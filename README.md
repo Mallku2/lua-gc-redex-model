@@ -22,6 +22,7 @@ The procedures require a list containing the name of the library services that u
 	* delta.rkt: the implementation of the delta interpretation function.
 	* errorMessagesMetafunctions.rkt: implementation of the meta-function #errmessage (mentioned in the paper)
 	* grammarMetaFunctions.rkt: a couple of predicates over grammar's symbols (that ease the definition of several rules from the model) and some minor tasks related with the manipulation of phrases from that grammar (they are mostly implementation related).
+	* gc.rkt: mechanization of garbage collection in Lua 5.2.
 	* objStoreMetafunctions.rkt: meta-function for the manipulation of the objects' store.
 	* substitution.rkt: our implementation of a substitution function, that suites our needs (in particular, we don't need it to be capture-avoiding).
 	* tablesMetafunctions.rkt: several meta-functions that manipulate tables. This is the module where the meta-function addkeys (mentioned in the paper) is defined.
