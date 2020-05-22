@@ -1,4 +1,4 @@
-This is the mechanization of the semantics presented in "Decoding Lua: Formal semantics for the developer and the semanticist" and "Understanding Lua’s Garbage Collection - Towards a Formalized Static Analyzer".
+This is the mechanization of the semantics presented in *"Decoding Lua: Formal semantics for the developer and the semanticist"* and *"Understanding Lua’s Garbage Collection - Towards a Formalized Static Analyzer"*.
 
 1. **Installation of DrRacket**
 
