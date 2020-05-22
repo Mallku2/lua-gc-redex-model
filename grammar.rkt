@@ -272,6 +272,10 @@
      ((v == v) EqFail)
      ]
 
+  
+  ; terms: to specify meta-functions and relations that work on both, s and e
+  [aterm e s]
+  
   [statlabel WrongKey ;metamethods
              NonTable
              WrongFunCall]
@@ -495,7 +499,7 @@
      ($statFunCall e : Name (e ... C e ...))
      (C score ...)
      (s score_1 ... C score_2 ...)
-  
+     
      ; Run-time
      (C (renv ...) RetStat)
      (s (renv_1 ... (rEnv C) renv_2 ...) RetStat)
@@ -563,18 +567,6 @@
      (e \[ C \])
      (function Name_1 (Name_2 ...) C end)
      (function Name_1 (Name_2 ... <<<) C end)
-  
-     ; intreptables
-     ; repeat table constructors for a restricted def. of C 
-     ((\{ field ... (\[ C \] = e) field ... \}) any ...)
-     ((\{ field ... (\[ e \] = C) field ... \}) any ...)
-     ((\{ field ... C field ... \}) any ...)
-  
-     ; values store
-     ((r_1 v_1) ... (r C) (r_2 v_2) ...)
-  
-     ; objects store
-     ((objid_1 object_1) ... (objid C) (objid_2 object_2) ...)
      ]  
   )
 (provide ext-lang)
@@ -671,6 +663,10 @@
   (redex-match? ext-lang
                 \;))
 
+(define is_break?
+  (redex-match? ext-lang
+                break))
+
 ; state
 (define is_intreptable?
   (redex-match? ext-lang
@@ -708,6 +704,7 @@
 
          ; stats
          is_skip?
+         is_break?
          
          is_r?
          is_intreptable? 

@@ -557,6 +557,8 @@
    (cteFields (field ...))]
   )
 
+(provide cteFields)
+
 (define-metafunction ext-lang
   cteEphemeron : (field ...) -> ((e e) ...)
 
@@ -571,6 +573,8 @@
   [(cteEphemeron (_ field ...))
    (cteEphemeron (field ...))]
   )
+
+(provide cteEphemeron)
 
 ; PRE : {(v cte) ∈ π_1(θ(tid))}
 (define-metafunction ext-lang
@@ -627,8 +631,6 @@
   [(eph objid (v cte) tid any σ θ)
    #f]
   )
-
-(provide cteEphemeron)
 
 ; performs iteration over the elements from SO (tid)
 (define-metafunction ext-lang
