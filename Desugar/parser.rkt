@@ -62,7 +62,7 @@
     
     (chunk ((block) (begin
                       ; Reset symbol table (for debugging purposes)
-                      ; TODO: abstraer esto en un procedimiento.
+                      ; TODO: abstract this into a procedure
                       (reset-symbol-table)
                       (set! actual-block (new-empty-block))
                       (set! actual-block (new-block actual-block))
@@ -115,6 +115,16 @@
         (set! actual-block
               (close-scopes-in-block actual-block))
         (while $2 $4)))
+
+     ((beginning_repeat block UNTIL exp)
+      (begin
+        (set! actual-block
+              (close-scopes-in-block actual-block))
+        (add-to-block $2 (while (unop (\\not) $4) $2))
+;        (conc-stats
+;           (list $2
+;                 (while $4 $2)))
+        ))
      
      ((LOCAL namelist) (begin
                          ; New scope
@@ -353,7 +363,7 @@
     (beginning_elseif
       ((ELSEIF) (set! actual-block (new-block actual-block))))
     
-    ; TODO: simplificar
+    ; TODO: simplify
     (if_guard_branch
      ((beginning_if exp THEN block)
       (begin
@@ -385,6 +395,10 @@
     
     (beginning_do
       ((DO) (prec BEGINNING_DO_END)
+            (set! actual-block (new-block actual-block))))
+
+    (beginning_repeat
+      ((REPEAT) (prec BEGINNING_REPEAT)
             (set! actual-block (new-block actual-block))))
 
     

@@ -28,7 +28,7 @@
 ;                              ;                                     ;;;;           
 ;                                                                                   
 ; domain is (e t σ θ) instead of e x σ x θ, to put the whole tuple into the
-  ; pattern in side-condition
+; pattern in side-condition
 (define-metafunction ext-lang
   reach : (e (side-condition any (is_term? (term any))) σ θ) -> any
 
@@ -51,9 +51,9 @@
   [(reach (side-condition (e (in-hole C tid) σ
                              (osp_1 ... (tid (evaluatedtable any _)) osp_2 ...))
                           (or (term (reach (e evaluatedtable σ
-                                           (osp_1 ... osp_2 ...))))
+                                              (osp_1 ... osp_2 ...))))
                               (term (reach (e any σ
-                                           (osp_1 ... osp_2 ...)))))))
+                                              (osp_1 ... osp_2 ...)))))))
    #t]
 
   [(reach (side-condition (e (in-hole C cid) σ
@@ -64,7 +64,7 @@
 
   [(reach _)
    #f]
-)
+  )
 
 (provide reach)
 
@@ -101,15 +101,15 @@
    ⊥]
   
   [(setFin tid_1 tid_2 (_ ...
-                         (tid_1 (_ tid_2 pos))
-                         _ ...))
+                        (tid_1 (_ tid_2 pos))
+                        _ ...))
    pos]
 
   ; {π 2 (θ(tid_1)) != tid_2}
   ; unmark for finalization
   [(setFin tid_1 tid_2 (_ ...
-                         (tid_2 (tableconstructor _ _))
-                         _ ...))
+                        (tid_2 (tableconstructor _ _))
+                        _ ...))
    ⊥
    
    (side-condition
@@ -171,14 +171,14 @@
   ; domain is (e σ θ) instead of e x σ x θ, to put the whole tuple into the
   ; pattern in side-condition
   [(notReachFin (side-condition
-                   (e σ (osp_1 ... (tid any) osp_2 ...))
-                   (and (not (equal? (term tid)
-                                     (term e)))
-                        (term (marked tid (osp_1 ...
-                                           (tid any)
-                                           osp_2 ...)))
-                        (term (reach (e tid σ
-                                        (osp_1 ... (tid any) osp_2 ...)))))))
+                 (e σ (osp_1 ... (tid any) osp_2 ...))
+                 (and (not (equal? (term tid)
+                                   (term e)))
+                      (term (marked tid (osp_1 ...
+                                         (tid any)
+                                         osp_2 ...)))
+                      (term (reach (e tid σ
+                                      (osp_1 ... (tid any) osp_2 ...)))))))
    #f]
 
   ; default case
@@ -224,17 +224,17 @@
 
   ; ∃ tid_2, fin(tid_2,...) ∧ pos_tid_2 > pos_tid_1
   [(nextFin (side-condition
-              (tid_1 s σ (osp_1 ...
-                          (tid_2 (evaluatedtable any pos_1))
-                          osp_2 ...))
-              (and (term (fin tid_2 s σ (osp_1 ...
-                                         (tid_2 (evaluatedtable any pos_1))
-                                         osp_2 ...)))
-                   (> (term pos_1)
-                      (term (getPos tid_1
-                                     (osp_1 ...
-                                      (tid_2 (evaluatedtable any pos_1))
-                                      osp_2 ...)))))))
+             (tid_1 s σ (osp_1 ...
+                         (tid_2 (evaluatedtable any pos_1))
+                         osp_2 ...))
+             (and (term (fin tid_2 s σ (osp_1 ...
+                                        (tid_2 (evaluatedtable any pos_1))
+                                        osp_2 ...)))
+                  (> (term pos_1)
+                     (term (getPos tid_1
+                                   (osp_1 ...
+                                    (tid_2 (evaluatedtable any pos_1))
+                                    osp_2 ...)))))))
    #f]
 
   ; default
@@ -277,7 +277,7 @@
   ;{¬ reach r s σ θ ∧ ¬ notReachFin r σ θ}
   [(cleanSigmaAux σ θ s (vsp_1 vsp_2 ...))
    (cleanSigmaAux σ θ s (vsp_2 ...))]
-)
+  )
 
 ; Stop-the-world gc algorithm that cleans the given θ store and returns the
 ; next object to be finalized, if any. Garbage is defined in terms of reach
@@ -301,7 +301,7 @@
 
   ; objid is reachable
   [(cleanThetaAux σ θ s ((objid any_1) osp_1 ... )
-                    Number v)
+                  Number v)
    (((objid any_1) osp_2 ...) any_2)
 
    (side-condition (term (reach (objid s σ θ))))
@@ -312,7 +312,7 @@
   ; {objid is not reachable}
   ; finalizer set, is not the highest priority found so far
   [(cleanThetaAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...)
-                    Number_2 v)
+                  Number_2 v)
    (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
    
    (side-condition (<= (term Number_1)
@@ -854,7 +854,7 @@
                                                        (\[ v_1 \] = tid_1)
                                                        efield_2 ... \})
                                                    v_2 pos))
-                      osp_2 ...))))))
+                                           osp_2 ...))))))
    #f
    ]
 
@@ -900,7 +900,7 @@
   ; {objid is not reachable}
   ; check if it is a table, marked for finalization
   [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...)
-                    Number_2 v)
+                      Number_2 v)
    
    (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
    ; finalizer set, is not the highest priority found so far
@@ -931,7 +931,7 @@
   ; {(it is a non reachable table tid => (tid is not set for finalization ∨ has
   ; the highest priority found so far ∨ appears as a value of a weak table)) ∨
   ; it's a non-reachable closure}
-    [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v)
+  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v)
    (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
 
    (side-condition (> (term Number_1)
@@ -963,6 +963,27 @@
   [(cleanThetaWeakAux σ θ s (osp_1 osp_2 ... ) Number v)
    (cleanThetaWeakAux σ θ s (osp_2 ... ) Number v)]
   )
+
+
+;                                                                                                     
+;                                                                                                     
+;                                                                                                     
+;                                  ;;;     ;                                                  ;       
+;                                 ;        ;                                                  ;       
+;                                 ;                                                           ;       
+;     ;;; ;    ;;;              ;;;;;;   ;;;     ; ;;;;           ;       ;   ;;;      ;;;;   ;    ;  
+;    ;   ;;   ;   ;               ;        ;     ;;   ;;          ;       ;  ;   ;    ;    ;  ;  ;;   
+;   ;     ;  ;                    ;        ;     ;     ;           ;  ;  ;  ;     ;        ;  ; ;     
+;   ;     ;  ;                    ;        ;     ;     ;           ;  ;  ;  ;     ;   ;;;;;;  ;;;     
+;   ;     ;  ;                    ;        ;     ;     ;           ; ; ; ;  ;;;;;;;  ;;    ;  ;  ;    
+;   ;     ;  ;                    ;        ;     ;     ;           ; ; ; ;  ;        ;     ;  ;   ;   
+;    ;   ;;   ;   ;               ;        ;     ;     ;            ;   ;    ;    ;  ;    ;;  ;    ;  
+;     ;;; ;    ;;;                ;     ;;;;;;;  ;     ;            ;   ;     ;;;;    ;;;; ;  ;     ; 
+;         ;                                                                                           
+;    ;   ;;                                                                                           
+;     ;;;;                                                                                            
+;                    ;;;;;;;;;                           ;;;;;;;;;                                    
+
 
 (define-metafunction ext-lang
   gcFinWeakAware : s σ θ -> (σ θ e)

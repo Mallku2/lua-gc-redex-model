@@ -62,6 +62,7 @@
                                    ; tokens for resolving shif-reduce conflicts
                                    BEGINNING_DO_END
                                    BEGINNING_WHILE
+                                   BEGINNING_REPEAT
                                    UNM ; arith. negation
                                    ))
 
@@ -148,18 +149,20 @@
    (number-lit (token-NUMBER (exact->inexact (string->number lexeme))))
    
    ; Translate to Racket's hexadecimal numbers' notation
-   (simp-hex-number-lit (token-NUMBER (string->number (string-replace lexeme
-                                                                      (regexp "0x|0X") "#x"))))
+   (simp-hex-number-lit
+    (token-NUMBER (string->number (string-replace lexeme
+                                                  (regexp "0x|0X") "#x"))))
    
-   ;TODO: manejar hexadecimales con exponente binario
-   (hex-number-bin-exp-lit (token-HEX-NMBR-BINPOT
-                            ; Extract hexadecimal number and binary exponent
-                            ((lambda ()
-                               (define hex-split (string-split lexeme (regexp "p|P")))
+   ;TODO: hex. with binary exp.
+   (hex-number-bin-exp-lit
+    (token-HEX-NMBR-BINPOT
+     ; Extract hexadecimal number and binary exponent
+     ((lambda ()
+        (define hex-split (string-split lexeme (regexp "p|P")))
                                
-                               (list (string->number (string-replace (list-ref hex-split 0)
-                                                                     (regexp "0x|0X") "#x"))
-                                     (string->number (list-ref hex-split 1)))))))
+        (list (string->number (string-replace (list-ref hex-split 0)
+                                              (regexp "0x|0X") "#x"))
+              (string->number (list-ref hex-split 1)))))))
    
    (double-quoted-string-lit (token-STRING
                               ; Remove unprintable characters
@@ -168,18 +171,20 @@
                                                 1
                                                 (- (string-length lexeme) 1)))))
    
-   (single-quoted-string-lit (token-STRING
-                              ; Remove unprintable characters
-                              ; (embedded zeros)
-                              (clean (substring lexeme
-                                                1
-                                                (- (string-length lexeme) 1)))))
+   (single-quoted-string-lit
+    (token-STRING
+     ; Remove unprintable characters
+     ; (embedded zeros)
+     (clean (substring lexeme
+                       1
+                       (- (string-length lexeme) 1)))))
    
-   (mult-lines-string-lit (token-STRING (clean
-                                         ; Delete [[ and ]]
-                                         (substring lexeme
-                                                    2
-                                                    (- (string-length lexeme) 2)))))
+   (mult-lines-string-lit
+    (token-STRING (clean
+                   ; Delete [[ and ]]
+                   (substring lexeme
+                              2
+                              (- (string-length lexeme) 2)))))
    
    
    ("..." (token-VARARG))

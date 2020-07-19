@@ -130,7 +130,7 @@
                        ($statFunCall ($ENV |[| "assert" |]|)
                                      ((($ENV |[| "fact" |]|) == false))))))
   
-  ; TODO: eliminar los skip innecesarios
+  ; TODO: avoid unnecessary skips
   (check-equal? (parse-this "do local c = 1 ; c = 2 end ; c = 3" #f (void))
                 (term ((do (local c = 1.0 in (\; \; (c = 2.0)) end) end)
                        \;
@@ -146,6 +146,42 @@
   (check-equal? (parse-this "while true do local d = 1 end d = 2" #f (void))
                 (term ((while true do (local d = 1.0 in \; end) end)
                        (($ENV  \[ "d" \]) = 2.0))))
+
+  ; repeat
+  ; single repeat
+  (check-equal? (parse-this "repeat i = i + 1; u = i .. i until finish" #f
+                            (void))
+                (term ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                       |;|
+                       (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
+                                              .. ($ENV |[| "i" |]|)))
+                       (while
+                        (not ($ENV |[| "finish" |]|))
+                        do
+                        ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                         |;|
+                         (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
+                                                .. ($ENV |[| "i" |]|))))
+                        end))))
+
+  ; concat
+  (check-equal? (parse-this "do a = 1 end ;
+                             repeat i = i + 1; u = i .. i until finish" #f
+                            (void))
+                (term ((do (($ENV |[| "a" |]|) = 1.0) end)
+                       |;|
+                       (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                       |;|
+                       (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
+                                              .. ($ENV |[| "i" |]|)))
+                       (while
+                        (not ($ENV |[| "finish" |]|))
+                        do
+                        ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                         |;|
+                         (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
+                                                .. ($ENV |[| "i" |]|))))
+                        end))))
   
   ; numeric for
   (check-equal? (parse-this "for var = 1 , 10 do var = 1 end" #f (void))
