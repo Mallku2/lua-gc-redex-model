@@ -50,7 +50,7 @@
      <<<
      var
      ; To allow function calls in protected mode, in place of expressions.
-     functioncall
+     ;functioncall
      ($builtIn builtinserv (e ...))
      (\( e \))
      tableconstructor
@@ -117,8 +117,6 @@
                table.unpack]
 
   [Boolean true false]
-  
-  [vlist (v ...)]
 
   ; Variables' Identifiers' syntactic category, to ease the definition of the
   ; substitution function.
@@ -191,29 +189,7 @@
 ; Extensions made to the grammar to ease the definition of the reduction
 ; semantics
 
-; closures comprise core-lang stats + environment. We force this representation
-; with the following extension to core-lang
-(define-extended-language core+env-lang core-lang
-
-  [e ....
-     ; Run-time expressions, but codomain of the environment: the
-     ; substitution could embed this expressions into statements
-     r
-     (< e ... >)]
-  
-  ; Ordinary refs
-  [(r vr) (ref natural)]
-
-  [var ....
-       ; run-time expression
-       evar]
-  
-  [evar r
-        (v \[ v \])]
-
-  )
-
-(define-extended-language ext-lang core+env-lang
+(define-extended-language ext-lang core-lang
 
   ; Run-time statements
   [srun score
@@ -223,7 +199,6 @@
         
         ; extensions
         (do s end) ; needs to be added to allow reduction into a do-end block 
-        ;(s ReturnStat)
         (s Break)
         ; To help with the definition of well-formed programs, we exclude as
         ; many ill-formed programs as possible,  using the grammar
@@ -251,6 +226,8 @@
      (e : Name (e ...))
      
      ; Run-time expressions
+     r
+     (< e ... >)
      ($err v)
      ; renv is not an expression nor a value. The previous rules for these
      ; constructions does not describe the renv added
@@ -271,10 +248,6 @@
      ((\# v) StrLenWrongOp)
      ((v == v) EqFail)
      ]
-
-  
-  ; terms: to specify meta-functions and relations that work on both, s and e
-  [aterm e s]
   
   [statlabel WrongKey ;metamethods
              NonTable
@@ -294,6 +267,13 @@
                v]
   
   [evaluatedtable (\{ efield ... \})]
+
+  [var ....
+       ; run-time expression
+       evar]
+  
+  [evar r
+        (v \[ v \])]
     
   ;                                                  
   ;                                                  
@@ -337,15 +317,19 @@
   [object intreptable
           functiondef]
 
-  ; values store pair
-  [(rst vsp) (r v)
-             (refStdout String)]
+  ; Ordinary refs
+  [r (ref natural)]
   
-  [σ (vsp ...)]
+  ; values store pair
+  [vsp (r v)
+       (refStdout String)]
+  
+  [σ ((r v) ...)
+     ((refStdout String) (r v) ...)]
 
   ; id-object binding: objects store's pairs  
-  [(objrefst osp) (tid intreptable)
-                  (cid functiondef)]
+  [osp (tid intreptable)
+       (cid functiondef)]
   
   [θ (osp ...)]
 
@@ -371,7 +355,6 @@
        (do Elf end)
        (if Elf then s else s end)
        (local Name ... = v ... Elf e ... in s end)
-       ;(local Name ... = renv ... in Elf end)
        (Elf (renv ...) LocalBody)
        (evar ... (Elf \[ e \]) var ... = e ...)
        (evar ... (v \[ Elf \]) var ... = e ...)
