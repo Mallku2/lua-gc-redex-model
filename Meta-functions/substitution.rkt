@@ -106,12 +106,6 @@
   [(substExp ($err v) ((id e) ...))
    ($err v)]
 
-;  [(substExp (s ReturnExp) ((id e) ...))
-;   ((substBlock s ((id e) ...)) ReturnExp)]
-;
-;  [(substExp (((v_1 (v_2 ...))WrongFunCall) ReturnExp) ((id e) ...))
-;   (((v_1 (v_2 ...))WrongFunCall) ReturnExp)]
-
   [(substExp ((v_1 \[ v_2 \])NonTable) ((id e) ...))
    ((v_1 \[ v_2 \])NonTable)]
 

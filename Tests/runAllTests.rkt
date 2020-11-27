@@ -54,8 +54,10 @@
 
 (define (test-all-random-tests)
   (print "random testing:")
-  (print "progress:")
+  (print "well-formedness:")
   (well-formed-test-suite)
+  (print "free occurrences of references:")
+  (free-refs-test-suite)
   )
 
 (define (test-all-desugaring-tests)

@@ -95,10 +95,11 @@
   [(δ (\# String))
    ,(bytes-length (string->bytes/utf-8 (term String)))]
   
-  ; Table length
+  ; Table length: just the max. numeric key
   [(δ (\# (\{ field ... \})))
    any
-   
+
+   ; extract numeric keys
    (where (Number_1 Number_2 ...) 
           ,(map (λ (field)
                   ; Extract the expression associated with the binding...
@@ -743,9 +744,10 @@
   ;   ;
 
   ; Hack to implement a simple instrumentation tool.
-  [(δ (print v_1 ... (vsp_1 ... (refStdout string_1) vsp_2 ...) θ))
-   (vsp_1 ... (refStdout string_3) vsp_2 ...)
-   
+  [(δ (print v_1 ... ((refStdout string_1) vsp ...) θ))
+   ((refStdout string_3) vsp ...)
+
+   ; concat v_1 ... into a single string
    (where string_2 ,(foldl (λ (str accum)
                              (string-append accum
                                             (term (δ (tostring ,str θ)))

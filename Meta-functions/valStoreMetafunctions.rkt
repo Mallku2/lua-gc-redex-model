@@ -7,7 +7,7 @@
 (define-metafunction ext-lang
   refBelongsTo : r σ -> any
 
-  [(refBelongsTo r_1 (rst_1 ... (r_1 v) rst_2 ...))
+  [(refBelongsTo r_1 (vsp_1 ... (r_1 v) vsp_2 ...))
    #t]
 
   ; Default
@@ -43,12 +43,12 @@
    (ref 1)]
   
   ; An store with at least one reference
-  [(freshSigmaRef (rst ... ((ref Number_1) v)))
+  [(freshSigmaRef (vsp ... ((ref Number_1) v)))
    (ref Number_2)
 
    (where Number_2 ,(+ (term Number_1) 1))]
 
-  [(freshSigmaRef (rst ... ((ref Number_1) v_1) (refStdout v_2)))
+  [(freshSigmaRef (vsp ... ((ref Number_1) v_1) (refStdout v_2)))
    (ref Number_2)
 
    (where Number_2 ,(+ (term Number_1) 1))]
@@ -59,15 +59,15 @@
 (define-metafunction ext-lang
   addSimpVal : σ (v ...) -> (σ (r ...))
   ; Base case
-  [(addSimpVal (rst ...) ())
-   ((rst ...) ())]
+  [(addSimpVal (vsp ...) ())
+   ((vsp ...) ())]
   
   ; Inductive case
-  [(addSimpVal (rst ...) (v_1 v_2 ...))
+  [(addSimpVal (vsp ...) (v_1 v_2 ...))
    (σ (r_1 r ...))
 
-   (where r_1 (freshSigmaRef (rst ...)))
-   (where (σ (r ...)) (addSimpVal (rst ... (r_1 v_1)) (v_2 ...)))])
+   (where r_1 (freshSigmaRef (vsp ...)))
+   (where (σ (r ...)) (addSimpVal (vsp ... (r_1 v_1)) (v_2 ...)))])
 
 (provide addSimpVal)
 

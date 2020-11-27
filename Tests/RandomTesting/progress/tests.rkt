@@ -2,15 +2,27 @@
 
 (require redex
          "../../../grammar.rkt"
-         "../../../executionEnvironment.rkt"
-         "../../../Relations/fullProgs.rkt"
-         "../../../Relations/gc.rkt"
-         "../../../Meta-functions/delta.rkt"
-         "../../../Meta-functions/substitution.rkt"
-         "../../../Meta-functions/gc.rkt"
-         "../../../Meta-functions/valStoreMetafunctions.rkt"
-         "../../../Meta-functions/objStoreMetafunctions.rkt"
          "./defs.rkt")
+
+
+;                                                                                                     
+;                                                                                                     
+;                                                                                                     
+;                    ;;;;     ;;;;                   ;;;                                            ; 
+;                       ;        ;                  ;                                               ; 
+;                       ;        ;                  ;                                               ; 
+;  ;       ;   ;;;      ;        ;                ;;;;;;    ;;;      ; ;;;  ;;;;;;     ;;;      ;;; ; 
+;  ;       ;  ;   ;     ;        ;                  ;      ;   ;     ;;   ; ;  ;  ;   ;   ;    ;   ;; 
+;   ;  ;  ;  ;     ;    ;        ;                  ;     ;     ;    ;      ;  ;  ;  ;     ;  ;     ; 
+;   ;  ;  ;  ;     ;    ;        ;        ;;;;      ;     ;     ;    ;      ;  ;  ;  ;     ;  ;     ; 
+;   ; ; ; ;  ;;;;;;;    ;        ;                  ;     ;     ;    ;      ;  ;  ;  ;;;;;;;  ;     ; 
+;   ; ; ; ;  ;          ;        ;                  ;     ;     ;    ;      ;  ;  ;  ;        ;     ; 
+;    ;   ;    ;    ;    ;        ;                  ;      ;   ;     ;      ;  ;  ;   ;    ;   ;   ;; 
+;    ;   ;     ;;;;      ;;;      ;;;               ;       ;;;      ;      ;  ;  ;    ;;;;     ;;; ; 
+;                                                                                                     
+;                                                                                                     
+;                                                                                                     
+;                                                                                                     
 
 (define (well-formed-test-suite)
 
@@ -322,13 +334,13 @@
   (test-equal
    (judgment-holds
     (well_formed_term (hole Break) () () ($iter true do (x = 1)
-                                                       end)))
+                                                end)))
    #f)
 
   (test-equal
    (judgment-holds
     (well_formed_term (hole Break) () () ($iter x do \;
-                                                       end)))
+                                                end)))
    #f)
 
   ; WrongKey
@@ -1126,3 +1138,479 @@
   )
 
 (provide well-formed-test-suite)
+
+
+;                                                                                   
+;                                                                                   
+;                                                                                   
+;       ;;;                                                            ;;;          
+;      ;                                                              ;             
+;      ;                                                              ;             
+;    ;;;;;;    ; ;;;    ;;;      ;;;               ; ;;;    ;;;     ;;;;;;   ;;;;;  
+;      ;       ;;   ;  ;   ;    ;   ;              ;;   ;  ;   ;      ;     ;     ; 
+;      ;       ;      ;     ;  ;     ;             ;      ;     ;     ;     ;       
+;      ;       ;      ;     ;  ;     ;             ;      ;     ;     ;     ;;;;    
+;      ;       ;      ;;;;;;;  ;;;;;;;             ;      ;;;;;;;     ;         ;;; 
+;      ;       ;      ;        ;                   ;      ;           ;           ; 
+;      ;       ;       ;    ;   ;    ;             ;       ;    ;     ;     ;     ; 
+;      ;       ;        ;;;;     ;;;;              ;        ;;;;      ;      ;;;;;  
+;                                                                                   
+;                                                                                   
+;                                                                                   
+;                                                                                   
+
+(define (free-refs-test-suite)
+  
+  ;           
+  ;           
+  ;           
+  ;           
+  ;           
+  ;           
+  ;     ; ;;; 
+  ;     ;;   ;
+  ;     ;     
+  ;     ;     
+  ;     ;     
+  ;     ;     
+  ;     ;     
+  ;     ;     
+  ;           
+  ;           
+  ;           
+  ;           
+
+  ;                                          
+  ;                                          
+  ;                                          
+  ;                                          
+  ;             ;               ;            
+  ;             ;               ;            
+  ;    ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+  ;   ;    ;    ;      ;   ;    ;     ;    ; 
+  ;   ;         ;          ;    ;     ;      
+  ;    ;;;;     ;      ;;;;;    ;      ;;;;  
+  ;        ;    ;     ;    ;    ;          ; 
+  ;   ;    ;    ;     ;   ;;    ;     ;    ; 
+  ;    ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+  ;                                          
+  ;                                          
+  ;                                          
+  ;
+  ; skip stat
+  (test-equal
+   (term (free_val_ref () \;))
+   '())
+
+  (test-equal
+   (term (free_val_ref () break))
+   '())
+
+  ; while
+  (test-equal
+   (term (free_val_ref () (while (ref 1) do \; end)))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) (while (ref 1) do \; end)))
+   '())
+
+  ; do-end
+  (test-equal
+   (term (free_val_ref () (do \; end)))
+   '())
+
+  (test-equal
+   (term (free_val_ref () (do (while (ref 1) do \; end) end)))
+   (term ((ref 1))))
+
+  ; return
+  (test-equal
+   (term (free_val_ref () (return 1 (ref 1))))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) (return 1 (ref 1))))
+   '())
+  
+  ; fun call
+  (test-equal
+   (term (free_val_ref () ($statFunCall (ref 1) ())))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) ())))
+   '())
+
+  (test-equal
+   (term (free_val_ref () ($statFunCall (ref 1) ((ref 2)))))
+   (term ((ref 1) (ref 2))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) ((ref 2)))))
+   (term ((ref 2))))
+
+  (test-equal
+   (term (free_val_ref () ($statFunCall (ref 1) : x ())))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) : x ())))
+   '())
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) : x ((ref 2)))))
+   (term ((ref 2))))
+
+  ; assignment
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ((ref 1) = 1)))
+   '())
+
+  (test-equal
+   (term (free_val_ref () ((ref 1) = 1)))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref () ((ref 1) = (ref 2))))
+   (term ((ref 1) (ref 2))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) ((ref 1) = (ref 2))))
+   (term ((ref 2))))
+
+  (test-equal
+   (term (free_val_ref () (local x y = (ref 1) 2 in \; end)))
+   (term ((ref 1))))
+  
+  (test-equal
+   (term (free_val_ref (((ref 1) false)) (local x y = (ref 1) 2 in
+                                           (x y = 3 (ref 2))
+                                           end)))
+   (term ((ref 2))))
+  
+  (test-equal
+   (term (free_val_ref (((ref 1) (objr 1))) (((ref 1) \[ 1 \]) = 2)))
+   '())
+
+  (test-equal
+   (term (free_val_ref () (((ref 1) \[ 1 \]) = 2)))
+   (term ((ref 1))))
+
+  ; conditional
+  (test-equal
+   (term (free_val_ref () (if (ref 1)
+                              then ((ref 2) = 1)
+                              else ((ref 3) = 1) end)))
+   (term ((ref 1) (ref 2) (ref 3))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) true)) (if (ref 1)
+                                            then ((ref 2) = 1)
+                                            else ((ref 3) = 1) end)))
+   (term ((ref 2) (ref 3))))
+
+  ; local
+  (test-equal
+   (term (free_val_ref () (\; ((rEnv (ref 1)) (rEnv (ref 2))) LocalBody)))
+   (term ((ref 2) (ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) (\; ((rEnv (ref 1))) LocalBody)))
+   '())
+
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) (break ((rEnv (ref 1))) LocalBody)))
+   '())
+  
+  ; concat
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) (((ref 1) = (ref 2)) \;)))
+   (term ((ref 2))))
+  
+  (test-equal
+     (term (free_val_ref (((ref 1) 1)) (\; ((ref 1) = (ref 2)))))
+     (term ((ref 2))))
+  
+    ; error obj
+    (test-equal
+     ; error obj cannot have a ref...
+     (term (free_val_ref () ($err 1)))
+     '())
+  
+    ;                                                                          
+    ;   ;;;             ;                                                      
+    ;     ;             ;                                                      
+    ;     ;             ;                         ;               ;            
+    ;     ;             ;                         ;               ;            
+    ;     ;       ;;;   ;;;;;            ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+    ;     ;      ;   ;  ;;  ;;          ;    ;    ;      ;   ;    ;     ;    ; 
+    ;     ;          ;  ;    ;          ;         ;          ;    ;     ;      
+    ;     ;      ;;;;;  ;    ;           ;;;;     ;      ;;;;;    ;      ;;;;  
+    ;     ;     ;    ;  ;    ;               ;    ;     ;    ;    ;          ; 
+    ;     ;     ;   ;;  ;;  ;;          ;    ;    ;     ;   ;;    ;     ;    ; 
+    ;      ;;;   ;;; ;  ;;;;;            ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+    ;                                                                          
+    ;                                                                          
+    ;                                                                          
+  
+    ; Break tag
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) (($iter (ref 1) do \; end) Break)))
+   '())
+  
+  (test-equal
+   (term (free_val_ref () (($iter (ref 1) do \; end) Break)))
+   (term ((ref 1))))
+  
+  ; $iter
+  (test-equal
+   (term (free_val_ref () ($iter (ref 1) do \; end)))
+   (term ((ref 1))))
+
+  (test-equal
+   (term (free_val_ref (((ref 1) 1)) ($iter (ref 1) do \; end)))
+   '())
+  
+  ; WrongKey
+  (test-equal
+   ; just testing the syntactic form; WrongKey forces values and tids as tables
+   (term (free_val_ref () ((((objr 1) \[ 1 \]) = 2) WrongKey)))
+   '())
+  
+  ; NonTable
+  (test-equal
+   ; only values
+   (term (free_val_ref () (((1 \[ 2 \]) = 3) NonTable)))
+   '())
+  
+  ; WrongFunCall
+  (test-equal
+   ; only values
+   (term (free_val_ref () (($statFunCall 1 (2)) WrongFunCall)))
+   '())
+  
+  ; FunCall
+  (test-equal
+   (term (free_val_ref (((ref 1) 1))
+                       (($statFunCall (ref 1) ((ref 2))) () RetStat)))
+   (term ((ref 2))))
+    
+                                   
+    ;                                  
+    ;                                  
+    ;                                  
+    ;                                  
+    ;                                  
+    ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;   ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+    ;   ;    ;    ;;    ;    ;  ;      
+    ;   ;;;;;;    ;;    ;    ;   ;;;;  
+    ;   ;         ;;    ;    ;       ; 
+    ;   ;;   ;   ;  ;   ;;  ;;  ;    ; 
+    ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;                   ;              
+    ;                   ;              
+    ;                   ;              
+    ;
+  
+    ; primitive types
+    (test-equal
+     (term (free_val_ref () nil))
+     '())
+  
+    (test-equal
+     (term (free_val_ref () true))
+     '())
+  
+    (test-equal
+     (term (free_val_ref () 1))
+     '())
+  
+    (test-equal
+     (term (free_val_ref () "asd"))
+     '())
+  
+    ; objref
+    (test-equal
+     (term (free_val_ref () (objr 1)))
+     '())
+  
+    ; functiondef
+    (test-equal
+     (term (free_val_ref () (function x (y) ((ref 1) = 1) end)))
+     (term ((ref 1))))
+
+    (test-equal
+     (term (free_val_ref (((ref 1 ) 1)) (function x (y) ((ref 1) = 1) end)))
+     '())
+
+  (test-equal
+     (term (free_val_ref () (function x (<<<) ((ref 1) = 1) end)))
+     (term ((ref 1))))
+
+    (test-equal
+     (term (free_val_ref (((ref 1 ) 1)) (function x (<<<) ((ref 1) = 1) end)))
+     '())
+
+  ; Name
+    (test-equal
+     (term (free_val_ref () x))
+     '())
+  
+    ; table field
+    (test-equal
+     (term (free_val_ref () ((ref 1) \[ (ref 2) \])))
+     (term ((ref 1) (ref 2))))
+
+  (test-equal
+     (term (free_val_ref (((ref 2) 1)) ((ref 1) \[ (ref 2) \])))
+     (term ((ref 1))))
+  
+    ; parenthesized exp
+    (test-equal
+     (term (free_val_ref () (\( (ref 1) \))))
+     (term ((ref 1))))
+
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) (\( (ref 1) \))))
+     '())
+  
+    ; built-in
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) ($builtIn print ((ref 1)))))
+     '())
+    
+    (test-equal
+     (term (free_val_ref () ($builtIn print ((ref 1)))))
+     (term ((ref 1))))
+  
+    ; tableconstructor
+    (test-equal
+     (term (free_val_ref () (\{ (\[ (ref 1) \] = (ref 2)) \})))
+     (term ((ref 1) (ref 2))))
+  
+    (test-equal
+     (term (free_val_ref (((ref 1) 1))
+                         (\{ (\[ (ref 1) \] = (ref 2)) \})))
+     (term ((ref 2))))
+  
+    ; binops
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) ((ref 1) + (ref 2))))
+     (term ((ref 2))))
+  
+    ; unops
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) (- (ref 1))))
+     '())
+  
+    (test-equal
+     (term (free_val_ref () (- (ref 1))))
+     (term ((ref 1))))
+  
+    ; val refs
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) (ref 1)))
+     '())
+
+  (test-equal
+   (term (free_val_ref () (ref 1)))
+   (term ((ref 1))))
+  
+  
+    ; tuples
+    (test-equal
+     (term (free_val_ref (((ref 1) 1)) (< (ref 1) >)))
+     '())
+  
+    (test-equal
+     (term (free_val_ref () (< (ref 1) >)))
+     (term ((ref 1))))
+  
+    
+    ;                                                                  
+    ;                                                                  
+    ;   ;;;             ;                                              
+    ;     ;             ;                                              
+    ;     ;             ;                                              
+    ;     ;             ;                                              
+    ;     ;       ;;;   ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;     ;      ;   ;  ;;  ;;          ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+    ;     ;          ;  ;    ;          ;    ;    ;;    ;    ;  ;      
+    ;     ;      ;;;;;  ;    ;          ;;;;;;    ;;    ;    ;   ;;;;  
+    ;     ;     ;    ;  ;    ;          ;         ;;    ;    ;       ; 
+    ;     ;     ;   ;;  ;;  ;;          ;;   ;   ;  ;   ;;  ;;  ;    ; 
+    ;      ;;;   ;;; ;  ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;                                                   ;              
+    ;                                                   ;              
+    ;                                                   ;              
+    ;
+  
+    ; protected mode
+    (test-equal
+     (term (free_val_ref () ((((ref 1) = 1) () RetExp) ProtectedMode)))
+     (term ((ref 1))))
+
+  (test-equal
+     (term (free_val_ref (((ref 1) 1))
+                         ((((ref 1) = 1) () RetExp) ProtectedMode)))
+     '())
+  
+    ; xpcall
+  (test-equal
+     (term (free_val_ref () ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
+     (term ((ref 1))))
+
+  (test-equal
+     (term (free_val_ref (((ref 1) 1))
+                         ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
+     '())
+  
+  
+    ; NonTable
+    (test-equal
+     ;only values
+     (term (free_val_ref () ((1 \[ 2 \]) NonTable)))
+     '())
+  
+    ; WrongKey
+    (test-equal
+     (term (free_val_ref () (((objr 1) \[ 1 \]) WrongKey)))
+     '())
+  
+    ; ArithWrongOps
+    (test-equal
+     (term (free_val_ref () ((1 + true) ArithWrongOps)))
+     '())
+  
+    ; StrConcatWrongOps
+    (test-equal
+     (term (free_val_ref () (("a" .. "b") StrConcatWrongOps)))
+     '())
+  
+  
+    ; OrdCompWrongOps
+    (test-equal
+     (term (free_val_ref () ((true < 1) OrdCompWrongOps)))
+     '())
+  
+    ; StrLenWrongOp
+    (test-equal
+     (term (free_val_ref () ((\# 1)StrLenWrongOp)))
+     '())
+  
+    ; NegWrongOp
+    (test-equal
+     (term (free_val_ref () ((- true)NegWrongOp)))
+     '())
+  
+    ; EqFail
+    (test-equal
+     (term (free_val_ref () ((1 == 2) EqFail)))
+     '())
+  
+  (test-results)
+  )
+
+(provide free-refs-test-suite)

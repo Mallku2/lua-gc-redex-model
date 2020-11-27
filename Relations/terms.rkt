@@ -490,8 +490,7 @@
 
         (side-condition (not (is_cid? (term v_2))))]
 
-   [--> ((in-hole Enp ($err v)) ProtectedMode
-                               cid)
+   [--> ((in-hole Enp ($err v)) ProtectedMode cid)
         (cid (v))
         
         E-XProtectedModeErrorCatchedHandler]

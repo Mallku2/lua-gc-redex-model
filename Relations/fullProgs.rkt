@@ -67,7 +67,7 @@
    [--> (σ : θ : (in-hole Enp ($err v)))
         (σ : θ : ($err v))
         
-        E-ErrorPropagation
+        E-errorPropagation
         (side-condition (not (eq? (term Enp)
                                   (term hole))))]
 

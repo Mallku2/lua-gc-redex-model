@@ -9,14 +9,78 @@
          "../../../Meta-functions/substitution.rkt"
          "../../../Meta-functions/gc.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"
-         "../../../Meta-functions/objStoreMetafunctions.rkt")
+         "../../../Meta-functions/objStoreMetafunctions.rkt"
+         )
 
+; TODO: abstract patterns
+; extracts val. references from a term t
+(define (get_val_r t)
+  (map (lambda (match)
+         ; extract bindings from the match; filter bindings for symbol 'r;
+         ; extract the associated expression
+         (bind-exp (list-ref (filter (lambda (b)
+                                       (equal? (bind-name b) 'r))
+                                     (match-bindings match)) 0)))
+       (let ([match (redex-match ext-lang
+                                 (in-hole C r)
+                                 (term ,t))])
+         (if match
+             match
+             '()))))
+
+; PRE : {any ∈ s ∪ e}
 (define-metafunction ext-lang
+  free_val_ref : σ any -> (r ...)
+
+  [(free_val_ref ((r_1 v) ...) any)
+   (r_3 ...)
+
+   (where (r_2 ...) ,(get_val_r (term any)))
+   (where (r_3 ...) ,(remove* (term (r_1 ...)) (term (r_2 ...))))
+   ]
+  )
+
+(provide free_val_ref)
+
+; extracts tids from a term t
+(define (get_tid t)
+  (map (lambda (match)
+         ; extract bindings from the match; filter bindings for symbol 'r;
+         ; extract the associated expression
+         (bind-exp (list-ref (filter (lambda (b)
+                                       (equal? (bind-name b) 'r))
+                                     (match-bindings match)) 0)))
+       (let ([match (redex-match ext-lang
+                                 (in-hole C tid)
+                                 (term ,t))])
+         (if match
+             match
+             '()))))
+
+; extract closures ids from a term t
+(define (get_cl t)
+  (map (lambda (match)
+         ; extract bindings from the match; filter bindings for symbol 'r;
+         ; extract the associated expression
+         (bind-exp (list-ref (filter (lambda (b)
+                                       (equal? (bind-name b) 'r))
+                                     (match-bindings match)) 0)))
+       (let ([match (redex-match ext-lang
+                                 (in-hole C r)
+                                 (term ,t))])
+         (if match
+             match
+             '()))))
+
+; bound free variables and references
+(define-metafunction ext-lang
+  ; no vararg id
   [(close (σ : θ : s))
    (σ : θ : (local Name_1 Name_2 ... = nil in s end))
 
    (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))]
 
+  ; there is a vararg id
   [(close (σ : θ : s))
    (σ : θ : (local any_1 ... any_2 ... = nil in (function dummy (<<<) s end)
               end))
@@ -159,7 +223,7 @@
   ; local var
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
-                                (term (local Name ... = e in hole end))) σ θ s)
+                            (term (local Name ... = e in hole end))) σ θ s)
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (local Name ... = e in s end))]
 
@@ -172,14 +236,14 @@
 
   [(well_formed_term any σ θ r)
    (well_formed_term ,(plug (term any)
-                                (term (hole ((rEnv r)) LocalBody))) σ θ s)
+                            (term (hole ((rEnv r)) LocalBody))) σ θ s)
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (s ((rEnv r)) LocalBody))]
 
   [(well_formed_term any σ θ renv) ...
    (well_formed_term ,(plug (term any)
-                                (term (hole (renv ...)
-                                            LocalBody))) σ θ s)
+                            (term (hole (renv ...)
+                                        LocalBody))) σ θ s)
    --------------------------------------------------------------------------
    (well_formed_term any σ θ
                      (s (renv ...) LocalBody))]
@@ -219,8 +283,8 @@
 
   ; Break tag
   [(well_formed_term ,(plug (term any)
-                                (term (hole Break))) σ θ 
-                                                     s_1)
+                            (term (hole Break))) σ θ 
+                                                 s_1)
    ; Is s_1 a statement that represents the execution of a while loop?
    (side-condition ,(or (redex-match? ext-lang
                                       ($iter e do s_2 end)
@@ -245,7 +309,7 @@
   ; $iter
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
-                                (term ($iter e do hole end))) σ θ s)
+                            (term ($iter e do hole end))) σ θ s)
    (side-condition ,(redex-match? ext-lang
                                   (in-hole C_2 (C_3 Break))
                                   (term any)))
@@ -277,7 +341,7 @@
    (well_formed_term any σ θ (($statFunCall v_1 (v_2 ...)) WrongFunCall))]
   
   [(well_formed_term ,(plug (term any)
-                                (term (hole ((rEnv r) ...) RetStat))) σ θ s)
+                            (term (hole ((rEnv r) ...) RetStat))) σ θ s)
    (well_formed_term any σ θ r) ...
    ------------------------------------------------------------------------
    (well_formed_term any σ θ (s ((rEnv r) ...) RetStat))]
@@ -557,7 +621,7 @@
    (well_formed_term any σ θ ((v_1 (v_2 ...)) WrongFunCall))]
 
   [(well_formed_term ,(plug (term any)
-                                (term (hole ((rEnv r) ...) RetExp))) σ θ s)
+                            (term (hole ((rEnv r) ...) RetExp))) σ θ s)
    (well_formed_term any σ θ r) ...
    ------------------------------------------------------------------------
    (well_formed_term any σ θ (s ((rEnv r) ...) RetExp))]
@@ -595,13 +659,14 @@
    #t]
 
   ; stdout file
+  ; TODO: force this from the grammar
   [(well-formed-sigma ((refStdout String) (r_1 v_2) (r_2 v_3) ...) σ θ)
    (well-formed-sigma ((r_1 v_2) (r_2 v_3) ...) σ θ)
 
    ; only one stdout file
    (side-condition (not (redex-match ext-lang
-                        ((r_3 v_4) ... (refStdout v_5) (r_4 v_6) ...)
-                        (term ((r_1 v_2) (r_2 v_3) ...)))))
+                                     ((r_3 v_4) ... (refStdout v_5) (r_4 v_6) ...)
+                                     (term ((r_1 v_2) (r_2 v_3) ...)))))
    ]
   
   ; Stores are functions: for their syntactic representation, we ask for their
@@ -740,7 +805,7 @@
 
 (provide is-final-conf)
 
-(define (soundness_wfc_pred sigma theta s)
+(define (soundness_wfc_pred sigma theta s debug)
   (let ([result (if
                  (not (term (well_formed_conf (,sigma : ,theta : ,s))))
                  ; TODO: naive approach to discard ill formed
@@ -750,25 +815,34 @@
                  (apply-reduction-relation
                   full-progs-rel
                   (term (,sigma : ,theta : ,s))))])
+    (if debug
+        (begin
+          (print (term (,sigma : ,theta : ,s)))
+          (println (term (well_formed_conf (,sigma : ,theta : ,s))))
+          ;(println "--------------")
+          )
     (or
      ; it was a final configuration 
      (and (= (length result) 0)
-          (term (if-final-conf (sigma : theta : s))))
+          (term (is-final-conf (,sigma : ,theta : ,s))))
                 
      (and (= (length result) 1)
-          (term (well_formed_conf ,(first result)))))))
+          (term (well_formed_conf ,(first result))))))))
 
 (define (soundness_wfc attempts)
-  (redex-check ext-lang (σ : θ : s)
-               (soundness_wfc_pred (term σ) (term θ) (term s))
+  (redex-check ext-lang (σ : θ : s) ;#:uniform-at-random 0.05
+               (soundness_wfc_pred (term σ) (term θ) (term s) #t)
                #:prepare close_term
                #:attempts attempts
                #:source full-progs-rel
                ))
 
 (define (soundness_wfc_coverage attempts)
+  ; create records to register test coverage related with ↦
   (let ([rel-coverage (make-coverage full-progs-rel)])
-    (parameterize ([relation-coverage (list rel-coverage)])
+    (parameterize
+        ; supply data-structures
+        ([relation-coverage (list rel-coverage)])
       (soundness_wfc attempts)
       (values (covered-cases rel-coverage)))))
 
