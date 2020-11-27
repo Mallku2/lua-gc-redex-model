@@ -1199,143 +1199,143 @@
   ;
   ; skip stat
   (test-equal
-   (term (free_val_ref () \;))
+   (term (free_val_refs () \;))
    '())
 
   (test-equal
-   (term (free_val_ref () break))
+   (term (free_val_refs () break))
    '())
 
   ; while
   (test-equal
-   (term (free_val_ref () (while (ref 1) do \; end)))
+   (term (free_val_refs () (while (ref 1) do \; end)))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) (while (ref 1) do \; end)))
+   (term (free_val_refs (((ref 1) 1)) (while (ref 1) do \; end)))
    '())
 
   ; do-end
   (test-equal
-   (term (free_val_ref () (do \; end)))
+   (term (free_val_refs () (do \; end)))
    '())
 
   (test-equal
-   (term (free_val_ref () (do (while (ref 1) do \; end) end)))
+   (term (free_val_refs () (do (while (ref 1) do \; end) end)))
    (term ((ref 1))))
 
   ; return
   (test-equal
-   (term (free_val_ref () (return 1 (ref 1))))
+   (term (free_val_refs () (return 1 (ref 1))))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) (return 1 (ref 1))))
+   (term (free_val_refs (((ref 1) false)) (return 1 (ref 1))))
    '())
   
   ; fun call
   (test-equal
-   (term (free_val_ref () ($statFunCall (ref 1) ())))
+   (term (free_val_refs () ($statFunCall (ref 1) ())))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) ())))
+   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) ())))
    '())
 
   (test-equal
-   (term (free_val_ref () ($statFunCall (ref 1) ((ref 2)))))
+   (term (free_val_refs () ($statFunCall (ref 1) ((ref 2)))))
    (term ((ref 1) (ref 2))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) ((ref 2)))))
+   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) ((ref 2)))))
    (term ((ref 2))))
 
   (test-equal
-   (term (free_val_ref () ($statFunCall (ref 1) : x ())))
+   (term (free_val_refs () ($statFunCall (ref 1) : x ())))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) : x ())))
+   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) : x ())))
    '())
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ($statFunCall (ref 1) : x ((ref 2)))))
+   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) : x ((ref 2)))))
    (term ((ref 2))))
 
   ; assignment
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ((ref 1) = 1)))
+   (term (free_val_refs (((ref 1) false)) ((ref 1) = 1)))
    '())
 
   (test-equal
-   (term (free_val_ref () ((ref 1) = 1)))
+   (term (free_val_refs () ((ref 1) = 1)))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref () ((ref 1) = (ref 2))))
+   (term (free_val_refs () ((ref 1) = (ref 2))))
    (term ((ref 1) (ref 2))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) false)) ((ref 1) = (ref 2))))
+   (term (free_val_refs (((ref 1) false)) ((ref 1) = (ref 2))))
    (term ((ref 2))))
 
   (test-equal
-   (term (free_val_ref () (local x y = (ref 1) 2 in \; end)))
+   (term (free_val_refs () (local x y = (ref 1) 2 in \; end)))
    (term ((ref 1))))
   
   (test-equal
-   (term (free_val_ref (((ref 1) false)) (local x y = (ref 1) 2 in
+   (term (free_val_refs (((ref 1) false)) (local x y = (ref 1) 2 in
                                            (x y = 3 (ref 2))
                                            end)))
    (term ((ref 2))))
   
   (test-equal
-   (term (free_val_ref (((ref 1) (objr 1))) (((ref 1) \[ 1 \]) = 2)))
+   (term (free_val_refs (((ref 1) (objr 1))) (((ref 1) \[ 1 \]) = 2)))
    '())
 
   (test-equal
-   (term (free_val_ref () (((ref 1) \[ 1 \]) = 2)))
+   (term (free_val_refs () (((ref 1) \[ 1 \]) = 2)))
    (term ((ref 1))))
 
   ; conditional
   (test-equal
-   (term (free_val_ref () (if (ref 1)
+   (term (free_val_refs () (if (ref 1)
                               then ((ref 2) = 1)
                               else ((ref 3) = 1) end)))
    (term ((ref 1) (ref 2) (ref 3))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) true)) (if (ref 1)
+   (term (free_val_refs (((ref 1) true)) (if (ref 1)
                                             then ((ref 2) = 1)
                                             else ((ref 3) = 1) end)))
    (term ((ref 2) (ref 3))))
 
   ; local
   (test-equal
-   (term (free_val_ref () (\; ((rEnv (ref 1)) (rEnv (ref 2))) LocalBody)))
+   (term (free_val_refs () (\; ((rEnv (ref 1)) (rEnv (ref 2))) LocalBody)))
    (term ((ref 2) (ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) (\; ((rEnv (ref 1))) LocalBody)))
+   (term (free_val_refs (((ref 1) 1)) (\; ((rEnv (ref 1))) LocalBody)))
    '())
 
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) (break ((rEnv (ref 1))) LocalBody)))
+   (term (free_val_refs (((ref 1) 1)) (break ((rEnv (ref 1))) LocalBody)))
    '())
   
   ; concat
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) (((ref 1) = (ref 2)) \;)))
+   (term (free_val_refs (((ref 1) 1)) (((ref 1) = (ref 2)) \;)))
    (term ((ref 2))))
   
   (test-equal
-     (term (free_val_ref (((ref 1) 1)) (\; ((ref 1) = (ref 2)))))
+     (term (free_val_refs (((ref 1) 1)) (\; ((ref 1) = (ref 2)))))
      (term ((ref 2))))
   
     ; error obj
     (test-equal
      ; error obj cannot have a ref...
-     (term (free_val_ref () ($err 1)))
+     (term (free_val_refs () ($err 1)))
      '())
   
     ;                                                                          
@@ -1356,43 +1356,43 @@
   
     ; Break tag
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) (($iter (ref 1) do \; end) Break)))
+   (term (free_val_refs (((ref 1) 1)) (($iter (ref 1) do \; end) Break)))
    '())
   
   (test-equal
-   (term (free_val_ref () (($iter (ref 1) do \; end) Break)))
+   (term (free_val_refs () (($iter (ref 1) do \; end) Break)))
    (term ((ref 1))))
   
   ; $iter
   (test-equal
-   (term (free_val_ref () ($iter (ref 1) do \; end)))
+   (term (free_val_refs () ($iter (ref 1) do \; end)))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_ref (((ref 1) 1)) ($iter (ref 1) do \; end)))
+   (term (free_val_refs (((ref 1) 1)) ($iter (ref 1) do \; end)))
    '())
   
   ; WrongKey
   (test-equal
    ; just testing the syntactic form; WrongKey forces values and tids as tables
-   (term (free_val_ref () ((((objr 1) \[ 1 \]) = 2) WrongKey)))
+   (term (free_val_refs () ((((objr 1) \[ 1 \]) = 2) WrongKey)))
    '())
   
   ; NonTable
   (test-equal
    ; only values
-   (term (free_val_ref () (((1 \[ 2 \]) = 3) NonTable)))
+   (term (free_val_refs () (((1 \[ 2 \]) = 3) NonTable)))
    '())
   
   ; WrongFunCall
   (test-equal
    ; only values
-   (term (free_val_ref () (($statFunCall 1 (2)) WrongFunCall)))
+   (term (free_val_refs () (($statFunCall 1 (2)) WrongFunCall)))
    '())
   
   ; FunCall
   (test-equal
-   (term (free_val_ref (((ref 1) 1))
+   (term (free_val_refs (((ref 1) 1))
                        (($statFunCall (ref 1) ((ref 2))) () RetStat)))
    (term ((ref 2))))
     
@@ -1416,116 +1416,116 @@
   
     ; primitive types
     (test-equal
-     (term (free_val_ref () nil))
+     (term (free_val_refs () nil))
      '())
   
     (test-equal
-     (term (free_val_ref () true))
+     (term (free_val_refs () true))
      '())
   
     (test-equal
-     (term (free_val_ref () 1))
+     (term (free_val_refs () 1))
      '())
   
     (test-equal
-     (term (free_val_ref () "asd"))
+     (term (free_val_refs () "asd"))
      '())
   
     ; objref
     (test-equal
-     (term (free_val_ref () (objr 1)))
+     (term (free_val_refs () (objr 1)))
      '())
   
     ; functiondef
     (test-equal
-     (term (free_val_ref () (function x (y) ((ref 1) = 1) end)))
+     (term (free_val_refs () (function x (y) ((ref 1) = 1) end)))
      (term ((ref 1))))
 
     (test-equal
-     (term (free_val_ref (((ref 1 ) 1)) (function x (y) ((ref 1) = 1) end)))
+     (term (free_val_refs (((ref 1 ) 1)) (function x (y) ((ref 1) = 1) end)))
      '())
 
   (test-equal
-     (term (free_val_ref () (function x (<<<) ((ref 1) = 1) end)))
+     (term (free_val_refs () (function x (<<<) ((ref 1) = 1) end)))
      (term ((ref 1))))
 
     (test-equal
-     (term (free_val_ref (((ref 1 ) 1)) (function x (<<<) ((ref 1) = 1) end)))
+     (term (free_val_refs (((ref 1 ) 1)) (function x (<<<) ((ref 1) = 1) end)))
      '())
 
   ; Name
     (test-equal
-     (term (free_val_ref () x))
+     (term (free_val_refs () x))
      '())
   
     ; table field
     (test-equal
-     (term (free_val_ref () ((ref 1) \[ (ref 2) \])))
+     (term (free_val_refs () ((ref 1) \[ (ref 2) \])))
      (term ((ref 1) (ref 2))))
 
   (test-equal
-     (term (free_val_ref (((ref 2) 1)) ((ref 1) \[ (ref 2) \])))
+     (term (free_val_refs (((ref 2) 1)) ((ref 1) \[ (ref 2) \])))
      (term ((ref 1))))
   
     ; parenthesized exp
     (test-equal
-     (term (free_val_ref () (\( (ref 1) \))))
+     (term (free_val_refs () (\( (ref 1) \))))
      (term ((ref 1))))
 
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) (\( (ref 1) \))))
+     (term (free_val_refs (((ref 1) 1)) (\( (ref 1) \))))
      '())
   
     ; built-in
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) ($builtIn print ((ref 1)))))
+     (term (free_val_refs (((ref 1) 1)) ($builtIn print ((ref 1)))))
      '())
     
     (test-equal
-     (term (free_val_ref () ($builtIn print ((ref 1)))))
+     (term (free_val_refs () ($builtIn print ((ref 1)))))
      (term ((ref 1))))
   
     ; tableconstructor
     (test-equal
-     (term (free_val_ref () (\{ (\[ (ref 1) \] = (ref 2)) \})))
+     (term (free_val_refs () (\{ (\[ (ref 1) \] = (ref 2)) \})))
      (term ((ref 1) (ref 2))))
   
     (test-equal
-     (term (free_val_ref (((ref 1) 1))
+     (term (free_val_refs (((ref 1) 1))
                          (\{ (\[ (ref 1) \] = (ref 2)) \})))
      (term ((ref 2))))
   
     ; binops
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) ((ref 1) + (ref 2))))
+     (term (free_val_refs (((ref 1) 1)) ((ref 1) + (ref 2))))
      (term ((ref 2))))
   
     ; unops
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) (- (ref 1))))
+     (term (free_val_refs (((ref 1) 1)) (- (ref 1))))
      '())
   
     (test-equal
-     (term (free_val_ref () (- (ref 1))))
+     (term (free_val_refs () (- (ref 1))))
      (term ((ref 1))))
   
     ; val refs
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) (ref 1)))
+     (term (free_val_refs (((ref 1) 1)) (ref 1)))
      '())
 
   (test-equal
-   (term (free_val_ref () (ref 1)))
+   (term (free_val_refs () (ref 1)))
    (term ((ref 1))))
   
   
     ; tuples
     (test-equal
-     (term (free_val_ref (((ref 1) 1)) (< (ref 1) >)))
+     (term (free_val_refs (((ref 1) 1)) (< (ref 1) >)))
      '())
   
     (test-equal
-     (term (free_val_ref () (< (ref 1) >)))
+     (term (free_val_refs () (< (ref 1) >)))
      (term ((ref 1))))
   
     
@@ -1549,21 +1549,21 @@
   
     ; protected mode
     (test-equal
-     (term (free_val_ref () ((((ref 1) = 1) () RetExp) ProtectedMode)))
+     (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtectedMode)))
      (term ((ref 1))))
 
   (test-equal
-     (term (free_val_ref (((ref 1) 1))
+     (term (free_val_refs (((ref 1) 1))
                          ((((ref 1) = 1) () RetExp) ProtectedMode)))
      '())
   
     ; xpcall
   (test-equal
-     (term (free_val_ref () ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
+     (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
      (term ((ref 1))))
 
   (test-equal
-     (term (free_val_ref (((ref 1) 1))
+     (term (free_val_refs (((ref 1) 1))
                          ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
      '())
   
@@ -1571,43 +1571,490 @@
     ; NonTable
     (test-equal
      ;only values
-     (term (free_val_ref () ((1 \[ 2 \]) NonTable)))
+     (term (free_val_refs () ((1 \[ 2 \]) NonTable)))
      '())
   
     ; WrongKey
     (test-equal
-     (term (free_val_ref () (((objr 1) \[ 1 \]) WrongKey)))
+     (term (free_val_refs () (((objr 1) \[ 1 \]) WrongKey)))
      '())
   
     ; ArithWrongOps
     (test-equal
-     (term (free_val_ref () ((1 + true) ArithWrongOps)))
+     (term (free_val_refs () ((1 + true) ArithWrongOps)))
      '())
   
     ; StrConcatWrongOps
     (test-equal
-     (term (free_val_ref () (("a" .. "b") StrConcatWrongOps)))
+     (term (free_val_refs () (("a" .. "b") StrConcatWrongOps)))
      '())
   
   
     ; OrdCompWrongOps
     (test-equal
-     (term (free_val_ref () ((true < 1) OrdCompWrongOps)))
+     (term (free_val_refs () ((true < 1) OrdCompWrongOps)))
      '())
   
     ; StrLenWrongOp
     (test-equal
-     (term (free_val_ref () ((\# 1)StrLenWrongOp)))
+     (term (free_val_refs () ((\# 1)StrLenWrongOp)))
      '())
   
     ; NegWrongOp
     (test-equal
-     (term (free_val_ref () ((- true)NegWrongOp)))
+     (term (free_val_refs () ((- true)NegWrongOp)))
      '())
   
     ; EqFail
     (test-equal
-     (term (free_val_ref () ((1 == 2) EqFail)))
+     (term (free_val_refs () ((1 == 2) EqFail)))
+     '())
+
+  
+;                             
+;                             
+;                             
+;               ;           ; 
+;     ;         ;           ; 
+;     ;                     ; 
+;   ;;;;;;    ;;;       ;;; ; 
+;     ;         ;      ;   ;; 
+;     ;         ;     ;     ; 
+;     ;         ;     ;     ; 
+;     ;         ;     ;     ; 
+;     ;         ;     ;     ; 
+;     ;         ;      ;   ;; 
+;      ;;;   ;;;;;;;    ;;; ; 
+;                             
+;                             
+;                             
+;                             
+;                                          
+  ;                                          
+  ;                                          
+  ;                                          
+  ;             ;               ;            
+  ;             ;               ;            
+  ;    ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+  ;   ;    ;    ;      ;   ;    ;     ;    ; 
+  ;   ;         ;          ;    ;     ;      
+  ;    ;;;;     ;      ;;;;;    ;      ;;;;  
+  ;        ;    ;     ;    ;    ;          ; 
+  ;   ;    ;    ;     ;   ;;    ;     ;    ; 
+  ;    ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+  ;                                          
+  ;                                          
+  ;                                          
+  ;
+  ; skip stat
+  (test-equal
+   (term (free_tids () \;))
+   '())
+
+  (test-equal
+   (term (free_tids () break))
+   '())
+
+  ; while
+  (test-equal
+   (term (free_tids () (while (objr 1) do \; end)))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) (while (objr 1) do \; end)))
+   '())
+
+  ; do-end
+  (test-equal
+   (term (free_tids () (do \; end)))
+   '())
+
+  (test-equal
+   (term (free_tids () (do (while (objr 1) do \; end) end)))
+   (term ((objr 1))))
+
+  ; return
+  (test-equal
+   (term (free_tids () (return 1 (objr 1))))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) (return 1 (objr 1))))
+   '())
+  
+  ; fun call
+  (test-equal
+   (term (free_tids () ($statFunCall (objr 1) ())))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) ($statFunCall (objr 1) ())))
+   '())
+
+  (test-equal
+   (term (free_tids () ($statFunCall (objr 1) ((objr 2)))))
+   (term ((objr 1) (objr 2))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    ($statFunCall (objr 1) ((objr 2)))))
+   (term ((objr 2))))
+
+  (test-equal
+   (term (free_tids () ($statFunCall (objr 1) : x ())))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    ($statFunCall (objr 1) : x ())))
+   '())
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    ($statFunCall (objr 1) : x ((objr 2)))))
+   (term ((objr 2))))
+
+  ; assignment
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) ((ref 1) = (objr 1))))
+   '())
+
+  (test-equal
+   (term (free_tids () ((ref 1) = (objr 1))))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) ((ref 1) = (objr 2))))
+   (term ((objr 2))))
+
+  (test-equal
+   (term (free_tids () (local x y = (objr 1) 2 in \; end)))
+   (term ((objr 1))))
+  
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    (local x y = (objr 1) 2 in (x y = 3 (ref 2)) end)))
+   '())
+  
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) (((objr 1) \[ 1 \]) = 2)))
+   '())
+
+  (test-equal
+   (term (free_tids () (((objr 1) \[ 1 \]) = 2)))
+   (term ((objr 1))))
+
+  ; conditional
+  (test-equal
+   (term (free_tids () (if (objr 1)
+                              then ((ref 2) = 1)
+                              else ((ref 3) = 1) end)))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    (if (objr 1)
+                        then ((ref 2) = (objr 2))
+                        else ((ref 3) = (objr 3)) end)))
+   (term ((objr 2) (objr 3))))
+
+  ; local
+  (test-equal
+   (term (free_tids () (\; ((rEnv (ref 1)) (rEnv (ref 2))) LocalBody)))
+   '())
+
+  ; concat
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    (((ref 1) = (objr 1)) \;)))
+   '())
+
+  ; error obj
+    (test-equal
+     (term (free_tids () ($err (objr 1))))
+     (term ((objr 1))))
+  
+    ;                                                                          
+    ;   ;;;             ;                                                      
+    ;     ;             ;                                                      
+    ;     ;             ;                         ;               ;            
+    ;     ;             ;                         ;               ;            
+    ;     ;       ;;;   ;;;;;            ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+    ;     ;      ;   ;  ;;  ;;          ;    ;    ;      ;   ;    ;     ;    ; 
+    ;     ;          ;  ;    ;          ;         ;          ;    ;     ;      
+    ;     ;      ;;;;;  ;    ;           ;;;;     ;      ;;;;;    ;      ;;;;  
+    ;     ;     ;    ;  ;    ;               ;    ;     ;    ;    ;          ; 
+    ;     ;     ;   ;;  ;;  ;;          ;    ;    ;     ;   ;;    ;     ;    ; 
+    ;      ;;;   ;;; ;  ;;;;;            ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+    ;                                                                          
+    ;                                                                          
+    ;                                                                          
+  
+    ; Break tag
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    (($iter (objr 1) do \; end) Break)))
+   '())
+  
+  (test-equal
+   (term (free_tids () (($iter (objr 1) do \; end) Break)))
+   (term ((objr 1))))
+  
+  ; $iter
+  (test-equal
+   (term (free_tids () ($iter (objr 1) do \; end)))
+   (term ((objr 1))))
+
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                    ($iter (objr 1) do \; end)))
+   '())
+  
+  ; WrongKey
+  (test-equal
+   ; just testing the syntactic form; WrongKey forces values and tids as tables
+   (term (free_tids () ((((objr 1) \[ 1 \]) = 2) WrongKey)))
+   (term ((objr 1))))
+  
+  ; NonTable
+  (test-equal
+   (term (free_tids () (((1 \[ 2 \]) = 3) NonTable)))
+   '())
+  
+  ; WrongFunCall
+  (test-equal
+   ; only values
+   (term (free_tids () (($statFunCall 1 (2)) WrongFunCall)))
+   '())
+  
+  ; FunCall
+  (test-equal
+   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                       (($statFunCall (objr 1) ((ref 2))) () RetStat)))
+   '())
+    
+                                   
+    ;                                  
+    ;                                  
+    ;                                  
+    ;                                  
+    ;                                  
+    ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;   ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+    ;   ;    ;    ;;    ;    ;  ;      
+    ;   ;;;;;;    ;;    ;    ;   ;;;;  
+    ;   ;         ;;    ;    ;       ; 
+    ;   ;;   ;   ;  ;   ;;  ;;  ;    ; 
+    ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;                   ;              
+    ;                   ;              
+    ;                   ;              
+    ;
+  
+    ; primitive types
+    (test-equal
+     (term (free_tids () nil))
+     '())
+  
+    (test-equal
+     (term (free_tids () true))
+     '())
+  
+    (test-equal
+     (term (free_tids () 1))
+     '())
+  
+    (test-equal
+     (term (free_tids () "asd"))
+     '())
+  
+    ; objref
+    (test-equal
+     (term (free_tids () (objr 1)))
+     (term ((objr 1))))
+
+  (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1))) (objr 1)))
+     '())
+  
+    ; functiondef
+    (test-equal
+     (term (free_tids () (function x (y) ((objr 1) = 1) end)))
+     (term ((objr 1))))
+
+    (test-equal
+     (term (free_tids (((objr 1 ) ((\{ \}) nil 1)))
+                      (function x (y) ((objr 1) = 1) end)))
+     '())
+
+  (test-equal
+     (term (free_tids () (function x (<<<) ((ref 1) = (objr 1)) end)))
+     (term ((objr 1))))
+
+    (test-equal
+     (term (free_tids (((objr 1 ) ((\{ \}) nil 1)))
+                      (function x (<<<) ((ref 1) = (objr 1) end))))
+     '())
+
+  ; Name
+    (test-equal
+     (term (free_tids () x))
+     '())
+  
+    ; table field
+    (test-equal
+     (term (free_tids () ((objr 1) \[ (objr 2) \])))
+     (term ((objr 1) (objr 2))))
+
+  (test-equal
+     (term (free_tids (((objr 2) ((\{ \}) nil 1)))
+                      ((objr 1) \[ (ref 2) \])))
+     (term ((objr 1))))
+  
+    ; parenthesized exp
+    (test-equal
+     (term (free_tids () (\( (objr 1) \))))
+     (term ((objr 1))))
+
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1))) (\( (objr 1) \))))
+     '())
+  
+    ; built-in
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                      ($builtIn print ((objr 1)))))
+     '())
+    
+    (test-equal
+     (term (free_tids () ($builtIn print ((objr 1)))))
+     (term ((objr 1))))
+  
+    ; tableconstructor
+    (test-equal
+     (term (free_tids () (\{ (\[ (objr 1) \] = (objr 2)) \})))
+     (term ((objr 1) (objr 2))))
+  
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                         (\{ (\[ (objr 1) \] = (objr 2)) \})))
+     (term ((objr 2))))
+  
+    ; binops
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                      ((objr 1) + (objr 2))))
+     (term ((objr 2))))
+  
+    ; unops
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                      (- (objr 1))))
+     '())
+  
+    (test-equal
+     (term (free_tids () (- (objr 1))))
+     (term ((objr 1))))
+  
+    ; val refs
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1))) (objr 1)))
+     '())
+
+  (test-equal
+   (term (free_tids () (objr 1)))
+   (term ((objr 1))))
+  
+  
+    ; tuples
+    (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1))) (< (objr 1) >)))
+     '())
+  
+    (test-equal
+     (term (free_tids () (< (objr 1) >)))
+     (term ((objr 1))))
+  
+    
+    ;                                                                  
+    ;                                                                  
+    ;   ;;;             ;                                              
+    ;     ;             ;                                              
+    ;     ;             ;                                              
+    ;     ;             ;                                              
+    ;     ;       ;;;   ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;     ;      ;   ;  ;;  ;;          ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+    ;     ;          ;  ;    ;          ;    ;    ;;    ;    ;  ;      
+    ;     ;      ;;;;;  ;    ;          ;;;;;;    ;;    ;    ;   ;;;;  
+    ;     ;     ;    ;  ;    ;          ;         ;;    ;    ;       ; 
+    ;     ;     ;   ;;  ;;  ;;          ;;   ;   ;  ;   ;;  ;;  ;    ; 
+    ;      ;;;   ;;; ;  ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+    ;                                                   ;              
+    ;                                                   ;              
+    ;                                                   ;              
+    ;
+  
+    ; protected mode
+    (test-equal
+     (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtectedMode)))
+     (term ((objr 1))))
+
+  (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                         ((((ref 1) = (objr 1)) () RetExp) ProtectedMode)))
+     '())
+  
+    ; xpcall
+  (test-equal
+     (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtectedMode 1)))
+     (term ((objr 1))))
+
+  (test-equal
+     (term (free_tids (((objr 1) ((\{ \}) nil 1)))
+                         ((((ref 1) = (objr 1)) () RetExp) ProtectedMode 1)))
+     '())
+  
+  
+    ; NonTable
+    (test-equal
+     ;only values
+     (term (free_tids () ((1 \[ 2 \]) NonTable)))
+     '())
+  
+    ; WrongKey
+    (test-equal
+     (term (free_tids () (((objr 1) \[ 1 \]) WrongKey)))
+     (term ((objr 1))))
+  
+    ; ArithWrongOps
+    (test-equal
+     (term (free_tids () ((1 + true) ArithWrongOps)))
+     '())
+  
+    ; StrConcatWrongOps
+    (test-equal
+     (term (free_tids () (("a" .. "b") StrConcatWrongOps)))
+     '())
+  
+  
+    ; OrdCompWrongOps
+    (test-equal
+     (term (free_tids () ((true < 1) OrdCompWrongOps)))
+     '())
+  
+    ; StrLenWrongOp
+    (test-equal
+     (term (free_tids () ((\# 1)StrLenWrongOp)))
+     '())
+  
+    ; NegWrongOp
+    (test-equal
+     (term (free_tids () ((- true)NegWrongOp)))
+     '())
+  
+    ; EqFail
+    (test-equal
+     (term (free_tids () ((1 == 2) EqFail)))
      '())
   
   (test-results)

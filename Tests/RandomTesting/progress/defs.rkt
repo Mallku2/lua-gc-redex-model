@@ -14,7 +14,7 @@
 
 ; TODO: abstract patterns
 ; extracts val. references from a term t
-(define (get_val_r t)
+(define (get_val_refs t)
   (map (lambda (match)
          ; extract bindings from the match; filter bindings for symbol 'r;
          ; extract the associated expression
@@ -30,30 +30,30 @@
 
 ; PRE : {any ∈ s ∪ e}
 (define-metafunction ext-lang
-  free_val_ref : σ any -> (r ...)
+  free_val_refs : σ any -> (r ...)
 
   ; discard refStdout
-  [(free_val_ref ((refStdout String) (r v) ...) any)
-   (free_val_ref ((r v) ...) any)
+  [(free_val_refs ((refStdout String) (r v) ...) any)
+   (free_val_refs ((r v) ...) any)
    ]
   
-  [(free_val_ref ((r_1 v) ...) any)
+  [(free_val_refs ((r_1 v) ...) any)
    (r_3 ...)
 
-   (where (r_2 ...) ,(get_val_r (term any)))
+   (where (r_2 ...) ,(get_val_refs (term any)))
    (where (r_3 ...) ,(remove* (term (r_1 ...)) (term (r_2 ...))))
    ]
   )
 
-(provide free_val_ref)
+(provide free_val_refs)
 
 ; extracts tids from a term t
-(define (get_tid t)
+(define (get_tids t)
   (map (lambda (match)
          ; extract bindings from the match; filter bindings for symbol 'r;
          ; extract the associated expression
          (bind-exp (list-ref (filter (lambda (b)
-                                       (equal? (bind-name b) 'r))
+                                       (equal? (bind-name b) 'tid))
                                      (match-bindings match)) 0)))
        (let ([match (redex-match ext-lang
                                  (in-hole C tid)
@@ -66,28 +66,44 @@
 (define-metafunction ext-lang
   free_tids : θ any -> (tid ...)
 
-  [(free_tids ((r_1 v) ...) any)
-   (r_3 ...)
+  [(free_tids ((any_1 object) ...) any_2)
+   (tid_2 ...)
 
-   (where (tid_2 ...) ,(get_tid (term any)))
-   (where (r_3 ...) ,(remove* (term (r_1 ...)) (term (tid_2 ...))))
+   (where (tid_1 ...) ,(get_tids (term any_2)))
+   (where (tid_2 ...) ,(remove* (term (any_1 ...)) (term (tid_1 ...))))
    ]
   )
 
+(provide free_tids)
+
 ; extract closures ids from a term t
-(define (get_cl t)
+(define (get_clids t)
   (map (lambda (match)
          ; extract bindings from the match; filter bindings for symbol 'r;
          ; extract the associated expression
          (bind-exp (list-ref (filter (lambda (b)
-                                       (equal? (bind-name b) 'r))
+                                       (equal? (bind-name b) 'cid))
                                      (match-bindings match)) 0)))
        (let ([match (redex-match ext-lang
-                                 (in-hole C r)
+                                 (in-hole C cid)
                                  (term ,t))])
          (if match
              match
              '()))))
+
+; PRE : {any ∈ s ∪ e}
+(define-metafunction ext-lang
+  free_clids : θ any -> (cid ...)
+
+  [(free_clids ((any_1 object) ...) any_2)
+   (cid_2 ...)
+
+   (where (cid_1 ...) ,(get_clids (term any_2)))
+   (where (cid_2 ...) ,(remove* (term (any_1 ...)) (term (cid_1 ...))))
+   ]
+  )
+
+(provide free_clids)
 
 ; bound free variables and references
 (define-metafunction ext-lang
