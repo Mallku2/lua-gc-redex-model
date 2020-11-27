@@ -2,33 +2,6 @@
 (require redex
          "../grammar.rkt")
 
-; Determine if a reference belongs to the domain of a store
-; PRE : {the store received satisfy the invariant of representation}
-(define-metafunction ext-lang
-  refBelongsTo : r σ -> any
-
-  [(refBelongsTo r_1 (vsp_1 ... (r_1 v) vsp_2 ...))
-   #t]
-
-  ; Default
-  [(refBelongsTo r_1 σ)
-   #f]
-  )
-
-(provide refBelongsTo)
-
-(define-metafunction ext-lang
-  domSigma : σ -> (r ...)
-
-  [(domSigma ())
-   ()]
-
-  [(domSigma ((r_1 v_1) (r_2 v_2) ...))
-   ,(append (term (r_1))
-            (term (domSigma ((r_2 v_2) ...))))])
-
-(provide domSigma)
-
 ; Meta-function that generates a fresh reference in sigma. Its definition
 ; depends heavily on the fact that references are implicit generated only by
 ; this function and that we don't have any kind of garbage collection.
@@ -70,23 +43,3 @@
    (where (σ (r ...)) (addSimpVal (vsp ... (r_1 v_1)) (v_2 ...)))])
 
 (provide addSimpVal)
-
-; {r belongs to dom(σ)}
-(define-metafunction ext-lang
-  derefSigma : σ r -> v
-
-  [(derefSigma ((r_1 v_1) ... (r_2 v_2) (r_3 v_3) ...) r_2)
-   v_2]
-  )
-
-(provide derefSigma)
-
-; {r belongs to dom(σ)}
-(define-metafunction ext-lang
-  delVal : σ r -> σ
-
-  [(delVal ((r_1 v_1) ... (r_2 v_2) (r_3 v_3) ...) r_2)
-   ((r_1 v_1) ... (r_3 v_3) ...)]
-  )
-
-(provide delVal)

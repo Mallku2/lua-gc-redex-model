@@ -4,24 +4,6 @@
          "./tablesMetafunctions.rkt"
          )
 
-; Access to an object store
-; PRE : {}
-; ret = (derefTheta θ ref)
-; POS : {the correspondent value mapped to the reference}
-(define-metafunction ext-lang
-  derefTheta : θ objid -> object
-
-  [(derefTheta (osp_1 ... (objid object) osp_2 ...) objid)
-   object]
-
-  ; Allows calling derefTheta with a objid ∉ dom(θ). Simplifies the
-  ; definition of meta-functions that iterate over θ
-  [(derefTheta objid θ)
-   nil]
-  )
-
-(provide derefTheta)
-
 (define-metafunction ext-lang
   getTable : tid θ -> any
 
@@ -122,29 +104,3 @@
   )
 
 (provide freshClosId)
-
-(define-metafunction ext-lang
-  domTheta : θ -> (tid ...)
-
-  [(domTheta ())
-   ()]
-
-  [(domTheta ((tid_1 object_1) (tid_2 object_2) ...))
-   ,(append (term (tid_1))
-            (term (domTheta ((tid_2 object_2) ...))))]
-  )
-
-(provide domTheta)
-
-(define-metafunction ext-lang
-  delObj : θ v -> θ
-
-  [(delObj (osp_1 ... (objid _) osp_2 ...) objid)
-   (osp_1 ... osp_2 ...)]
-
-  ; To allow calling delObj with nil instead of a tid
-  [(delObj θ v)
-   θ]
-  )
-
-(provide delObj)

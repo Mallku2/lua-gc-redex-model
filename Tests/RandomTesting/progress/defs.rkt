@@ -32,6 +32,11 @@
 (define-metafunction ext-lang
   free_val_ref : σ any -> (r ...)
 
+  ; discard refStdout
+  [(free_val_ref ((refStdout String) (r v) ...) any)
+   (free_val_ref ((r v) ...) any)
+   ]
+  
   [(free_val_ref ((r_1 v) ...) any)
    (r_3 ...)
 
@@ -56,6 +61,18 @@
          (if match
              match
              '()))))
+
+; PRE : {any ∈ s ∪ e}
+(define-metafunction ext-lang
+  free_tids : θ any -> (tid ...)
+
+  [(free_tids ((r_1 v) ...) any)
+   (r_3 ...)
+
+   (where (tid_2 ...) ,(get_tid (term any)))
+   (where (r_3 ...) ,(remove* (term (r_1 ...)) (term (tid_2 ...))))
+   ]
+  )
 
 ; extract closures ids from a term t
 (define (get_cl t)
@@ -468,9 +485,8 @@
    (well_formed_term any σ θ (unop e))]
 
   ; val ref
-  [(side-condition (refBelongsTo r σ))
-   -----------------------------------
-   (well_formed_term any σ θ r)]
+  [-----------------------------------
+   (well_formed_term any ((any_1 v_1) ... (r v_2) (any_2 v_3) ...) θ r)]
 
   [(well_formed_term any σ θ r)
    -----------------------------------

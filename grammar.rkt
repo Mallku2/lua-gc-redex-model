@@ -323,7 +323,8 @@
   ; values store pair
   [vsp (r v)
        (refStdout String)]
-  
+
+  ; to force just one stdout file on σ, helping redex-check
   [σ ((r v) ...)
      ((refStdout String) (r v) ...)]
 
