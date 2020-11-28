@@ -2,129 +2,13 @@
 
 (require redex
          "../../../grammar.rkt"
-         "../../../executionEnvironment.rkt"
          "../../../Relations/fullProgs.rkt"
-         "../../../Relations/gc.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
-         "../../../Meta-functions/gc.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"
          "../../../Meta-functions/objStoreMetafunctions.rkt"
+         "./prepare.rkt"
          )
-
-; TODO: abstract patterns
-; extracts val. references from a term t
-(define (get_val_refs t)
-  (map (lambda (match)
-         ; extract bindings from the match; filter bindings for symbol 'r;
-         ; extract the associated expression
-         (bind-exp (list-ref (filter (lambda (b)
-                                       (equal? (bind-name b) 'r))
-                                     (match-bindings match)) 0)))
-       (let ([match (redex-match ext-lang
-                                 (in-hole C r)
-                                 (term ,t))])
-         (if match
-             match
-             '()))))
-
-; PRE : {any ∈ s ∪ e}
-(define-metafunction ext-lang
-  free_val_refs : σ any -> (r ...)
-
-  ; discard refStdout
-  [(free_val_refs ((refStdout String) (r v) ...) any)
-   (free_val_refs ((r v) ...) any)
-   ]
-  
-  [(free_val_refs ((r_1 v) ...) any)
-   (r_3 ...)
-
-   (where (r_2 ...) ,(get_val_refs (term any)))
-   (where (r_3 ...) ,(remove* (term (r_1 ...)) (term (r_2 ...))))
-   ]
-  )
-
-(provide free_val_refs)
-
-; extracts tids from a term t
-(define (get_tids t)
-  (map (lambda (match)
-         ; extract bindings from the match; filter bindings for symbol 'r;
-         ; extract the associated expression
-         (bind-exp (list-ref (filter (lambda (b)
-                                       (equal? (bind-name b) 'tid))
-                                     (match-bindings match)) 0)))
-       (let ([match (redex-match ext-lang
-                                 (in-hole C tid)
-                                 (term ,t))])
-         (if match
-             match
-             '()))))
-
-; PRE : {any ∈ s ∪ e}
-(define-metafunction ext-lang
-  free_tids : θ any -> (tid ...)
-
-  [(free_tids ((any_1 object) ...) any_2)
-   (tid_2 ...)
-
-   (where (tid_1 ...) ,(get_tids (term any_2)))
-   (where (tid_2 ...) ,(remove* (term (any_1 ...)) (term (tid_1 ...))))
-   ]
-  )
-
-(provide free_tids)
-
-; extract closures ids from a term t
-(define (get_clids t)
-  (map (lambda (match)
-         ; extract bindings from the match; filter bindings for symbol 'r;
-         ; extract the associated expression
-         (bind-exp (list-ref (filter (lambda (b)
-                                       (equal? (bind-name b) 'cid))
-                                     (match-bindings match)) 0)))
-       (let ([match (redex-match ext-lang
-                                 (in-hole C cid)
-                                 (term ,t))])
-         (if match
-             match
-             '()))))
-
-; PRE : {any ∈ s ∪ e}
-(define-metafunction ext-lang
-  free_clids : θ any -> (cid ...)
-
-  [(free_clids ((any_1 object) ...) any_2)
-   (cid_2 ...)
-
-   (where (cid_1 ...) ,(get_clids (term any_2)))
-   (where (cid_2 ...) ,(remove* (term (any_1 ...)) (term (cid_1 ...))))
-   ]
-  )
-
-(provide free_clids)
-
-; bound free variables and references
-(define-metafunction ext-lang
-  ; no vararg id
-  [(close (σ : θ : s))
-   (σ : θ : (local Name_1 Name_2 ... = nil in s end))
-
-   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))]
-
-  ; there is a vararg id
-  [(close (σ : θ : s))
-   (σ : θ : (local any_1 ... any_2 ... = nil in (function dummy (<<<) s end)
-              end))
-
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))]
-
-  [(close any)
-   any])
-
-(define (close_term t)
-  (term (close (unquote t))))
 
 ;                                                                                          
 ;                                                                                          
@@ -851,22 +735,21 @@
         (begin
           (print (term (,sigma : ,theta : ,s)))
           (println (term (well_formed_conf (,sigma : ,theta : ,s))))
-          ;(println "--------------")
           )
-    (or
-     ; it was a final configuration 
-     (and (= (length result) 0)
-          (term (is-final-conf (,sigma : ,theta : ,s))))
-                
-     (and (= (length result) 1)
-          (term (well_formed_conf ,(first result))))))))
+        (or
+         ; it was a final configuration 
+         (and (= (length result) 0)
+              (term (is-final-conf (,sigma : ,theta : ,s))))
+         ; not a final configuration 
+         (and (= (length result) 1)
+              (term (well_formed_conf ,(first result))))))))
 
 (define (soundness_wfc attempts)
-  (redex-check ext-lang (σ : θ : s) ;#:uniform-at-random 0.05
+  (redex-check ext-lang (σ : θ : s) #:uniform-at-random 0.1
                (soundness_wfc_pred (term σ) (term θ) (term s) #t)
-               #:prepare close_term
+               ;#:prepare close_term
                #:attempts attempts
-               #:source full-progs-rel
+               ;#:source full-progs-rel
                ))
 
 (define (soundness_wfc_coverage attempts)

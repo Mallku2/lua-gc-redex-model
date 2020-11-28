@@ -2,7 +2,8 @@
 
 (require redex
          "../../../grammar.rkt"
-         "./defs.rkt")
+         "./defs.rkt"
+         "./prepare.rkt")
 
 
 ;                                                                                                     
