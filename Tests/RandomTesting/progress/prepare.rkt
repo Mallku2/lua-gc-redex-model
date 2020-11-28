@@ -98,89 +98,100 @@
 
 (provide free_clids)
 
-; bound free variables and references; enforce well-formedness of domains of
-; σ and θ
+; bound free variables and references
 (define-metafunction ext-lang
   ; TODO: redex-check may generate a tuple (σ : θ : any), where any ∉ s, even
   ; though the template is (σ : θ : s)
-  close : (σ : θ : any) -> (σ : θ : any)
+  close_term_meta : t -> t
   
   ; no vararg id
-  [(close (σ_1 : θ_1 : s))
-   (σ_2 : θ_2 : (local Name_1 Name_2 ... = nil in s end))
+  [(close_term_meta s)
+   (local Name_1 Name_2 ... = nil in s end)
 
    ; close local variables
    (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))
+   ]
+
+  ; there is a vararg id
+  [(close_term_meta s)
+   (local dummyVar = (function dummyF (<<<) s end) in \; end)
+
+   ; only a vararg
+   (where (<<<) ,(remove-duplicates (term (fv s))))
+   ]
+
+  ; vararg id plus other var. id.
+  [(close_term_meta s)
+   (local any_1 ... any_2 ... = (function dummy (<<<) s end) in
+     \;
+     end)
+
+   ; {# (any_1 ... any_2 ...) > 0}
+   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))
+   ]
+
+  ; no free identifiers
+  [(close_term_meta s)
+   s]
+
+  ; no vararg id
+  [(close_term_meta e)
+   (function $dummy (Name_1 Name_2 ...) (local x = e in \; end) end)
+
+   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv e))))
+   ]
+
+  ; there is a vararg id
+  [(close_term_meta e)
+   (function $dummy (any_1 ... any_2 ... <<<)
+             (local x = e in \; end) end)
+
+   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv e))))
+   ]
+
+  ; no free identifiers
+  [(close_term_meta e)
+   e]
+  )
+
+(define (close_term c)
+  (term (close_term_meta (unquote c))))
+
+(provide close_term)
+
+; bound free variables and references; enforce well-formedness of domains of
+; σ and θ
+(define-metafunction ext-lang
+  close_conf_meta  : (σ : θ : t) -> (σ : θ : t)
+  
+  [(close_conf_meta  (σ_1 : θ_1 : t_1))
+   (σ_2 : θ_2 : t_2)
+
+   ; close var. identifiers
+   (where t_2 (close_term_meta t_1))
 
    ; enforce well-formedness of dom(σ_1)
    (where (vsp ...) (fix_sigma_dom σ_1))
    ; close free val. refs
-   (where (r ...) ,(remove-duplicates (term (free_val_refs (vsp ...) s))))
+   (where (r ...) ,(remove-duplicates (term (free_val_refs (vsp ...) t_2))))
    ; add dummy vals
    (where σ_2 (vsp ... (r 1) ...))
 
    ; enforce well-formedness of dom(θ_1)
    (where (osp ...) (fix_theta_dom θ_1))
    ; close free tids and cids
-   (where (tid ...) ,(remove-duplicates (term (free_tids (osp ...) s))))
-   (where (cid ...) ,(remove-duplicates (term (free_clids (osp ...) s))))
-   ; add dummy tables and closures
-   (where θ_2 (osp ...
-               (tid ((\{ \}) nil ⊥)) ...
-               (cid (function x () \; end)) ...))
-   ]
-
-  ; there is a vararg id
-  [(close (σ_1 : θ_1 : s))
-   (σ_2 : θ_2 : (local any_1 ... any_2 ... = nil in (function dummy (<<<) s end)
-              end))
-
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))
-
-    ; enforce well-formedness of dom(σ_1)
-   (where (vsp ...) (fix_sigma_dom σ_1))
-   ; close free val. refs
-   (where (r ...) ,(remove-duplicates (term (free_val_refs (vsp ...) s))))
-   ; add dummy vals
-   (where σ_2 (vsp ... (r 1) ...))
-
-   ; enforce well-formedness of dom(θ_1)
-   (where (osp ...) (fix_theta_dom θ_1))
-   ; close free tids and cids
-   (where (tid ...) ,(remove-duplicates (term (free_tids (osp ...) s))))
-   (where (cid ...) ,(remove-duplicates (term (free_clids (osp ...) s))))
-   ; add dummy tables and closures
-   (where θ_2 (osp ...
-               (tid ((\{ \}) nil ⊥)) ...
-               (cid (function x () \; end)) ...))
-   ]
-
-  ; no free identifier
-  [(close (σ_1 : θ_1 : s))
-   (σ_2 : θ_2 : s)
-
-    ; enforce well-formedness of dom(σ_1)
-   (where (vsp ...) (fix_sigma_dom σ_1))
-   ; close free val. refs
-   (where (r ...) ,(remove-duplicates (term (free_val_refs (vsp ...) s))))
-   ; add dummy vals
-   (where σ_2 (vsp ... (r 1) ...))
-
-   ; enforce well-formedness of dom(θ_1)
-   (where (osp ...) (fix_theta_dom θ_1))
-   ; close free tids and cids
-   (where (tid ...) ,(remove-duplicates (term (free_tids (osp ...) s))))
-   (where (cid ...) ,(remove-duplicates (term (free_clids (osp ...) s))))
+   (where (tid ...) ,(remove-duplicates (term (free_tids (osp ...) t_2))))
+   (where (cid ...) ,(remove-duplicates (term (free_clids (osp ...) t_2))))
    ; add dummy tables and closures
    (where θ_2 (osp ...
                (tid ((\{ \}) nil ⊥)) ...
                (cid (function x () \; end)) ...))
    ])
 
-(define (close_term c)
-  (term (close (unquote c))))
+(define (close_conf c)
+  (term (close_conf_meta (unquote c))))
 
-(provide close_term)
+(provide close_conf)
 
 ; redex-check tends to generate stores with repeated references
 ; (typically (ref 0)); fix_sigma_dom implements a simple fix to that

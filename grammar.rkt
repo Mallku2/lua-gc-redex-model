@@ -189,7 +189,29 @@
 ; Extensions made to the grammar to ease the definition of the reduction
 ; semantics
 
-(define-extended-language ext-lang core-lang
+; closures comprise core-lang stats + environment. We force this representation
+; with the following extension to core-lang
+(define-extended-language core+env-lang core-lang
+
+  [e ....
+     ; Run-time expressions, but codomain of the environment: the
+     ; substitution could embed this expressions into statements
+     r
+     (< e ... >)]
+  
+  ; Ordinary refs
+  [(r vr) (ref natural)]
+
+  [var ....
+       ; run-time expression
+       evar]
+  
+  [evar r
+        (v \[ v \])]
+
+  )
+
+(define-extended-language ext-lang core+env-lang
 
   ; Run-time statements
   [srun score
@@ -226,8 +248,6 @@
      (e : Name (e ...))
      
      ; Run-time expressions
-     r
-     (< e ... >)
      ($err v)
      ; renv is not an expression nor a value. The previous rules for these
      ; constructions does not describe the renv added
@@ -268,12 +288,8 @@
   
   [evaluatedtable (\{ efield ... \})]
 
-  [var ....
-       ; run-time expression
-       evar]
-  
-  [evar r
-        (v \[ v \])]
+  ; terms: s ∪ e; for better spec. of some relations
+  [t s e]
     
   ;                                                  
   ;                                                  
@@ -316,9 +332,6 @@
   ; Elements from img(θ)
   [object intreptable
           functiondef]
-
-  ; Ordinary refs
-  [r (ref natural)]
   
   ; values store pair
   [vsp (r v)

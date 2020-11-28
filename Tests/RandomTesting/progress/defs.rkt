@@ -3,6 +3,7 @@
 (require redex
          "../../../grammar.rkt"
          "../../../Relations/fullProgs.rkt"
+         "../../../Relations/terms.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"
@@ -650,14 +651,14 @@
    #f])
 
 (define-metafunction ext-lang
-  [(well_formed_conf (σ : θ : s))
+  [(well_formed_conf (σ : θ : t))
    ,(and
      (term (well-formed-sigma σ σ θ))
 
      (term (well-formed-theta θ σ θ))
      
      (judgment-holds
-      (well_formed_term hole σ θ s)))])
+      (well_formed_term hole σ θ t)))])
 
 ;                                                                  
 ;                                                                  
@@ -676,7 +677,7 @@
 ;   ;                        ;   ;                                 
 ;   ;                         ;;;                                  
 ;                                                                  
-; PRE : {s is well-formed, with respect to some stores}
+; PRE : {t is well-formed, with respect to some stores}
 (define-metafunction ext-lang
   is-final-stat : s -> any
   
@@ -712,54 +713,95 @@
   )
 
 (define-metafunction ext-lang
-  is-final-conf : (σ : θ : s) -> any
+  is-final-conf : (σ : θ : t) -> any
 
   ; The concept depends only on the stat
   [(is-final-conf (σ : θ : s))
    (is-final-stat s)]
+
+  [(is-final-conf (σ : θ : v))
+   #t]
   )
 
 (provide is-final-conf)
 
-(define (soundness_wfc_pred sigma theta s debug)
+(define (check_conf debug conf result)
+  (if debug
+        (begin
+          (print conf)
+          (println (term (well_formed_conf ,conf)))
+          )
+        (or
+         ; it was a final configuration 
+         (and (= (length result) 0)
+              (term (is-final-conf ,conf)))
+         ; not a final configuration 
+         (and (= (length result) 1)
+              (term (well_formed_conf ,(first result)))))))
+
+(define (check_term debug t result)
+  (if debug
+        (begin
+          (print t)
+          (println (term (well_formed_conf (() : () : ,t))))
+          )
+        (or
+         ; it was a final configuration 
+         (and (= (length result) 0)
+              (term (is-final-conf (() : () : ,t))))
+         ; not a final configuration 
+         (and (= (length result) 1)
+              (term (well_formed_conf (() : () : ,(first result))))))))
+
+(define (soundness_wfc_pred sigma theta t debug)
   (let ([result (if
-                 (not (term (well_formed_conf (,sigma : ,theta : ,s))))
+                 (not (term (well_formed_conf (,sigma : ,theta : ,t))))
                  ; TODO: naive approach to discard ill formed
                  ; terms
                  (term ((() : () : \;)))
                                  
                  (apply-reduction-relation
                   full-progs-rel
-                  (term (,sigma : ,theta : ,s))))])
-    (if debug
-        (begin
-          (print (term (,sigma : ,theta : ,s)))
-          (println (term (well_formed_conf (,sigma : ,theta : ,s))))
-          )
-        (or
-         ; it was a final configuration 
-         (and (= (length result) 0)
-              (term (is-final-conf (,sigma : ,theta : ,s))))
-         ; not a final configuration 
-         (and (= (length result) 1)
-              (term (well_formed_conf ,(first result)))))))
+                  (term (,sigma : ,theta : ,t))))])
+    (check_conf debug (term (,sigma : ,theta : ,t)) result)
+    )
+  )
+
+(define (soundness_wfc_pred_term t debug rel)
+  (let ([result (if
+                 (not (term (well_formed_conf (() : () : ,t))))
+                 ; TODO: naive approach to discard ill formed
+                 ; terms
+                 (term (\;))
+                                 
+                 (apply-reduction-relation rel (term ,t)))])
+    (check_term debug t result)
+    )
   )
 
 (define (soundness_wfc attempts)
-  (redex-check ext-lang (σ : θ : s) #:uniform-at-random 0.2
+  (redex-check ext-lang (σ : θ : s) ;#:uniform-at-random 0.2
                (soundness_wfc_pred (term σ) (term θ) (term s) #f)
-               #:prepare close_term
+               #:prepare close_conf
                #:attempts attempts
-               ;#:source full-progs-rel
+               #:source full-progs-rel
                ))
 
-(define (soundness_wfc_coverage attempts)
+(define (soundness_wfc_terms attempts)
+  (redex-check ext-lang t ;#:uniform-at-random 0.2
+               (soundness_wfc_pred_term (term t) #f terms-rel)
+               #:prepare close_term
+               #:attempts attempts
+               #:source terms-rel
+               ))
+
+(define (soundness_wfc_coverage attempts rel test)
   ; create records to register test coverage related with ↦
-  (let ([rel-coverage (make-coverage full-progs-rel)])
+  (let ([rel-coverage (make-coverage rel)])
     (parameterize
         ; supply data-structures
         ([relation-coverage (list rel-coverage)])
-      (soundness_wfc attempts)
+      (test attempts)
       (values (covered-cases rel-coverage)))))
 
 ;                  

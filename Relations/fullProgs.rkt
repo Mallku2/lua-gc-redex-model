@@ -17,72 +17,76 @@
    #:domain (σ : θ : s)
    
    ; Terms
-   [--> (σ : θ : (in-hole E any_1))
-        ; to obtain a well-formed concat of stats when E and any_2 are concat
+   [--> (σ : θ : (in-hole E t_1))
+        ; to obtain a well-formed concat of stats when E and t_2 are concat
         ; stats
-        (σ : θ : (concat-stats E any_2))
+        (σ : θ : (concat-stats E t_2))
         
-        E-terms
-        (where (any_2) ,(apply-reduction-relation terms-rel (term any_1)))
-        ]
+        (where (t_2) ,(apply-reduction-relation terms-rel (term t_1)))
+
+        E-terms]
    
    ; Terms that interact with the value store
-   [--> (σ_1 : θ : (in-hole E any_1))
-        (σ_2 : θ : (in-hole E any_2))
-        
-        E-valStoreTerms
-        
-        (where ((σ_2 : any_2)) ,(apply-reduction-relation terms-val-store
+   [--> (σ_1 : θ : (in-hole E t_1))
+        (σ_2 : θ : (in-hole E t_2))
+
+        (where ((σ_2 : t_2)) ,(apply-reduction-relation terms-val-store
                                                           (term
-                                                           (σ_1 : any_1))))]
+                                                           (σ_1 : t_1))))
+
+        E-valStoreTerms]
    
    ; Terms that interact with the object store
-   [--> (σ : θ_1 : (in-hole E any_1))
-        (σ : θ_2 : (in-hole E any_2))
-        
-        E-objStoreTerms
-        (where ((θ_2 : any_2)) ,(apply-reduction-relation terms-obj-store
+   [--> (σ : θ_1 : (in-hole E t_1))
+        (σ : θ_2 : (in-hole E t_2))
+
+        (where ((θ_2 : t_2)) ,(apply-reduction-relation terms-obj-store
                                                           (term
-                                                           (θ_1 : any_1))))]
+                                                           (θ_1 : t_1))))
+
+        E-objStoreTerms]
 
    ; Terms that interact with both stores
-   [--> (σ_1 : θ_1 : (in-hole E any_1))
-        (σ_2 : θ_2 : (in-hole E any_2))
-        
-        E-valObjStoreTerms
-        (where ((σ_2 : θ_2 : any_2)) ,(apply-reduction-relation
+   [--> (σ_1 : θ_1 : (in-hole E t_1))
+        (σ_2 : θ_2 : (in-hole E t_2))
+
+        (where ((σ_2 : θ_2 : t_2)) ,(apply-reduction-relation
                                        terms-val-obj-store
-                                       (term (σ_1 : θ_1 : any_1))))]
+                                       (term (σ_1 : θ_1 : t_1))))
+
+        
+        E-valObjStoreTerms]
    
    ; Meta
-   [--> (σ : θ_1 : (in-hole E any_1))
-        (σ : θ_2 : (in-hole E any_2))
+   [--> (σ : θ_1 : (in-hole E t_1))
+        (σ : θ_2 : (in-hole E t_2))
         
-        E-meta
-        (where ((θ_2 : any_2))
+        (where ((θ_2 : t_2))
                ,(apply-reduction-relation meta
-                                          (term (θ_1 : any_1))))]
+                                          (term (θ_1 : t_1))))
+
+        E-meta]
    
    ; Error propagation
    [--> (σ : θ : (in-hole Enp ($err v)))
         (σ : θ : ($err v))
         
-        E-errorPropagation
         (side-condition (not (eq? (term Enp)
-                                  (term hole))))]
+                                  (term hole))))
+
+        E-errorPropagation]
 
    ; GC
    [--> (σ_1 : θ_1 : (in-hole E ($builtIn collectgarbage (v ...))))
-        (σ_2 : θ_2 : (in-hole E any))
+        (σ_2 : θ_2 : (in-hole E t))
 
-        E-builtInCollectgarbage
-        
-        (where (σ_2 θ_2 any)
+        (where (σ_2 θ_2 t)
                (δ (collectgarbage
                    σ_1
                    θ_1
                    (in-hole E ($builtIn collectgarbage (v ...))))))
-        ]
+
+        E-builtInCollectgarbage]
    ))
 
 (provide full-progs-rel)
