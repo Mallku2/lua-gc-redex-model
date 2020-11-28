@@ -742,12 +742,13 @@
               (term (is-final-conf (,sigma : ,theta : ,s))))
          ; not a final configuration 
          (and (= (length result) 1)
-              (term (well_formed_conf ,(first result))))))))
+              (term (well_formed_conf ,(first result)))))))
+  )
 
 (define (soundness_wfc attempts)
-  (redex-check ext-lang (σ : θ : s) #:uniform-at-random 0.1
-               (soundness_wfc_pred (term σ) (term θ) (term s) #t)
-               ;#:prepare close_term
+  (redex-check ext-lang (σ : θ : s) #:uniform-at-random 0.2
+               (soundness_wfc_pred (term σ) (term θ) (term s) #f)
+               #:prepare close_term
                #:attempts attempts
                ;#:source full-progs-rel
                ))
