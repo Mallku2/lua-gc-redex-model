@@ -299,6 +299,10 @@
    ----------------------------------------------
    (well_formed_term any σ θ objref)]
 
+  [(side-condition (refBelongsToTheta? cid θ))
+   ----------------------------------------------
+   (well_formed_term any σ θ cid)]
+
   ; functiondef
   [(well_formed_term ,(plug (term any)
                             (term (function Name_1 (Name_2 ...)
@@ -306,6 +310,13 @@
                                             end))) σ θ s)
    ----------------------------------------------
    (well_formed_term any σ θ (function Name_1 (Name_2 ...) s end))]
+
+  [(well_formed_term ,(plug (term any)
+                            (term (function Name_1 (Name_2 ... <<<)
+                                            hole
+                                            end))) σ θ s)
+   ----------------------------------------------
+   (well_formed_term any σ θ (function Name_1 (Name_2 ... <<<) s end))]
 
   ; vararg mark
   [(side-condition ,(redex-match ext-lang
@@ -576,14 +587,8 @@
    #t]
 
   ; stdout file
-  ; TODO: force this from the grammar
   [(well-formed-sigma ((refStdout String) (r_1 v_2) (r_2 v_3) ...) σ θ)
    (well-formed-sigma ((r_1 v_2) (r_2 v_3) ...) σ θ)
-
-   ; only one stdout file
-   (side-condition (not (redex-match ext-lang
-                                     ((r_3 v_4) ... (refStdout v_5) (r_4 v_6) ...)
-                                     (term ((r_1 v_2) (r_2 v_3) ...)))))
    ]
   
   ; Stores are functions: for their syntactic representation, we ask for their
@@ -622,6 +627,14 @@
                                                      tableconstructor)))
    ]
 
+  [(well-formed-osp (cid functiondef) σ θ)
+   #t
+   
+   ; functiondef must be well formed
+   (side-condition (judgment-holds (well_formed_term hole σ θ 
+                                                     functiondef)))
+   ]
+
   ; default
   [(well-formed-osp any ...)
    #f]
@@ -638,14 +651,15 @@
 
    (side-condition (term (well-formed-osp osp σ θ)))]
 
-  [(well-formed-theta (((objr natural_1) object_1)
-                       ((objr natural_2) object_2) osp ...) σ θ)
-   (well-formed-theta (((objr natural_2) object_2) osp ...) σ θ)
+  ; simple check to enforce θ as functions
+  [(well-formed-theta (((any_1 natural_1) any_2)
+                       ((any_3 natural_2) any_4) osp ...) σ θ)
+   (well-formed-theta (((any_3 natural_2) any_4) osp ...) σ θ)
 
    (side-condition (< (term natural_1)
                       (term natural_2)))
 
-   (side-condition (term (well-formed-osp ((objr natural_1) object_1) σ θ)))]
+   (side-condition (term (well-formed-osp ((any_1 natural_1) any_2) σ θ)))]
 
   [(well-formed-theta any ...)
    #f])
@@ -739,7 +753,8 @@
          (and (= (length result) 1)
               (term (well_formed_conf ,(first result)))))))
 
-(define (check_term debug t result)
+; terms-rel
+(define (check_one_step_term_rel debug t result)
   (if debug
         (begin
           (print t)
@@ -751,7 +766,48 @@
               (term (is-final-conf (() : () : ,t))))
          ; not a final configuration 
          (and (= (length result) 1)
-              (term (well_formed_conf (() : () : ,(first result))))))))
+              (term (well_formed_conf ,(first result)))))))
+
+(define (soundness_wfc_pred_term t debug)
+  (let ([result (if (is_s? (term ,t))
+                    ; {(is_s? (term ,t))}
+                    (if
+                     (not (term (well_formed_conf (() : () : ,t))))
+                     ; TODO: naive approach to discard ill formed
+                     ; terms
+                     (term ((() : () : \;)))
+                     
+                     (apply-reduction-relation full-progs-rel
+                                               (term (() : () : ,t))))
+                    ; {¬ (is_s? (term ,t))}
+                    (if
+                     (not (term (well_formed_conf (() : () : ,t))))
+                     ; TODO: naive approach to discard ill formed
+                     ; terms
+                     (term ((() : () : \;)))
+                     
+                     (apply-reduction-relation full-progs-rel
+                                               ; generate a term that implies
+                                               ; the reduction of t
+                                               (term (() : () : (if ,t then \;
+                                                                    else \;
+                                                                    end))))))
+                    ])
+    (if (is_s? (term ,t))
+        (check_one_step_term_rel debug t result)
+        (check_one_step_term_rel debug (term (if ,t then \;
+                                                 else \;
+                                                 end)) result))
+    )
+  )
+
+(define (soundness_wfc_terms attempts)
+  (redex-check ext-lang t ;#:uniform-at-random 0.2
+               (soundness_wfc_pred_term (term t) #f)
+               #:prepare close_term
+               #:attempts attempts
+               #:source terms-rel
+               ))
 
 (define (soundness_wfc_pred sigma theta t debug)
   (let ([result (if
@@ -767,17 +823,7 @@
     )
   )
 
-(define (soundness_wfc_pred_term t debug rel)
-  (let ([result (if
-                 (not (term (well_formed_conf (() : () : ,t))))
-                 ; TODO: naive approach to discard ill formed
-                 ; terms
-                 (term (\;))
-                                 
-                 (apply-reduction-relation rel (term ,t)))])
-    (check_term debug t result)
-    )
-  )
+
 
 (define (soundness_wfc attempts)
   (redex-check ext-lang (σ : θ : s) ;#:uniform-at-random 0.2
@@ -787,22 +833,16 @@
                #:source full-progs-rel
                ))
 
-(define (soundness_wfc_terms attempts)
-  (redex-check ext-lang t ;#:uniform-at-random 0.2
-               (soundness_wfc_pred_term (term t) #f terms-rel)
-               #:prepare close_term
-               #:attempts attempts
-               #:source terms-rel
-               ))
-
-(define (soundness_wfc_coverage attempts rel test)
+(define (soundness_wfc_coverage attempts test rel)
   ; create records to register test coverage related with ↦
-  (let ([rel-coverage (make-coverage rel)])
+  (let ([rel-coverage (make-coverage rel)]
+        [full-progs-rel-coverage (make-coverage full-progs-rel)])
     (parameterize
         ; supply data-structures
-        ([relation-coverage (list rel-coverage)])
+        ([relation-coverage (list rel-coverage full-progs-rel-coverage)])
       (test attempts)
-      (values (covered-cases rel-coverage)))))
+      (values (covered-cases rel-coverage)
+              (covered-cases full-progs-rel-coverage)))))
 
 ;                  
 ;      ;;          
