@@ -44,14 +44,18 @@
 ; Determine if a reference belongs to the domain of a store
 ; PRE : {the store received satisfy the invariant of representation}
 (define-metafunction ext-lang
-  refBelongsToTheta? : tid θ -> any
+  refBelongsToTheta? : any θ -> any
   
   ; tid in dom(θ)
   [(refBelongsToTheta? tid (osp_1 ... (tid object) osp_2 ...))
    #t]
+
+  ; cid in dom(θ)
+  [(refBelongsToTheta? cid (osp_1 ... (cid object) osp_2 ...))
+   #t]
   
   ; Default case
-  [(refBelongsToTheta? tid θ)
+  [(refBelongsToTheta? _ _)
    #f])
 
 (provide refBelongsToTheta?)

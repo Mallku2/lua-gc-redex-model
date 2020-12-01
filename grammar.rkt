@@ -367,12 +367,12 @@
   [Elf hole
        ; Statements
        (do Elf end)
-       (if Elf then s else s end)
-       (local Name ... = v ... Elf e ... in s end)
+       (if Elf then block else block end)
+       (local Name_1 Name_2 ... = v ... Elf e ... in block end)
        (Elf (renv ...) LocalBody)
        (evar ... (Elf \[ e \]) var ... = e ...)
        (evar ... (v \[ Elf \]) var ... = e ...)
-       (evar ... = v ... Elf e ...)
+       (evar_1 evar_2 ... = v ... Elf e ...)
        (return v ... Elf e ...)
        (Elf score_1 score_2 ...)   
 
@@ -420,11 +420,11 @@
   [Etel (v ... hole e_1 e_2 ...)]
   
   ; Immediate evaluation contexts where a tuple is truncated
-  [Et (if hole then s else s_2 end)
-      (local Name ... = v ... hole e_1 e_2 ... in s end)
+  [Et (if hole then block_1 else block end)
+      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in block end)
       (evar ... (hole \[ e_1 \]) var ... = e ...)
       (evar ... (e_1 \[ hole \]) var ... = e ...)
-      (evar ... = v ... hole e_1 e_2 ...)
+      (evar_1 evar_2 ... = v ... hole e_1 e_2 ...)
       (return v ... hole e_1 e_2 ...)
       (hole (e ...))
       (v Etel)
@@ -449,9 +449,9 @@
   ; List of expressions where a tuple is unwrapped
   [Euel (v ... hole)]
   ; Immediate evaluation contexts where a tuple is unwrapped
-  [Eu (local Name ... = v ... hole in s end)
+  [Eu (local Name_1 Name_2 ... = v ... hole in block end)
       (return v ... hole)
-      (evar ... = v ... hole)
+      (evar_1 evar_2 ... = v ... hole)
       (v (v ... hole))
       ($statFunCall v (v ... hole))
       ($builtIn builtinserv Euel)
@@ -479,15 +479,15 @@
   [C hole
      ; Statements
      (do C end)
-     (if C then s else s end)
-     (if e then C else s end)
-     (if e then s else C end)
-     (local Name ... = e ... C e ... in s end)
+     (if C then block else block end)
+     (if e then C else block end)
+     (if e then block else C end)
+     (local Name ... = e ... C e ... in block end)
      (local Name ... = e ... in C end)
      (e ... C e ... = e ...)
      (e ... = e ... C e ...)
      (return e ... C e ...)
-     (while C do s end)
+     (while C do block end)
      (while e do C end)
      ; Function call, method call, built-in services
      ($statFunCall C (e ...))
@@ -542,7 +542,7 @@
      
      (< e ... C e ... >)
      ($err C)
-     ($iter C do s end)
+     ($iter C do block end)
      ($iter e do C end)
   
      ; Function call, method call, built-in services
