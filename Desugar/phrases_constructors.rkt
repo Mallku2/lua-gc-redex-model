@@ -216,7 +216,7 @@
 
 
 ; Concrete-to-abstract grammar translation...
-(define-metafunction core-lang
+(define-metafunction ext-lang
   [(to-abstract (ref Number))
    ,(val-ref (nmbr (term Number)))]
 

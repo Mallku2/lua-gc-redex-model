@@ -2,63 +2,102 @@
 
 (require redex)
 
-; Core language grammar definition
-(define-language core-lang
-  
-  ;                                  
-  ;                                  
-  ;                                  
-  ;                                  
-  ;                                  
-  ;                                  
-  ;     ;;;    ;;;;    ;;;;    ;;;;  
-  ;    ;   ;  ;;  ;;   ;;  ;  ;;  ;; 
-  ;   ;       ;    ;   ;      ;    ; 
-  ;   ;       ;    ;   ;      ;;;;;; 
-  ;   ;       ;    ;   ;      ;      
-  ;    ;   ;  ;;  ;;   ;      ;;   ; 
-  ;     ;;;    ;;;;    ;       ;;;;  
-  ;                                  
-  ;                                  
-  ;                                  
-  ;                                  
+(define-language ext-lang
 
-  [score \;
+  [ssing \;
          break
          (return e ...)
-         ; stat funcall
-         ($statFunCall prefixexp (e ...))
-         ($statFunCall prefixexp : Name (e ...))
-         (var_1 var_2 ... = e_1 e_2 ...)
-         (do block end)
-         (if e then block else block end)
-         (while e do block end)
-         ($iter e do block end)
-         (local Name_1 Name_2 ... = e_1 e_2 ... in block end)]
+         ($statFunCall e (e ...))
+         ($statFunCall e : Name (e ...))
+         (var_1 var_2 ... = e ...)
+         (do s end)
+         (if e then s else s end)
+         (while e do s end)
+         ($iter e do s end)
+         (local Name_1 Name_2 ... = e ... in s end) 
+        
+        ; extensions
+        (s Break)
+        ; To help with the definition of well-formed programs, we exclude as
+        ; many ill-formed programs as possible,  using the grammar
+        (((tid \[ v \]) = v) WrongKey)
+        (((v \[ v \]) = v) NonTable)
+        (($statFunCall v (v ...)) WrongFunCall)
+        ; renv is not an expression nor a value.
+        (s (renv ...) LocalBody)
+        ; To allow intermediate states of execution of a funtioncall
+        (s (renv ...) RetStat)
+
+        ; Error objects
+        ($err v)
+        ]
 
   ; Lua's block of code: it helps to avoid an ambiguity in the grammar, between
   ; funcalls and concat. of stats
-  [block score
-         (score_1 score_2 score_3 ...)]
+  [s ssing
+     (ssing_1 ssing_2 ssing_3 ...)]
 
-  [v nil Boolean Number String]
+  [v nil Boolean Number String
+     tid
+     cid]
 
-  ; Difference between statements and expressions is present also at a semantics
+  [Boolean true false]
+    
+  ; Number represents real (double-precision floating-point) numbers
+  [Number real]
+  
+  [String string]
+
+   ; Difference between statements and expressions is present also at a semantics
   ; level: eg., tuples' semantics is defined taking into account if they appear
   ; as an expression or as a statement, and the same with funcall
   [e v
      <<<
      var
-     ; To allow function calls in protected mode, in place of expressions.
-     ;functioncall
-     ($builtIn builtinserv (e ...))
      (\( e \))
+     ($builtIn builtinserv (e ...))
      tableconstructor
-     ;(e_1 binop ... e_2)
      (e binop e)
      (unop e)
-     functiondef]
-  
+     functiondef
+     (e (e ...))
+     (e : Name (e ...))
+     
+     ; Run-time expressions
+     r
+     (< e ... >)
+     ($err v)
+     ; renv is not an expression nor a value. The previous rules for these
+     ; constructions does not describe the renv added
+     (s (renv ...) RetExp)
+     (e ProtectedMode)
+     (e ProtectedMode v)
+     
+     ; To help with the definition of well-formed programs, we exclude with the
+     ; grammar as many ill-formed programs as possible
+     ((v_1 (v_2 ...)) WrongFunCall)
+     ((v \[ v \]) NonTable)
+     ((tid \[ v \]) WrongKey)
+     ((v arithop v) ArithWrongOps)
+     ((v .. v) StrConcatWrongOps)
+     ((v < v) OrdCompWrongOps)
+     ((v <= v) OrdCompWrongOps)
+     ((- v) NegWrongOp)
+     ((\# v) StrLenWrongOp)
+     ((v == v) EqFail)
+     ]
+
+   ; Variables' Identifiers' syntactic category, to ease the definition of the
+  ; substitution function.
+  [id Name
+      <<<]
+
+  [parameters (Name ...)
+              (Name ... <<<)]
+
+  ; This syntactic category is added to ease meta-functions' definitions. 
+  [functiondef (function Name parameters s end)]
+
   ; Built-in services' names, for use by the random generator of terms
   [builtinserv assert
                collectgarbage
@@ -115,27 +154,24 @@
                ; table
                table.concat
                table.unpack]
-
-  [Boolean true false]
-
-  ; Variables' Identifiers' syntactic category, to ease the definition of the
-  ; substitution function.
-  [id Name
-      <<<]
-
-  [parameters (Name ...)
-              (Name ... <<<)]
-
-  ; This syntactic category is added to ease meta-functions' definitions. 
-  [functiondef (function Name parameters block end)]
-
-  [prefixexp var
-             functioncall
-             (\( e \))]
   
-  [functioncall (prefixexp (e ...))
-                (prefixexp : Name (e ...))]
+  [statlabel WrongKey ;metamethods
+             NonTable
+             WrongFunCall]
 
+  [explabel WrongKey
+            NonTable
+            ArithWrongOps
+            StrConcatWrongOps
+            EqFail
+            OrdCompWrongOps
+            NegWrongOp
+            StrLenWrongOp
+            WrongFunCall]
+
+  [(efield ef) (\[ v \] = v)
+               v]
+  
   [field (\[ e \] = e)
          ; We need to allow fields like this
          e]
@@ -155,136 +191,14 @@
   
   ; Name can be anything except a keyword of the language
   [Name variable-not-otherwise-mentioned]
-
-  [var Name 
-       (e \[ e \])]
-  
-  ; Number represents real (double-precision floating-point) numbers
-  [Number real]
-  
-  [String string]
-
-  ) 
-
-; Export core-lang grammar definition
-(provide core-lang)
-
-
-;                                                                                  
-;                                           ;;;                                    
-;                                             ;                                    
-;   ;;;;;;;           ;                       ;                                    
-;   ;                 ;                       ;                                    
-;   ;       ;;  ;;  ;;;;;;                    ;       ;;;   ; ;;;    ;;;;;         
-;   ;        ;  ;     ;                       ;      ;   ;  ;;   ;  ;;  ;;         
-;   ;;;;;;;   ;;      ;                       ;          ;  ;    ;  ;    ;         
-;   ;         ;;      ;                       ;      ;;;;;  ;    ;  ;    ;         
-;   ;         ;;      ;                       ;     ;    ;  ;    ;  ;    ;         
-;   ;        ;  ;     ;       ;;              ;     ;   ;;  ;    ;  ;;  ;;    ;;   
-;   ;;;;;;; ;;  ;;     ;;;    ;;               ;;;   ;;; ;  ;    ;   ;;; ;    ;;   
-;                                                                        ;         
-;                                                                    ;   ;         
-;                                                                     ;;;          
-
-; Extensions made to the grammar to ease the definition of the reduction
-; semantics
-
-; closures comprise core-lang stats + environment. We force this representation
-; with the following extension to core-lang
-(define-extended-language core+env-lang core-lang
-
-  [e ....
-     ; Run-time expressions, but codomain of the environment: the
-     ; substitution could embed this expressions into statements
-     r
-     (< e ... >)]
-  
-  ; Ordinary refs
-  [(r vr) (ref natural)]
-
-  [var ....
-       ; run-time expression
-       evar]
   
   [evar r
         (v \[ v \])]
 
-  )
-
-(define-extended-language ext-lang core+env-lang
-
-  ; Run-time statements
-  [srun score
-        ; functioncall will not be reduced to prefixexp ()
-        ($statFunCall e (e ...))
-        ($statFunCall e : Name (e ...))
-        
-        ; extensions
-        (do s end) ; needs to be added to allow reduction into a do-end block 
-        (s Break)
-        ; To help with the definition of well-formed programs, we exclude as
-        ; many ill-formed programs as possible,  using the grammar
-        (((tid \[ v \]) = v) WrongKey)
-        (((v \[ v \]) = v) NonTable)
-        (($statFunCall v (v ...)) WrongFunCall)
-        ; renv is not an expression nor a value.
-        (s (renv ...) LocalBody)
-        ; To allow intermediate states of execution of a funtioncall
-        (s (renv ...) RetStat)
-
-        ; Error objects
-        ($err v)
-        ]
-
-  [s srun
-     (srun score_1 score_2 ...)]
-
-  [v ....
-     tid
-     cid]
-  
-  [e ....
-     (e (e ...))
-     (e : Name (e ...))
-     
-     ; Run-time expressions
-     ($err v)
-     ; renv is not an expression nor a value. The previous rules for these
-     ; constructions does not describe the renv added
-     (s (renv ...) RetExp)
-     (e ProtectedMode)
-     (e ProtectedMode v)
-     
-     ; To help with the definition of well-formed programs, we exclude with the
-     ; grammar as many ill-formed programs as possible
-     ((v_1 (v_2 ...)) WrongFunCall)
-     ((v \[ v \]) NonTable)
-     ((tid \[ v \]) WrongKey)
-     ((v arithop v) ArithWrongOps)
-     ((v .. v) StrConcatWrongOps)
-     ((v < v) OrdCompWrongOps)
-     ((v <= v) OrdCompWrongOps)
-     ((- v) NegWrongOp)
-     ((\# v) StrLenWrongOp)
-     ((v == v) EqFail)
-     ]
-  
-  [statlabel WrongKey ;metamethods
-             NonTable
-             WrongFunCall]
-
-  [explabel WrongKey
-            NonTable
-            ArithWrongOps
-            StrConcatWrongOps
-            EqFail
-            OrdCompWrongOps
-            NegWrongOp
-            StrLenWrongOp
-            WrongFunCall]
-
-  [(efield ef) (\[ v \] = v)
-               v]
+  [var Name 
+       (e \[ e \])
+       ; run-time expression
+       evar]
   
   [evaluatedtable (\{ efield ... \})]
 
@@ -319,6 +233,10 @@
 
   ; References for the representation of the environment 
   [renv (rEnv r)]
+
+  
+  ; Ordinary refs
+  [(r vr) (ref natural)]
   
   [(objref tid) (objr natural)]
 
@@ -367,14 +285,14 @@
   [Elf hole
        ; Statements
        (do Elf end)
-       (if Elf then block else block end)
-       (local Name_1 Name_2 ... = v ... Elf e ... in block end)
+       (if Elf then s else s end)
+       (local Name_1 Name_2 ... = v ... Elf e ... in s end)
        (Elf (renv ...) LocalBody)
-       (evar ... (Elf \[ e \]) var ... = e_1 e_2 ...)
-       (evar ... (v \[ Elf \]) var ... = e_1 e_2 ...)
+       (evar ... (Elf \[ e \]) var ... = e ...)
+       (evar ... (v \[ Elf \]) var ... = e ...)
        (evar_1 evar_2 ... = v ... Elf e ...)
        (return v ... Elf e ...)
-       (Elf score_1 score_2 ...)   
+       (Elf ssing_1 ssing_2 ...)   
 
        ; Function call, method call, built-in services
        ($statFunCall Elf (e ...))
@@ -420,26 +338,26 @@
   [Etel (v ... hole e_1 e_2 ...)]
   
   ; Immediate evaluation contexts where a tuple is truncated
-  [Et (if hole then block_1 else block end)
-      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in block end)
-      (evar ... (hole \[ e_1 \]) var ... = e_1 e_2 ...)
-      (evar ... (e_1 \[ hole \]) var ... = e_1 e_2 ...)
+  [Et (if hole then s else s end)
+      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in s end)
+      (evar ... (hole \[ e \]) var ... = e ...)
+      (evar ... (v \[ hole \]) var ... = e ...)
       (evar_1 evar_2 ... = v ... hole e_1 e_2 ...)
       (return v ... hole e_1 e_2 ...)
       (hole (e ...))
       (v Etel)
       ($statFunCall hole (e ...))
       ($statFunCall v Etel)
+      ($statFunCall hole : Name (e ...))
       ($builtIn builtinserv Etel)
       (hole : Name (e ...))
-      ($statFunCall hole : Name (e ...))
       (hole binop e)
       (v strictbinop hole)
       (unop hole)
       (< v ... hole e_1 e_2 ... >)
       (\{ efield ... hole field_1 field_2 ... \})
       (\{ efield ... (\[ hole \] = e) field ... \})
-      (\{ efield ... (\[ e \] = hole) field ... \})
+      (\{ efield ... (\[ v \] = hole) field ... \})
       (hole \[ e \])
       (v \[ hole \])
       ; Introduces shift/reduce and reduce/reduce conflicts
@@ -449,7 +367,7 @@
   ; List of expressions where a tuple is unwrapped
   [Euel (v ... hole)]
   ; Immediate evaluation contexts where a tuple is unwrapped
-  [Eu (local Name_1 Name_2 ... = v ... hole in block end)
+  [Eu (local Name_1 Name_2 ... = v ... hole in s end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)
       (v (v ... hole))
@@ -479,23 +397,24 @@
   [C hole
      ; Statements
      (do C end)
-     (if C then block else block end)
-     (if e then C else block end)
-     (if e then block else C end)
-     (local Name ... = e ... C e ... in block end)
+     (if C then s else s end)
+     (if e then C else s end)
+     (if e then s else C end)
+     (local Name ... = e ... C e ... in s end)
      (local Name ... = e ... in C end)
      (e ... C e ... = e ...)
      (e ... = e ... C e ...)
      (return e ... C e ...)
-     (while C do block end)
+     (while C do s end)
      (while e do C end)
      ; Function call, method call, built-in services
      ($statFunCall C (e ...))
      ($statFunCall e (e ... C e ...))
      ($statFunCall C : Name (e ...))
      ($statFunCall e : Name (e ... C e ...))
-     (C score ...)
-     (s score_1 ... C score_2 ...)
+
+     (C ssing_1 ssing_2 ...)
+     (ssing_1 ssing_2 ... C ssing_3 ...)
      
      ; Run-time
      (C (renv ...) RetStat)
@@ -542,7 +461,7 @@
      
      (< e ... C e ... >)
      ($err C)
-     ($iter C do block end)
+     ($iter C do s end)
      ($iter e do C end)
   
      ; Function call, method call, built-in services

@@ -38,8 +38,8 @@
   ; other ops. over tuples
   ; truncation
   (test-->> terms-rel
-            (term ((y \[ (< 1 2 >) \]) = 3))
-            (term ((y \[ 1 \]) = 3)))
+            (term ((1 \[ (< 1 2 >) \]) = 3))
+            (term ((1 \[ 1 \]) = 3)))
 
   (test-->> terms-rel
             (term (((< 1 2 >) \[ 3 \]) = 4))
@@ -52,6 +52,10 @@
   (test-->> terms-rel
             (term (local x y = (< >) 1 in \; end))
             (term (local x y = nil 1 in \; end)))
+
+  (test-->> terms-rel
+            (term (local x y = (< >) in \; end))
+            (term (local x y = nil nil in \; end)))
 
   (test-->> terms-rel
             (term (\{ 1 (< 2 3 >) 4 \}))

@@ -262,6 +262,10 @@
 
   [(substBlock ((v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
    ((v_1 (v_2 ...)) WrongFunCall)]
+
+  ; every variable bound in s has already been replaced by a ref.
+  [(substBlock (s (renv ...) LocalBody) ((id e) ...))
+   ((substBlock s ((id e) ...)) (renv ...) LocalBody)]
   )
 
 
@@ -443,13 +447,12 @@
    (where (id_1 ...) (fv e_1))
    (where ((id_2 ...) ...) ((fv e_2) ...))]
 
-  [(fv (var_1 var_2 ... = e_1 e_2 ...))
-   (id_1 ... id_2 ... ... id_3 ... id_4 ... ...)
+  [(fv (var_1 var_2 ... = e ...))
+   (id_1 ... id_2 ... ... id_3 ... ...)
 
    (where (id_1 ...) (fv var_1))
    (where ((id_2 ...) ...) ((fv var_2) ...))
-   (where (id_3 ...) (fv e_1))
-   (where ((id_4 ...) ...) ((fv e_2) ...))]
+   (where ((id_3 ...) ...) ((fv e) ...))]
 
   [(fv (do s end))
    (fv s)]

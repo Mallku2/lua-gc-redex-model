@@ -577,7 +577,19 @@
   [(δ (loadfile String_1 v_2 v_3 θ))
    (δ (load String_2 nil v_2 v_3))
 
-   (where String_2 ,(file->string (term String_1)))]
+   (where String_2 ,(with-handlers
+                     ([exn:fail? (λ (e) (term nil))])
+                      (file->string (term String_1))
+                   ))]
+
+  ; no file found
+  [(δ (loadfile String_1 v_2 v_3 θ))
+   nil
+
+   (where nil ,(with-handlers
+                   ([exn:fail? (λ (e) (term nil))])
+                 (file->string (term String_1))
+                 ))]
 
   [(δ (loadfile v_1 v_2 v_3 θ))
    (δ (error String_1))

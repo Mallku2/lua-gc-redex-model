@@ -98,15 +98,21 @@
 
 (provide free_clids)
 
+;; transform a given s into a term from block
+;(define-metafunction ext-lang
+;  convert2_block : s -> block
+;  ; we only take care of the problematic cases
+;  [(convert2_block ($statFunCall ))]
+;  )
+
 ; bound free variables and references
 (define-metafunction ext-lang
-  ; TODO: redex-check may generate a tuple (σ : θ : any), where any ∉ s, even
-  ; though the template is (σ : θ : s)
-  close_term_meta : t -> t
+  close_term_meta : any -> t
   
   ; no vararg id
   [(close_term_meta s)
    (local Name_1 Name_2 ... = nil in s end)
+   ; TODO: in this case, we must transform s into a block
 
    ; close local variables
    (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))
@@ -115,6 +121,7 @@
   ; there is a vararg id
   [(close_term_meta s)
    (local dummyVar = (function dummyF (<<<) s end) in \; end)
+   ; TODO: in this case, we must transform s into a block
 
    ; only a vararg
    (where (<<<) ,(remove-duplicates (term (fv s))))
@@ -125,6 +132,7 @@
    (local any_1 ... any_2 ... = (function dummy (<<<) s end) in
      \;
      end)
+   ; TODO: in this case, we must transform s into a block
 
    ; {# (any_1 ... any_2 ...) > 0}
    (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))
@@ -152,6 +160,11 @@
   ; no free identifiers
   [(close_term_meta e)
    e]
+
+  ; redex-check may have generated an ill-formed term
+  [(close_term_meta any)
+   \;
+   ]
   )
 
 (define (close_term c)

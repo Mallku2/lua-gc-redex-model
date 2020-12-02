@@ -304,15 +304,15 @@
 
 
    ; If statement
-   [--> (if v then block_1 else block_2 end)
-        block_1
+   [--> (if v then s_1 else s_2 end)
+        s_1
         IfTrue
       
         (side-condition (and (not (is_nil? (term v)))
                              (not (is_false? (term v)))))]
    
-   [--> (if v then block_1 else block_2 end)
-        block_2
+   [--> (if v then s_1 else s_2 end)
+        s_2
         IfFalse
       
         (side-condition (or (is_nil? (term v))
@@ -320,18 +320,18 @@
                             (is_false? (term v))))]
 
    ; While statement
-   [--> (while e do block end)
-        (($iter e do block end) Break)
+   [--> (while e do s end)
+        (($iter e do s end) Break)
         SignpostWhile]
    
-   [--> ($iter e do score end)
-        (if e then (score ($iter e do score end)) else \; end)
+   [--> ($iter e do ssing end)
+        (if e then (ssing ($iter e do ssing end)) else \; end)
         While_single_stat]
 
-   [--> ($iter e do (score_1 score_2 score_3 ...) end)
+   [--> ($iter e do (ssing_1 ssing_2 ssing_3 ...) end)
         (if e then
-            (score_1 score_2 score_3 ...
-                     ($iter e do (score_1 score_2 score_3 ...) end))
+            (ssing_1 ssing_2 ssing_3 ...
+                     ($iter e do (ssing_1 ssing_2 ssing_3 ...) end))
             else \; end)
         While_conc_stats]
 
@@ -339,12 +339,12 @@
    ; Concatenation of statements
    ; This added rule has to do with the concrete grammar used
    ; in this mechanization.
-   [--> (\; score)
-        score
+   [--> (\; ssing)
+        ssing
         ConcatBehavior]
 
-   [--> (\; score_1 score_2 score_3 ...)
-        (score_1 score_2 score_3 ...)
+   [--> (\; ssing_1 ssing_2 ssing_3 ...)
+        (ssing_1 ssing_2 ssing_3 ...)
         ConcatBehavior2]
 
    ; Do ... End block
@@ -367,17 +367,17 @@
         (where (v_4 ...) ,(take (term (v_1 v_2 v_3 ...)) (term Number_1)))
         ]
 
-   [--> (evar_1 evar_2 evar_3 ... = v_1 v_2 ...)
-        (evar_1 evar_2 evar_3 ... = v_3 ...)
+   [--> (evar_1 evar_2 evar_3 ... = v_1 ...)
+        (evar_1 evar_2 evar_3 ... = v_2 ...)
         AssignCompleteRvalues
         
         (where Number_1 ,(length (term (evar_1 evar_2 evar_3 ...))))
-        (where Number_2 ,(length (term (v_1 v_2 ...))))
+        (where Number_2 ,(length (term (v_1 ...))))
         
         (side-condition (> (term Number_1) 
                            (term Number_2)))
 
-        (where (v_3 ...) ,(append (term (v_1 v_2 ...))
+        (where (v_2 ...) ,(append (term (v_1 ...))
                                   (make-list (- (term Number_1) (term Number_2))
                                              (term nil))))
         ]
@@ -389,8 +389,8 @@
         (side-condition (= (length (term (evar_1 evar_2 ... evar_3)))
                            (length (term (v_1 v_2 ... v_3)))))]
 
-   [--> (local Name_1 Name_2 ... = v_1 v_2 v_3 ... in block end)
-        (local Name_1 Name_2 ... = v_4 ... in block end)
+   [--> (local Name_1 Name_2 ... = v_1 v_2 v_3 ... in s end)
+        (local Name_1 Name_2 ... = v_4 ... in s end)
         
         LocalDiscardRvalues
         
@@ -401,23 +401,23 @@
 
         (where (v_4 ...) ,(take (term (v_1 v_2 v_3 ...)) (term Number_1)))]
 
-   [--> (local Name_1 Name_2 Name_3 ... = v_1 v_2 ... in block end)
-        (local Name_1 Name_2 Name_3 ... = v_3 ... in block end)
+   [--> (local Name_1 Name_2 Name_3 ... = v_1 ... in s end)
+        (local Name_1 Name_2 Name_3 ... = v_2 ... in s end)
         
         LocalCompleteRvalues
 
         (where Number_1 ,(length (term (Name_1 Name_2 Name_3 ...))))
-        (where Number_2 ,(length (term (v_1 v_2 ...))))
+        (where Number_2 ,(length (term (v_1 ...))))
         
         (side-condition (> (term Number_1) (term Number_2)))
         
-        (where (v_3 ...) ,(append (term (v_1 v_2 ...))
+        (where (v_2 ...) ,(append (term (v_1 ...))
                                   (make-list (- (term Number_1) (term Number_2))
                                              (term nil))))
         ]
 
    ; Break
-   [--> ((in-hole Elf break)Break)
+   [--> ((in-hole Elf break) Break)
         \;
         Break]
 
