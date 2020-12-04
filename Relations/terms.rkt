@@ -355,11 +355,11 @@
    ; List length-equating rules for assignment statements
    ; The rule only make sense when there are 2 or more r-values (spec. useful
    ; for redex-check'ing purposes)
-   [--> (evar_1 evar_2 ... = v_1 v_2 v_3 ...)
-        (evar_1 evar_2 ... = v_4 ...)
+   [--> (evar ... = v_1 v_2 v_3 ...)
+        (evar ... = v_4 ...)
         AssignDiscardRvalues
         
-        (where Number_1 ,(length (term (evar_1 evar_2 ...))))
+        (where Number_1 ,(length (term (evar ...))))
         (where Number_2 ,(length (term (v_1 v_2 v_3 ...))))
         
         (side-condition (< (term Number_1) (term Number_2)))

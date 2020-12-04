@@ -263,9 +263,18 @@
   [(substBlock ((v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
    ((v_1 (v_2 ...)) WrongFunCall)]
 
+  [(substBlock (($statFunCall v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
+   (($statFunCall v_1 (v_2 ...)) WrongFunCall)]
+
   ; every variable bound in s has already been replaced by a ref.
   [(substBlock (s (renv ...) LocalBody) ((id e) ...))
    ((substBlock s ((id e) ...)) (renv ...) LocalBody)]
+
+  [(substBlock (s (renv ...) RetStat) ((id e) ...))
+   ((substBlock s ((id e) ...)) (renv ...) RetStat)]
+
+  [(substBlock (s (renv ...) RetExp) ((id e) ...))
+   ((substBlock s ((id e) ...)) (renv ...) RetExp)]
   )
 
 

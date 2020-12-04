@@ -66,11 +66,10 @@
                                    UNM ; arith. negation
                                    ))
 
-; TODO: cambiar nombre
 (define-tokens non-empty-tokens (STRING NUMBER HEX-NMBR-BINPOT NAME))
 
 (define-lex-abbrevs
-  ; TODO: corregir la re para strings
+  ; TODO: fix re for strings
   (double-quoted-string-lit (re-: "\""
                                   (re-* (char-complement #\"))
                                   "\""))

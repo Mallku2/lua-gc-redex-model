@@ -1131,7 +1131,7 @@
   ;
   ; When called with a base (Number), then the first argument should be a string
   ; to be interpreted as an integer numeral in that base
-  [(δ (tonumber String Number v ...))
+  [(δ (tonumber String Number))
    any_2
 
    (where any_1 ,(string->number (term String) (term Number)))
@@ -1145,19 +1145,11 @@
   ; it converts it into a decimal. In our mechanization that isn't a problem,
   ; because all numbers are converted to decimal.
   
-  [(δ (tonumber Number_1 Number_2 v ...))
+  [(δ (tonumber Number_1 Number_2))
    Number_1]
 
-  [(δ (tonumber Number_1 nil))
-   Number_1]
-
-  [(δ (tonumber v_1 v_2 v_3 ...))
-   (δ (error v_1 v_2))
-
-   (where Sring ,(string-append "bad argument #1 (string expected)"))]
-
-  ; Decimal number
-  [(δ (tonumber String v ...))
+  ; Decimal number, no base specified
+  [(δ (tonumber String nil))
    e
    
    ; Convert string following the rules of the lexer, as said by the semantics.
@@ -1179,23 +1171,26 @@
                     ; Positive or negative decimal number
                     (is_number? (term e))
 
+                    ; Hexadecimal number with binary exponent (the lexer does
+                    ; not compute the result)
                     (redex-match? ext-lang
-                                  (- Number)
-                                  (term e))
-
-                    ; Hexadecimal number with binary exponent
-                    (redex-match? ext-lang
-                                  (e_1 binop e_2)
+                                  (Number_1 * (Number_2 ^ Number_3))
                                   (term e))
 
                     (redex-match? ext-lang
-                                  (- (e_1 binop e_2))
-                                  (term e))))
+                                  (- (Number_1 * (Number_2 ^ Number_3)))
+                                  (term e))
+                    ))
    ]
-  
-  ; Default case
-  [(δ (tonumber v_1 v_2))
+
+  [(δ (tonumber v_1 nil))
    nil]
+
+  ; {v_2 ≠ nil}
+  [(δ (tonumber v_1 v_2))
+   (δ (error v_1 v_2))
+
+   (where String ,(string-append "bad argument #1 (string expected)"))]
   
   
   ;                                                                  
@@ -1231,6 +1226,17 @@
   
   ; To implement the behaviour of Lua's coercion:
   ; 1.0 .. 1.0 = "11"
+  ; simple way of avoiding exception check, when using inexact->exact, below
+  [(δ (tostring +nan.0 θ))
+   "nan"]
+
+  [(δ (tostring +inf.0 θ))
+   "inf"]
+
+  [(δ (tostring -inf.0 θ))
+   "-inf"]
+
+  ; {Number ∉ {nan, inf}}
   [(δ (tostring Number θ))
    ,(~a (inexact->exact (term Number)))
    
@@ -1240,14 +1246,16 @@
    
    (where nil (indexMetaTable objref "__tostring" θ))
    
-   (side-condition (equal? (remainder (* (term Number) 10) 10)
-                           0.0))]
+   (side-condition (= (floor (term Number))
+                      (term Number)))
+   ]
   
   [(δ (tostring Number θ))
    ,(~a (inexact->exact (term Number)))
    
-   (side-condition (equal? (remainder (* (term Number) 10) 10)
-                           0.0))]
+   (side-condition (= (floor (term Number))
+                      (term Number)))
+   ]
   
   ; v doesn't have an associated metatable or its meta-table doesn't have a
   ; field ("__tostring" = any)
@@ -1279,7 +1287,6 @@
   [(δ (tostring v θ))
    ; From racket/format
    ,(~a (term v))]
-  
   
   ;                                  
   ;                                  

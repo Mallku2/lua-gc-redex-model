@@ -31,7 +31,7 @@
               1.0)
   
   (test-equal (term (δ (% 1 0)))
-              (term $nan))
+              (term +nan.0))
 
   (test-equal (term (δ (% 4 -3)))
               (term -2.0))
