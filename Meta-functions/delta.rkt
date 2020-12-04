@@ -19,7 +19,9 @@
 (define-metafunction ext-lang
   ; Arithmetic operations
   ; From https://www.lua.org/manual/5.2/manual.html#2.1:
-  ; "Number represents real (double-precision floating-point) numbers"
+  ; "Number represents real (double-precision floating-point) numbers";
+  ; we reuse racket's implementation of double-precision IEEE floating-point
+  ; numbers, flonums 
   [(δ (+ Number_1 Number_2))
    ,(+ (term Number_3) (term Number_4))
    
@@ -37,14 +39,7 @@
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
-  
-  [(δ (/ 0 0))
-   +nan.0]
-  
-  [(δ (/ Number 0))
-   +inf.0]
-  
-  ; { Number_2 != 0 }
+ 
   [(δ (/ Number_1 Number_2))
    ,(/ (term Number_3) (term Number_4))
    
@@ -56,9 +51,6 @@
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
-  
-  [(δ (% Number 0))
-   $nan]
   
   [(δ (% Number_1 Number_2))
    ;a - math.floor(a/b)*b

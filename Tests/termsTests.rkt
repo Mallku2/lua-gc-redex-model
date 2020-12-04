@@ -92,11 +92,17 @@
             (term (1 / 1))
             (term 1.0))
   (test-->> terms-rel
+            (term (1 / 0))
+            (term +inf.0))
+  (test-->> terms-rel
             (term (1 ^ 1))
             (term 1.0))
   (test-->> terms-rel
             (term (1 % 1))
             (term 0.0))
+  (test-->> terms-rel
+            (term (1 % 0))
+            (term +nan.0))
   ; Equality comparison
   (test-->> terms-rel
             (term (1 == 1))

@@ -44,7 +44,14 @@
   [Boolean true false]
     
   ; Number represents real (double-precision floating-point) numbers
-  [Number real]
+  [Number real
+          ; arithmetic operations in Lua never result in error; we incldue the
+          ; ojects used to express the result of erroneous or undefined
+          ; operations, but prefixed with $, since they are valid variable
+          ; indetifiers
+;          $inf
+;          $nan
+          ]
   
   [String string]
 
