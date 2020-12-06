@@ -22,8 +22,7 @@
                                    "__call" 
                                    θ))
         
-        (side-condition (and (not (is_nil?  (term any)))
-                             (not (is_false?  (term any)))))]
+        (side-condition (not (is_false_cond? (term any))))]
    
    [--> (θ : ((v_1 (v_2 ...))WrongFunCall))
         (θ : ($err String))
@@ -34,8 +33,7 @@
                                    "__call" 
                                    θ))
 
-        (side-condition (or (is_nil? (term v_3))
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage WrongFunCall (δ (type v_1))))]
 
@@ -48,8 +46,7 @@
                                    "__call" 
                                    θ))
         
-        (side-condition (and (not (is_nil?  (term any)))
-                             (not (is_false?  (term any)))))]
+        (side-condition (not (is_false_cond? (term any))))]
    
    [--> (θ : (($statFunCall v_1 (v_2 ...))WrongFunCall))
         (θ : ($err String))
@@ -60,8 +57,7 @@
                                    "__call" 
                                    θ))
 
-        (side-condition (or (is_nil? (term v_3))
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage WrongFunCall (δ (type v_1))))]
 
@@ -128,8 +124,7 @@
                                   (binopeventkey binop)
                                   θ))
         
-        (side-condition (not (or (is_nil? (term v_3))
-                                 (is_false? (term v_3)))))]
+        (side-condition (not (is_false_cond? (term v_3))))]
    
    [--> (θ : ((v_1 binop v_2)explabel))
         (θ : ($builtIn error (String)))
@@ -142,8 +137,7 @@
         ; Determine if sv_1 or sv_2 efectively has a meta-table
         (where v_3 (getBinHandler v_1 v_2 (binopeventkey binop) θ))
 
-        (side-condition (or (is_nil? (term v_3))
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage explabel 
                                   (δ (type v_1)) 
@@ -158,8 +152,7 @@
                                     (unopeventkey -) 
                                     θ))
         
-        (side-condition (not (or (is_nil? (term v_2))
-                                 (is_false? (term v_2)))))]
+        (side-condition (not (is_false_cond? (term v_2))))]
    
    [--> (θ : ((- v_1)NegWrongOp))
         (θ : ($builtIn error (String)))
@@ -170,8 +163,7 @@
                                     (unopeventkey -)
                                     θ))
 
-        (side-condition (or (is_nil? (term v_2))
-                            (is_false? (term v_2))))
+        (side-condition (is_false_cond? (term v_2)))
         
         (where String (errmessage NegWrongOp (δ (type v_1))))]
    
@@ -222,8 +214,7 @@
         E-EqualityFailWithHandler
         ; Determine the type of sv_1
         (where v_3 (getEqualHandler v_1 v_2 θ))
-        (side-condition (not (or (is_nil? (term v_3))
-                                 (is_false? (term v_3)))))]
+        (side-condition (not (is_false_cond? (term v_3))))]
    
    [--> (θ : ((v_1 == v_2)EqFail))
         (θ : false)
@@ -232,9 +223,7 @@
         ; Determine the type of sv_1
         (where v_3 (getEqualHandler v_1 v_2 θ))
         
-        (side-condition (or (is_nil? (term v_3))
-                            
-                            (is_false? (term v_3))))]
+        (side-condition (is_false_cond? (term v_3)))]
    
    [--> (θ : ((v_1 relop v_2)OrdCompWrongOps))
         (θ : (v_3 (v_1 v_2)))
@@ -246,9 +235,7 @@
                                   (binopeventkey relop) 
                                   θ))
         
-        (side-condition (not (or (is_nil? (term v_3))
-                             
-                                 (is_false? (term v_3)))))]
+        (side-condition (not (is_false_cond? (term v_3))))]
    
    [--> (θ : ((v_1 < v_2)OrdCompWrongOps))
         (θ : ($builtIn error (String)))
@@ -260,9 +247,7 @@
                                   (binopeventkey <) 
                                   θ))
         
-        (side-condition (or (is_nil? (term v_3))
-                             
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage OrdCompWrongOps 
                                   (δ (type v_1))
@@ -278,17 +263,14 @@
                                   (binopeventkey <=) 
                                   θ))
         
-        (side-condition (or (is_nil? (term v_3))
-                            
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
 
         (where v_4 (getBinHandler v_1
                                   v_2
                                   (binopeventkey <)
                                   θ))
         
-        (side-condition (not (or (is_nil? (term v_4))
-                                 (is_false? (term v_4)))))]
+        (side-condition (not (is_false_cond? (term v_4))))]
    
    [--> (θ : ((v_1 <= v_2)OrdCompWrongOps))
         (θ : ($builtIn error (String)))
@@ -300,17 +282,14 @@
                                   (binopeventkey <=) 
                                   θ))
         
-        (side-condition (or (is_nil? (term v_3))
-                            (is_false? (term v_3))))
+        (side-condition (is_false_cond? (term v_3)))
 
         (where v_4 (getBinHandler v_1
                                   v_2
                                   (binopeventkey <)
                                   θ))
         
-        (side-condition (or (is_nil? (term v_4))
-                            
-                            (is_false? (term v_4))))
+        (side-condition (is_false_cond? (term v_4)))
         
         (where String (errmessage OrdCompWrongOps
                                   (δ (type v_1))

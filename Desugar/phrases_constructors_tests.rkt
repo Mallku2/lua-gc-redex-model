@@ -126,7 +126,7 @@
                                                 (nmbr 2)))
                 (term (1 >= 2)))
 
-  (check-equal? (concrete-grammar-e (binop (eq)
+  (check-equal? (concrete-grammar-e (binop (equ)
                                                 (nmbr 1)
                                                 (nmbr 2)))
                 (term (1 == 2)))

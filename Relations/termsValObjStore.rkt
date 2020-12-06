@@ -156,7 +156,7 @@
                              0))
 
         ; Take the extra-arguments, if present
-        (where Number_5 ,(if (eq? (term Number_4) 0)
+        (where Number_5 ,(if (= (term Number_4) 0)
                              (- (term Number_2) (term Number_1))
                              0))
         
@@ -212,7 +212,7 @@
                              0))
 
         ; Take the extra-arguments, if present
-        (where Number_5 ,(if (eq? (term Number_4) 0)
+        (where Number_5 ,(if (= (term Number_4) 0)
                              (- (term Number_2) (term Number_1))
                              0))
         

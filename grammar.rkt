@@ -549,6 +549,11 @@
   (redex-match? ext-lang
                 false))
 
+; values that are interpreted as false, in a boolean context
+(define (is_false_cond? t)
+  (or (is_false? t)
+      (is_nil? t)))
+
 (define is_true?
   (redex-match? ext-lang
                 true))
@@ -620,6 +625,7 @@
          is_nil?
          is_false?
          is_true?
+         is_false_cond?
 
          ; ops
          is_strconcat?

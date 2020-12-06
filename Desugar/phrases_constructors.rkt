@@ -209,7 +209,7 @@
 
 (struct ge ())
 
-(struct eq ())
+(struct equ ())
 
 ; list of expressions
 (struct exps (el))
@@ -452,7 +452,7 @@
 
     ((ge) (term >=))
 
-    ((eq) (term ==))
+    ((equ) (term ==))
 
     ((\\and) (term and))
 

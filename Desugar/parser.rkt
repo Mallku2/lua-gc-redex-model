@@ -290,7 +290,7 @@
              (conc-stats
               (list
                (conditional
-                (binop (eq)
+                (binop (equ)
                        (list-ref (exps-el (list-ref $1 0)) 0)
                        (nil))
                 (break)
@@ -491,8 +491,8 @@
          ((exp LE exp) (binop (le) $1 $3))
          ((exp GT exp) (binop (gt) $1 $3))
          ((exp GE exp) (binop (ge) $1 $3))
-         ((exp EQ exp) (binop (eq) $1 $3))
-         ((exp NOTEQ exp) (unop (\\not) (binop (eq) $1 $3)))
+         ((exp EQ exp) (binop (equ) $1 $3))
+         ((exp NOTEQ exp) (unop (\\not) (binop (equ) $1 $3)))
          ((exp CONCAT exp) (binop (str-concat) $1 $3))
          ((exp AND exp) (binop (\\and) $1 $3))
          ((exp OR exp) (binop (\\or) $1 $3))

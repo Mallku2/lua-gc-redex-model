@@ -308,16 +308,13 @@
         s_1
         IfTrue
       
-        (side-condition (and (not (is_nil? (term v)))
-                             (not (is_false? (term v)))))]
+        (side-condition (not (is_false_cond? (term v))))]
    
    [--> (if v then s_1 else s_2 end)
         s_2
         IfFalse
       
-        (side-condition (or (is_nil? (term v))
-                          
-                            (is_false? (term v))))]
+        (side-condition (is_false_cond? (term v)))]
 
    ; While statement
    [--> (while e do s end)
