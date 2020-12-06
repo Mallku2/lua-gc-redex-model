@@ -109,25 +109,25 @@
   [builtinserv assert
                collectgarbage
                error
+               getmetatable
+               ipairs
+               load
+               loadfile
+               next
+               pairs
                pcall
                print
                rawequal
-               select
-               tonumber
-               type
-               xpcall
-               setmetatable
-               rawset
-               ipairs
-               next
-               pairs
-               load
-               loadfile
-               getmetatable
-               tostring
                rawget
                rawlen
+               rawset
                require
+               select
+               setmetatable
+               tonumber
+               tostring
+               type
+               xpcall
                ; math
                math.abs
                math.acos

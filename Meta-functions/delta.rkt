@@ -5,6 +5,7 @@
          "./objStoreMetafunctions.rkt"
          "./valStoreMetafunctions.rkt"
          "./grammarMetafunctions.rkt"
+         "./coercion.rkt"
          "./gc.rkt"
          "../Desugar/parser.rkt"
          "../Desugar/lexer.rkt"
@@ -42,7 +43,10 @@
  
   [(δ (/ Number_1 Number_2))
    ,(/ (term Number_3) (term Number_4))
-   
+
+   ; to guarantee ieee 754 behavior, we apply a step of conversion to flonums;
+   ; hence, for example, a division (/ 1 0) results in +inf.0, as in Lua,
+   ; instead of raising an exception
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
@@ -975,7 +979,7 @@
 
   ; Wrong arguments
   [(δ (rawset v ... nil θ))
-   (δ (error "rawset: missing arguments"))
+   (θ (δ (error "rawset: missing arguments")))
 
    (side-condition (< (length (term (v ...)))
                       3))]
@@ -1129,36 +1133,20 @@
   ;                                                                  
   ;                                                                  
   ;
-  ; When called with a base (Number), then the first argument should be a string
-  ; to be interpreted as an integer numeral in that base
-  [(δ (tonumber String Number))
-   any_2
-
-   (where any_1 ,(string->number (term String) (term Number)))
-
-   (where any_2 ,(if (equal? (term any_1) #f)
-                     (term nil)
-                     (term any_1)))]
-
-  ; NOTE: Lua's reference manual says that if the argument is already a number,
-  ; then tonumber return that number. But when given an hexadecimal number,
-  ; it converts it into a decimal. In our mechanization that isn't a problem,
-  ; because all numbers are converted to decimal.
-  
-  [(δ (tonumber Number_1 Number_2))
+  [(δ (tonumber Number_1 nil))
    Number_1]
 
-  ; Decimal number, no base specified
+  ; decimal number, no base specified
   [(δ (tonumber String nil))
    e
-   
-   ; Convert string following the rules of the lexer, as said by the semantics.
-   ; However, lexer alone will not suffice: for example, in case of malformed
+   ; though the manual does not specify this, in this case tonumber
+   ; converts String following the rules of the lexer, as said by the semantics;
+   ; however, lexer alone will not suffice: for example, in case of malformed
    ; strings beginning with a correct string representation of numbers.
    (where (any = e) ,(with-handlers ([exn:fail?
                                       (λ (e) #f)])
                        ((λ ()
-                          ; To use the parser, we need to feed it with an
+                          ; to use the parser, we need to feed it with an
                           ; statement...
                           ; NOTE: we append String directly. Then, the
                           ; conversion to a number is done by the lexer/parser.
@@ -1168,10 +1156,10 @@
 
    
    (side-condition (or
-                    ; Positive or negative decimal number
+                    ; positive or negative decimal number
                     (is_number? (term e))
 
-                    ; Hexadecimal number with binary exponent (the lexer does
+                    ; hexadecimal number with binary exponent (the lexer does
                     ; not compute the result)
                     (redex-match? ext-lang
                                   (Number_1 * (Number_2 ^ Number_3))
@@ -1183,14 +1171,32 @@
                     ))
    ]
 
-  [(δ (tonumber v_1 nil))
+  ; {v ∉ Number ∪ String}
+  [(δ (tonumber v nil))
    nil]
 
-  ; {v_2 ≠ nil}
-  [(δ (tonumber v_1 v_2))
-   (δ (error v_1 v_2))
+  ; base out of range
+  [(δ (tonumber v 1))
+   (δ (error String))
 
-   (where String ,(string-append "bad argument #1 (string expected)"))]
+   (where String ,(string-append
+                   "bad argument #2 to 'tonumber' (base out of range)"))]
+  
+  ; when called with a base (Number), then the first argument should be a string
+  ; to be interpreted as an integer numeral in that base
+  [(δ (tonumber String Number))
+   (convert_string String Number)]
+
+  ; it is also possible convert a number to another base
+  [(δ (tonumber Number_1 Number_2))
+   (convert_number Number_1 Number_2)]
+
+  ; {v_2 ≠ nil ∧ v_1 ∉ Number ∪ String}
+  [(δ (tonumber v_1 v_2))
+   (δ (error String))
+
+   (where String ,(string-append
+                   "bad argument #1 to 'tonumber' (string expected)"))]
   
   
   ;                                                                  
@@ -1304,23 +1310,23 @@
   ;             ;     ;              
   ;            ;;     ;              
 
-  [(δ (type Number v ...))
+  [(δ (type Number ))
    ,(term "number")]
   
-  [(δ (type nil v ...))
+  [(δ (type nil ))
    ,(term "nil")]
   
-  [(δ (type Boolean v ...))
+  [(δ (type Boolean ))
    ,(term "boolean")]
   
-  [(δ (type String v ...))
+  [(δ (type String ))
    ,(term "string")]
   
-  [(δ (type cid v ...))
+  [(δ (type cid ))
    ,(term "function")]
   
   ; Default case
-  [(δ (type objref v ...))
+  [(δ (type objref ))
    ,(term "table")]
   
   ;                                                  
@@ -1373,7 +1379,7 @@
   ;                          
   ;                          
   ;                          
-  [(δ (math.abs Number v ...))
+  [(δ (math.abs Number ))
    ,(abs (term Number))]
   ;                                  
   ;                                  
@@ -1463,7 +1469,7 @@
   ;                          
   ;                          
   ;                          
-  [(δ (math.cos Number v ...))
+  [(δ (math.cos Number ))
    ,(cos (term Number))]
 
   
@@ -1482,7 +1488,7 @@
   ;                                  
   ;                                  
   ;                                  
-  [(δ (math.cosh Number v ...))
+  [(δ (math.cosh Number ))
    ,(cosh (term Number))]
   
   ;                          
@@ -1500,7 +1506,7 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;  
-  [(δ (math.deg Number v ...))
+  [(δ (math.deg Number ))
    ,(radians->degrees (term Number))]
 
   
@@ -1538,7 +1544,7 @@
   ;                                          
   ;                                          
   
-  [(δ (math.floor Number v ...))
+  [(δ (math.floor Number ))
    ,(floor (term Number))]
   
   ;                                  
@@ -1557,7 +1563,7 @@
   ;                                  
   ;                                  
   
-  [(δ (math.fmod Number_1 Number_2 v ...))
+  [(δ (math.fmod Number_1 Number_2 ))
    ,(exact-floor (remainder (term Number_1) (term Number_2)))]
   
   ;                          
@@ -1575,10 +1581,10 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;
-  [(δ (math.log Number nil v ...))
+  [(δ (math.log Number nil ))
    ,(log (term Number))]
 
-  [(δ (math.log Number_1 Number_2 v ...))
+  [(δ (math.log Number_1 Number_2 ))
    (δ (/ (δ (math.log Number_1 nil))
          (δ (math.log Number_2 nil))))]
 
@@ -1616,7 +1622,7 @@
   ;                                  
   ;                                  
   ;                                  
-  [(δ (math.modf Number v ...))
+  [(δ (math.modf Number ))
    ,(- (term Number) (exact-truncate (term Number)))]
   ;                          
   ;                        ; 
@@ -1634,7 +1640,7 @@
   ;                          
   ;                          
 
-  [(δ (math.rad Number v ...))
+  [(δ (math.rad Number ))
    ,(degrees->radians (term Number))]
   
   ;                          
@@ -1653,7 +1659,7 @@
   ;                          
   ;                          
   
-  [(δ (math.sin Number v ...))
+  [(δ (math.sin Number ))
    ,(sin (term Number))]
   
   ;                                  
@@ -1671,7 +1677,7 @@
   ;                                  
   ;                                  
   ;
-  [(δ (math.sinh Number v ...))
+  [(δ (math.sinh Number ))
    ,(sinh (term Number))]
 
 
@@ -1691,7 +1697,7 @@
   ;                ;                 
   ;                ;                 
   ;                ;                 
-  [(δ (math.sqrt Number v ...))
+  [(δ (math.sqrt Number))
    ,(sqrt (term Number))]
 
   
@@ -1710,7 +1716,7 @@
   ;                          
   ;                          
   ;                          
-  [(δ (math.tan Number v ...))
+  [(δ (math.tan Number ))
    ,(tan (term Number))]
   
   ;                                  
@@ -1728,7 +1734,7 @@
   ;                                  
   ;                                  
   ;                                  
-  [(δ (math.tanh Number v ...))
+  [(δ (math.tanh Number ))
    ,(tanh (term Number))]
 
   ; Default case of math functions

@@ -1,278 +1,271 @@
 #lang racket
 
-(require racket/format)
 (require redex
          "../grammar.rkt")
 
-; String to Number conversion.
-; Mimics the behaviour of the procedure luaO_str2d defined in lobject.c of the Lua's
-; source code.
-(define-metafunction ext-lang
-  ;toNumber : any -> any
-  
-  ; The string received has the character n or N.
-  ; Reject 'inf' and 'nan'
-  [(toNumber String Number)
-   false
-   (side-condition (regexp-match #rx"n|N" (term String)))]
-  
-  ; The string received has the character x or X.
-  ; Hexadecimal numeric string?
-  ; TODO: we are not using the base...
-  [(toNumber String Number)
-   (stringToHexaNumber String)
-   (side-condition (regexp-match #rx"x|X" (term String)))]
-  
-  ; Converts a decimal numeric string to a number
-  [(toNumber String Number)
-   ; TODO: finish stringToNumber. We are, for the moment, using the implementation
-   ; on Racket of the procedure
-   any_2
-   (where any ,(string->number (term String) (term Number)))
-   (where any_2, (if (equal? (term any) #f)
-                     (term false)
-                     (term any)))]
-  
-  ; TODO: for the moment, we do not allow the conversion of a number to a different 
-  ; base
-  [(toNumber any Number)
-   any]
-  
-  
+; dictionary that maps alphabetic digits and their decimal interpretation,
+; according to Lua's tonumber
+(define letter_to_digit
+  '(("a" . 10)
+    ("A" . 10)
+
+    ("b" . 11)
+    ("B" . 11)
+
+    ("c" . 12)
+    ("C" . 12)
+
+    ("d" . 13)
+    ("D" . 13)
+
+    ("e" . 14)
+    ("E" . 14)
+
+    ("f" . 15)
+    ("F" . 15)
+
+    ("g" . 16)
+    ("G" . 16)
+
+    ("h" . 17)
+    ("H" . 17)
+
+    ("i" . 18)
+    ("I" . 18)
+
+    ("j" . 19)
+    ("J" . 19)
+
+    ("k" . 20)
+    ("K" . 20)
+
+    ("l" . 21)
+    ("L" . 21)
+
+    ("m" . 22)
+    ("M" . 22)
+
+    ("n" . 23)
+    ("N" . 23)
+
+    ("o" . 24)
+    ("O" . 24)
+
+    ("p" . 25)
+    ("P" . 25)
+
+    ("q" . 26)
+    ("Q" . 26)
+
+    ("r" . 27)
+    ("R" . 27)
+
+    ("s" . 28)
+    ("S" . 28)
+
+    ("t" . 29)
+    ("T" . 29)
+
+    ("u" . 30)
+    ("U" . 30)
+
+    ("v" . 31)
+    ("V" . 31)
+
+    ("w" . 32)
+    ("W" . 32)
+
+    ("x" . 33)
+    ("X" . 33)
+
+    ("y" . 34)
+    ("Y" . 34)
+
+    ("z" . 35)
+    ("Z" . 35)
+    )
   )
 
-(provide toNumber)
-
-; Mimics the behaviour of the procedure lua_strx2number defined in lobject.c of the
-; Lua's source code
+; transform a given alpha-numeric character String into its decimal
+; representation, according to base Number; returns nil if it is not
+; possible
+; PRE : {String contains one character}
 (define-metafunction ext-lang
-  ; Correct representation of an hexa number
-  [(stringToHexaNumber String)
-   Number_8
-   ; Eliminate white-spaces from the beginning or the end o String
-   (where String_2 ,(string-trim (term String)))
-   ; Determine the sign of the number
-   (where Number (sign String_2))
-   ; Eliminate minus sign, if present
-   (where String_3 (eliminateSign String_2))
-   ; String_3 must begins with "0x" or "0X".
-   (side-condition (regexp-match-positions #rx"^0x|0X" (term String_3)))
-   ; Skip the prefix for hexa numbers
-   (where String_4 ,(substring (term String_3) 2 (string-length (term String_3))))
-   ; Read as many hexadecimal digits it can
-   (where String_5 (extractHexaDigits String_4))
-   ; Extract the rest
-   (where String_6 ,(substring (term String_4) (string-length (term String_5))
-                               (string-length (term String_4))))                                                             
-   ; Read the fractional part, if present
-   (where String_7 (extractHexaFraction String_6))
-   ; Extract the remaining part
-   (where String_8 ,(substring (term String_6)
-                               ; If String_6 begins with ".", take it into
-                               ; account to determine where to begin the substring
-                               (if (regexp-match #rx"^\\." (term String_6))
-                                   (+ 1 (string-length (term String_7)))
-                                   (string-length (term String_7)))
-                               (string-length (term String_6))))
-   ; We already have digits before or after the '.'
-   (side-condition (or (not (equal? (string-length (term String_7)) 0))
-                       (not (equal? (string-length (term String_5)) 0))))
-   ; Each fractional digit divides value by 2^-4
-   (where Number_1 ,(string-length (term String_7)))
-   (where Number_2 ,(* (term Number_1) -4.0))
-   ; Read exponent part, if present
-   (where String_9 (extractHexaExponent String_8))
-   ; The exponenet part, if present, is well-formed
-   (side-condition (not (equal? (term String_9) (term error))))
-   ; Determine the sign of the exponent
-   (where Number_3 (sign String_9))
-   ; Eliminate minus sign, if present
-   (where String_10 (eliminateSign String_9))
-   ; Construct the result
-   ; Concatenate the digits before and after the '.'
-   (where String_11 ,(string-append (term String_5) (term String_7)))
-   ; Translate the resulting string to a decimal number
-   (where Number_4 ,(* (term Number) (string->number (term String_11) 16)))
-   ; Translate the exponent to a decimal number
-   (where Number_5 ,(* (term Number_3) (if (equal? (term String_10) "")
-                                           0
-                                           (string->number (term String_10) 10))))
-   (where Number_6 ,(+ (term Number_5) (term Number_2)))
-   ; Compute the exponent of 2
-   (where Number_7 ,(expt 2.0 (term Number_6)))
-   ; The final result
-   (where Number_8 ,(* (term Number_4) (term Number_7)))]
-  
-  ; If something gone wrong...
-  [(stringToHexaNumber String)
-   false])
+  char_to_digit : String Number -> any
 
-; Determine if a string begins or not with "+"/"-". If that is the case,
-; then it returns "-1", to indicate that it begins with "-", and it returns "1"
-; if not
-(define-metafunction ext-lang
-  ; Begins with "-"
-  [(sign String)
-   -1
-   (side-condition (regexp-match-positions #rx"^-" (term String)))]
-  
-  ; Begins with "+" or another character differnte thatn "-"
-  [(sign String)
-   1])
+  ; numeric digit
+  [(char_to_digit String Number_1)
+   Number_2
 
-; Determine if a string begins or not with "+"/"-". If that is the case,
-; then it eliminates the sign from the received string. If that is not the
-; case, then it returns the received string
-(define-metafunction ext-lang
-  ; Begins with "-"
-  [(eliminateSign String)
-   String_2
-   (side-condition (regexp-match-positions #rx"^-" (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))]
-  
-  ; Begins with "+"
-  [(eliminateSign String)
-   String_2
-   (side-condition (regexp-match-positions #rx"^\\+" (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))]
-  
-  [(eliminateSign String)
-   String])
-  
-; Extracts the fractional part of a string representation of an hexadecimal
-; number.
-; ret = (extractHexaFraction string)
-; POS : {ret is a sequence of hexadecimal digits present in string, if string 
-;        begins with '.' and already has hexadecimal digits or ret=="" otherwise}
-(define-metafunction ext-lang
-  
-  [(extractHexaFraction String)
-   (extractHexaDigits String_2)
-   (side-condition (regexp-match #rx"^\\." (term String)))
-   (where String_2 ,(substring (term String) 1 
-                                 (string-length (term String))))]
-  
-  [(extractHexaFraction String)
-   ""
-   (side-condition (not (regexp-match #rx"^\\." (term String))))])
+   (side-condition (char-numeric? (list-ref (string->list (term String)) 0)))
+   (where Number_2 ,(string->number (term String)))
+   (side-condition (> (term Number_1) (term Number_2)))]
 
-; Extracts the exponent part of a string representation of an hexadecimal
-; number, in scientific notation.
-; ret = (extractHexaExponent string)
-; POS : {ret is a sequence of hexadecimal digits present in string (with minus 
-;        sign, if present), if string begins with 'p' and already has hexadecimal
-;        digits or ret=="" otherwise}
-(define-metafunction ext-lang
-  ;extractHexaExponent : String -> String
-  
-  ; The exponent is negative
-  [(extractHexaExponent String)
-   String_4
-   (side-condition (regexp-match #rx"^p|^P" (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))
-   ; String begins with "p-"
-   (side-condition (regexp-match #rx"^-" (term String_2)))
-   (where String_3 ,(substring (term String_2) 1 (string-length (term String_2))))
-   (where String_4 ,(string-append "-" (term (extractDecimalDigits String_3))))
-   (side-condition (equal? (string-length (term String))
-                           (+ (string-length (term String_4))
-                              1)))]
-  
-  ; The exponent is positive, indicated with "+"
-  [(extractHexaExponent String)
-   String_4
-   
-   (side-condition (regexp-match #rx"^p|^P" (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))
-   ; String begins with "p+"
-   (side-condition (regexp-match #rx"^\\+" (term String_2)))
-   (where String_3 ,(substring (term String_2) 1 (string-length (term String_2))))
-   (where String_4 (extractDecimalDigits String_3))
-   (side-condition (equal? (string-length (term String))
-                           (+ (string-length (term String_4))
-                              2)))]
-  
-  
-  ; The exponent is positive
-  [(extractHexaExponent String)
-   String_3
-   
-   (side-condition (regexp-match #rx"^p|^P" (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))
-   (where String_3 (extractDecimalDigits String_2))
-   (side-condition (equal? (string-length (term String))
-                           (+ (string-length (term String_3))
-                              1)))]
-  
-  ; There is a malformed exponent part
-  [(extractHexaExponent String)
-   error
-   (side-condition (> (string-length (term String)) 0))]
-  
-  ; There is no exponent part
-  [(extractHexaExponent String)
-   ""])
+  ; alphabetic digit
+  [(char_to_digit String Number_1)
+   Number_2
 
-; Read as many decimal digits it can, from the beginning of the string
-; received
-(define-metafunction  ext-lang
-  extractDecimalDigits : String -> String
-  
-  [(extractDecimalDigits String)
-   ,(string-append (substring (term String) 0 1)
-            (term (extractDecimalDigits String_2)))
-   ; The string begins with a decimal digit
-   (side-condition (regexp-match 
-                    #rx"^0|^1|^2|^3|^4|^5|^6|^7|^8|^9"
-                    (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))]
-  
-  [(extractDecimalDigits String)
-   ""
-   ; The string begins with an hexadecimal digit
-   (side-condition (not (regexp-match 
-                    #rx"^0|^1|^2|^3|^4|^5|^6|^7|^8|^9"
-                    (term String))))])  
+   (where Number_2 ,(with-handlers ([exn:fail? (λ (e) (term nil))])
+                      ((λ ()
+                         (dict-ref letter_to_digit (term String))))))
+                         
+   (side-condition (> (term Number_1) (term Number_2)))]
 
-; Mimics the behaviour of the procedure strtod of the standard c library for
-; linux
-(define-metafunction ext-lang
-  stringToNumber : String -> Number
+  ; default
+  [(char_to_digit _ _)
+   nil]
   )
 
-; Read as many hexadecimal digits it can, from the beginning of the string
-; received
-(define-metafunction  ext-lang
-  extractHexaDigits : String -> String
-  
-  [(extractHexaDigits String)
-   ,(string-append (substring (term String) 0 1)
-            (term (extractHexaDigits String_2)))
-   ; The string begins with an hexadecimal digit
-   (side-condition (regexp-match 
-                    #rx"^0|^1|^2|^3|^4|^5|^6|^7|^8|^9|^a|^A|^b|^B|^c|^C|^d|^D|^e|^E|^f|^F"
-                    (term String)))
-   (where String_2 ,(substring (term String) 1 (string-length (term String))))]
-  
-  [(extractHexaDigits String)
-   ""
-   ; The string begins with an hexadecimal digit
-   (side-condition (not (regexp-match 
-                    #rx"^0|^1|^2|^3|^4|^5|^6|^7|^8|^9|^a|^A|^b|^B|^c|^C|^d|^D|^e|^E|^f|^F"
-                    (term String))))])
-
-; Number to String conversion
-; Mimics the behaviour of the GLIBC's sprintf procedure
-; TODO: actually we are using the Racket's implementation
+; for a given String, it returns a list of decimal numbers, each one
+; corresponding to the decimal representation of each character of
+; String, according to base Number
 (define-metafunction ext-lang
-  ; To implement the behaviour of Lua's coercion:
-  ; 1.0 .. 1.0 = "11"
-  [(toString Number)
-   ,(~a (inexact->exact (term Number)))
-   (side-condition (eq? (remainder (* (term Number) 10) 10)
-                        0.0))]
-  [(toString any)
-   ; From racket/format
-   ,(~a (term any))])
+  string_to_digits : String Number -> any
 
-(provide toString)
+  [(string_to_digits "" _)
+   ()
+   ]
+
+  [(string_to_digits String_1 Number_1)
+   (Number_2 Number_3 ...)
+
+   ; get first character
+   (where String_2 ,(substring (term String_1) 0 1))
+   ; convert it
+   (where Number_2 (char_to_digit String_2 Number_1))
+   ; get suffix of the string
+   (where String_3 ,(substring (term String_1) 1
+                               (string-length (term String_1))))
+   ; repeat with remaining digits
+   (where (Number_3 ...) (string_to_digits String_3 Number_1))
+   ]
+
+  ; default
+  [(string_to_digits _ _)
+   nil]
+  )
+
+; receives a list of numbers, each one interpreted as the decimal
+; representation of the digits of a number in base Number; it reconstructs
+; the original number in its decimal representation
+(define-metafunction ext-lang
+  reconstruct_number : (Number ...) Number -> Number
+
+  [(reconstruct_number () _)
+   0]
+
+  [(reconstruct_number (Number_1 Number_2 ...) Number_3)
+  ,(+ (* (term Number_1)
+         (expt (term Number_3)
+               (- (length (term (Number_1 Number_2 ...)))
+                  1)))
+      (term (reconstruct_number (Number_2 ...) Number_3)))]
+  )
+
+; converts String into a decimal number, trying to interpret String as a
+; number in base Number; returns nil if the conversion fails
+(define-metafunction ext-lang
+  convert_string : String Number -> any
+
+  ; negative number
+  [(convert_string String_1 Number_1)
+   ,(* (term Number_3) -1)
+
+   ; it is a negative number
+   (side-condition (equal? "-"
+                           (substring (term String_1) 0 1)))
+   ; get remaining characters
+   (where String_2 ,(substring (term String_1) 1
+                               (string-length (term String_1))))
+   ; transform String into a list of decimal numbers, according to
+   ; base Number_1
+   (where (Number_2 ...) (string_to_digits String_2 Number_1))
+   ; reconstruct number in decimal form, according to base Number_1
+   (where Number_3 (reconstruct_number (Number_2 ...) Number_1))]
+
+  ; not negative number
+  [(convert_string String Number_1)
+   Number_3
+
+   ; it is a negative number
+   (side-condition (not (equal? "-"
+                                (substring (term String) 0 1))))
+   ; transform String into a list of decimal numbers, according to
+   ; base Number_1
+   (where (Number_2 ...) (string_to_digits String Number_1))
+   ; reconstruct number in decimal form, according to base Number_1
+   (where Number_3 (reconstruct_number (Number_2 ...) Number_1))]
+
+  ; default: something went wrong
+  [(convert_string _ _)
+   nil]
+  )
+
+(provide convert_string)
+
+; for a given String, it returns a list of decimal numbers, each one
+; corresponding to the decimal representation of each character of
+; String, according to base Number
+; PRE : {Number is positive}
+(define-metafunction ext-lang
+  number_to_digits : Number Number -> any
+
+  [(number_to_digits Number _)
+   (Number)
+   
+   (side-condition (< (term Number) 10))]
+
+  ; {(> (term Number_1 ) 10)}
+  [(number_to_digits Number_1 Number_2)
+   (Number_5 ... Number_3)
+
+   ; get last digit
+   (where Number_3 ,(with-handlers ([exn:fail? (λ (e) (term nil))])
+                      ((λ ()
+                         (remainder (term Number_1) 10)))))
+   ; check if digit belongs to base Number_2
+   (side-condition (< (term Number_3) (term Number_2)))
+   ; rest of the digits
+   (where Number_4 ,(quotient (term Number_1) 10))
+   ; get remaining digits
+   (where (Number_5 ...) (number_to_digits Number_4 Number_2))
+   ]
+
+  ; default
+  [(number_to_digits _ _)
+   nil]
+  )
+
+; converts Number_1 into a decimal number, trying to interpret String as a
+; number in base Number_2; returns nil if the conversion fails
+(define-metafunction ext-lang
+  convert_number : Number Number -> any
+
+  [(convert_number Number_1 Number_2)
+   Number_4
+
+   (side-condition (> (term Number_1) 0))
+   ; transform String into a list of decimal numbers, according to
+   ; base Number_1
+   (where (Number_3 ...) (number_to_digits Number_1 Number_2))
+   ; reconstruct number in decimal form, according to base Number_1
+   (where Number_4 (reconstruct_number (Number_3 ...) Number_2))]
+
+  [(convert_number Number_1 Number_2)
+   ,(* -1 (term Number_5))
+
+   (side-condition (< (term Number_1) 0))
+   ; change sign
+   (where Number_3 ,(* -1 (term Number_1)))
+   ; transform String into a list of decimal numbers, according to
+   ; base Number_1
+   (where (Number_4 ...) (number_to_digits Number_3 Number_2))
+   ; reconstruct number in decimal form, according to base Number_1
+   (where Number_5 (reconstruct_number (Number_4 ...) Number_2))]
+
+  ; default: something went wrong
+  [(convert_number _ _)
+   nil]
+  )
+
+(provide convert_number)

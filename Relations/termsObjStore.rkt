@@ -2,7 +2,6 @@
 (require redex
          "../grammar.rkt"
          "../Meta-functions/objStoreMetafunctions.rkt"
-         "../Meta-functions/coercion.rkt"
          "../Meta-functions/delta.rkt"
          ;"../Meta-functions/misc.scm"
          "../Meta-functions/tablesMetafunctions.rkt")
