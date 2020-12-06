@@ -125,47 +125,40 @@
   [(δ (\# evaluatedtable))
    0]
   
-  ; Equality comparison
-  ; Numbers needs special treatment
-  ; TODO: does the IEEE 754 standard mention something about Nan
-  ; comparison? In Lua:
-  ; > print(0/0 == 0/0)
-  ; false
+  ; equality comparison
+  ; numbers needs special treatment
   [(δ (== Number_1 Number_2))
    (toBool ,(= (term Number_1) (term Number_2)))]
   
   [(δ (== v_1 v_2))
    (toBool ,(equal? (term v_1) (term v_2)))]
   
-  ; Logical connectives
+  ; logical connectives
   [(δ (and v e)) 
    v
-   (side-condition (or (equal? (term v) (term false))
-                       (equal? (term v) (term nil))))]
+   (side-condition (is_false_cond? (term v)))]
   
-  ; Try: a,b = true and g(), with g being a function that returns 2 or more 
+  ; try: a,b = true and g(), with g being a function that returns 2 or more 
   ; values
   [(δ (and v e)) 
    (\( e \))
-   (side-condition (and (not (equal? (term v) (term false)))
-                        (not (equal? (term v) (term nil)))))]
+   (side-condition (not (is_false_cond? (term v))))]
   
   [(δ (or v e)) 
    v
-   (side-condition (and (not (equal? (term v) (term false)))
-                        (not (equal? (term v) (term nil)))))]
+   (side-condition (not (is_false_cond? (term v))))]
   
   ; Try: a,b = false or g(), with g being a function that returns 2 or more 
   ; values
   [(δ (or v e)) 
    (\( e \))
-   (side-condition (or (equal? (term v) (term false))
-                       (equal? (term v) (term nil))))]
+   (side-condition (is_false_cond? (term v)))]
   
   [(δ (not v)) 
    true
-   (side-condition (or (equal? (term v) (term nil))
-                       (equal? (term v) (term false))))]
+
+   ; v = nil, false?
+   (side-condition (is_false_cond? (term v)))]
   
   [(δ (not v)) 
    false]
@@ -211,8 +204,7 @@
   [(δ (assert v_1 v_2 v_3 ...))
    (δ (error any))
    
-   (side-condition (or (equal? (term v_1) (term false))
-                       (equal? (term v_1) (term nil))))
+   (side-condition (is_false_cond? (term v_1)))
    
    (where any ,(if (equal? (term v_2) (term nil))
                    ; v_2 is nil. Return default error message.
@@ -1214,24 +1206,34 @@
   ;                                                                ; 
   ;                                                            ;   ; 
   ;                                                             ;;;
-  ; table objref doesn't have an associated metatable or its meta-table doesn't have a
-  ; field ("__tostring" = any)
-  [(δ (tostring objref θ))
-   String
-   
-   (where nil (indexMetaTable objref "__tostring" θ))
-   
-   (where String ,(string-append "table: "
-                                 (~a (term objref))))]
-  
   ; table objref has an associated metatable, with field ("__tostring" = any)
   [(δ (tostring objref θ))
    (any (objref))
-   
-   (where any (indexMetaTable objref "__tostring" θ))]
+
+   ; index metatable of objref
+   (where any (indexMetaTable objref "__tostring" θ))
+
+   (side-condition (not (is_nil? (term any))))]
   
-  ; To implement the behaviour of Lua's coercion:
-  ; 1.0 .. 1.0 = "11"
+  ; v has an associated metatable, with field ("__tostring" = any)
+  [(δ (tostring v θ))
+   (any (v))
+
+   (side-condition (not (is_tid? (term v))))
+   
+   (where objref (getMetaTableRef v))
+   
+   (side-condition (term (refBelongsToTheta? objref θ)))
+
+   ; directly index metatable objref
+   (where any (δ (rawget objref "__tostring" θ)))
+
+   (side-condition (not (is_nil? (term any))))]
+  
+  ; {meta-table of value's type is not set ∨ meta-table does not have
+  ; __tostring field ∨ v ∈ objref}
+  
+  ; implement custom conversions to string
   ; simple way of avoiding exception check, when using inexact->exact, below
   [(δ (tostring +nan.0 θ))
    "nan"]
@@ -1241,55 +1243,35 @@
 
   [(δ (tostring -inf.0 θ))
    "-inf"]
+  
+  ; to implement the behaviour of Lua's coercion: 1.0 .. 1.0 = "11"
+  [(δ (tostring Number θ))
+   ; {Number ∉ {nan, inf}}
+   ,(~a (inexact->exact (term Number)))
 
-  ; {Number ∉ {nan, inf}}
-  [(δ (tostring Number θ))
-   ,(~a (inexact->exact (term Number)))
-   
-   (where objref (getMetaTableRef Number))
-   
-   (side-condition (term (refBelongsToTheta? objref θ)))
-   
-   (where nil (indexMetaTable objref "__tostring" θ))
-   
    (side-condition (= (floor (term Number))
-                      (term Number)))
-   ]
+                      (term Number)))]
   
   [(δ (tostring Number θ))
-   ,(~a (inexact->exact (term Number)))
-   
-   (side-condition (= (floor (term Number))
-                      (term Number)))
-   ]
+   ,(~a (term Number))
+
+   (side-condition (not (= (floor (term Number))
+                           (term Number))))]
   
-  ; v doesn't have an associated metatable or its meta-table doesn't have a
-  ; field ("__tostring" = any)
   [(δ (tostring v θ))
    String_2
-   
-   (where objref (getMetaTableRef v))
-   
-   (side-condition (term (refBelongsToTheta? objref θ)))
-   
-   (where nil (indexMetaTable objref "__tostring" θ))
+
+   ; v is a table or closure id
+   (side-condition (or (is_tid? (term v))
+                       (is_cid? (term v))))
    
    (where String_1 (δ (type v)))
    
-   (where String_2 ,(string-append (term String_1)
+   (where String_2 ,(string-append (term String_1) ": "
                                    (~a (term v))))]
-  
-  ; v has an associated metatable, with field ("__tostring" = any)
-  [(δ (tostring v θ))
-   (any (v))
-   
-   (where objref (getMetaTableRef v))
-   
-   (side-condition (term (refBelongsToTheta? objref θ)))
-   
-   (where any (indexMetaTable objref "__tostring" θ))]
-  
-  ; Default case: racket/format conversion
+
+  ; {v ∉ tid ∪ cid}
+  ; default case: racket/format conversion
   [(δ (tostring v θ))
    ; From racket/format
    ,(~a (term v))]
@@ -2299,7 +2281,10 @@
 ;                                                                                          
 ;                                                                                          
 
-; Chooses a handler for a binary operation
+; since theses defs. make use of δ, and δ uses them too, they cannot be put in
+; an external module
+
+; chooses a handler for a binary operation
 ; PRE : {v_1, v_2 are the operands and String is the string that serves as
 ;       key to index the meta-table
 ; ret = (getBinHandler v_1 v_2 String θ)
@@ -2315,8 +2300,7 @@
    ; Determine if v_1 has meta-table
    (where any (indexMetaTable v_1 String θ))
 
-   (side-condition (not (or (is_nil? (term any))
-                            (is_false? (term any)))))
+   (side-condition (not (is_false_cond? (term any))))
    ]
   
   [(getBinHandler v_1 v_2 String θ)
@@ -2326,13 +2310,11 @@
    (where any (indexMetaTable v_1 String θ))
 
    ; no value associated with String
-   (side-condition (or (is_nil? (term any))
-                       (is_false? (term any))))
+   (side-condition (is_false_cond? (term any)))
    
    (where any_2 (indexMetaTable v_2 String θ))
    
-   (side-condition (not (or (is_nil? (term any_2))
-                            (is_false? (term any_2)))))]
+   (side-condition (not (is_false_cond? (term any_2))))]
   
   ; Otherwise...
   [(getBinHandler v_1 v_2 String θ)
@@ -2354,8 +2336,7 @@
    any
    ; Determine if sv has meta-table
    (where any (indexMetaTable v String θ))
-   (side-condition (not (or (is_nil? (term any))
-                            (is_false? (term any)))))]
+   (side-condition (not (is_false_cond? (term any))))]
   
   ; Otherwise...
   [(getUnaryHandler v String θ)
@@ -2456,11 +2437,12 @@
    (where any_1 (indexMetaTable v_1 "__eq" θ))
    
    (where any_2 (indexMetaTable v_2 "__eq" θ))
-   
-   (side-condition (equal? (term any_1)
-                           (term any_2)))]
+
+   ; compare handlers through Lua's equality
+   (side-condition (equal? (term (δ (== any_1 any_2)))
+                           (term true)))]
   
-  ; The values compared are tables, with the different handlers for the equality
+  ; the values compared are tables, with the different handlers for the equality
   ; comparison
   [(getEqualHandler v_1 v_2 θ)
    nil

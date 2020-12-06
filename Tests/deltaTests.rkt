@@ -289,21 +289,57 @@
               6.0)
   
   ; tostring
-  (test-equal (term (δ (tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1)) ((objr 2) ((\{ \}) nil 1))))))
-              "table: (objr 1)")
-  
   (test-equal (term (δ (tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1))
-                                           ((objr 2) ((\{ (\[ "__tostring" \] = "this ain't a function") \}) nil 1))))))
-              (term ("this ain't a function" ((objr 1)))))
-  
-  (test-equal (term (δ (tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1)) ((objr 2) ((\{ \}) nil 1))))))
+                                           ((objr 2) ((\{ \}) nil 1))))))
               "table: (objr 1)")
+  
+  (test-equal
+   (term
+    (δ (tostring (objr 1)
+                 (((objr 1) ((\{ \}) (objr 2) 1))
+                  ((objr 2) ((\{ (\[ "__tostring" \] = "this ain't a function")
+                                 \}) nil 1))))))
+   (term ("this ain't a function" ((objr 1)))))
+  
+  (test-equal (term (δ (tostring (objr 1)
+                                 (((objr 1) ((\{ \}) nil 1))))))
+              "table: (objr 1)")
+
+  (test-equal
+   (term
+    (δ (tostring (cl 1)
+                 (((cl 1) (function x () \; end))
+                  ((objr 5) ((\{ (\[ "__tostring" \] = "this ain't a function")
+                                 \}) nil 1))))))
+   (term ("this ain't a function" ((cl 1)))))
+
+  (test-equal
+   (term
+    (δ (tostring (cl 1)
+                 (((cl 1) (function x () \; end))))))
+   (term "function: (cl 1)"))
+
+  (test-equal
+   (term
+    (δ (tostring (cl 1)
+                 (((cl 1) (function x () \; end))
+                  ((objr 5) ((\{ \}) nil 1))))))
+   (term "function: (cl 1)"))
   
   (test-equal (term (δ (tostring 1.0 ())))
               "1")
   
   (test-equal (term (δ (tostring 1.1 ())))
               "1.1")
+
+  (test-equal (term (δ (tostring "asd" ())))
+              "asd")
+
+  (test-equal (term (δ (tostring true ())))
+              "true")
+
+  (test-equal (term (δ (tostring nil ())))
+              "nil")
   
   ; type
   (test-equal (term (δ (type (objr 1))))
