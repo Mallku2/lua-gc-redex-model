@@ -491,8 +491,28 @@
   
   (test-equal (term (δ (string.dump 1 ())))     
               (term ($err "bad argument #1 (function expected, got number)")))
-  
-  
+
+  ; string.rep
+  (test-equal (term (δ (string.rep "ab" 1 nil)))     
+              (term "ab"))
+  (test-equal (term (δ (string.rep "ab" 2 nil)))     
+              (term "abab"))
+  (test-equal (term (δ (string.rep "ab" 3 nil)))     
+              (term "ababab"))
+
+  (test-equal (term (δ (string.rep "a" 1 "b")))     
+              (term "a"))
+  (test-equal (term (δ (string.rep "a" 2 "b")))     
+              (term "aba"))
+  (test-equal (term (δ (string.rep "a" 3 "b")))     
+              (term "ababa"))
+
+  (test-equal (term (δ (string.rep 12 1 3)))     
+              (term "12"))
+  (test-equal (term (δ (string.rep 12 2 3)))     
+              (term "12312"))
+  (test-equal (term (δ (string.rep 12 3 3)))     
+              (term "12312312"))
                                     
   ;                           ;      
   ;                           ;      

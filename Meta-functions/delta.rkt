@@ -1812,36 +1812,54 @@
   ;                   ;      
   ;                   ;      
   ;                   ;
-  [(δ (string.rep String 1 any))
-   String]
-
-  [(δ (string.rep Number_1 1 any))
+  [(δ (string.rep v 1 any))
    String
-   
-   (where String ,(number->string (term Number_1)))]
+
+   (side-condition (or (is_string? (term v))
+                       (is_number? (term v))))
+
+   ; plain conversion to string
+   (where String (δ (tostring v ())))]
   
   [(δ (string.rep v Number nil))
    any
+
+   (side-condition (or (is_string? (term v))
+                       (is_number? (term v))))
+
+   ; plain conversion to string (for the case of v ∈ Number)
+   (where String (δ (tostring v ())))
    
    (where any ,(foldr (λ (str accum) (term (δ (.. ,str ,accum))))
-                      (term v)
+                      (term String)
                       (build-list
                        (- ; build-list contract: exact-nonnegative-integer?
                         (inexact->exact (term Number)) 1)
-                       (λ (nmbr) (term v)))))
+                       (λ (nmbr) (term String)))))
    ]
 
   ; {v_2 != nil}
   [(δ (string.rep v_1 Number v_2))
-   (δ (.. any v_1))
+   (δ (.. any String_1))
+
+   (side-condition (or (is_string? (term v_1))
+                       (is_number? (term v_1))))
+
+   (side-condition (or (is_string? (term v_2))
+                       (is_number? (term v_2))))
+
+   ; plain conversion to string (for the case of v_1,v_2 ∈ Number)
+   (where String_1 (δ (tostring v_1 ())))
+   (where String_2 (δ (tostring v_2 ())))
    
-   (where any ,(foldr (λ (str accum) (term (δ (.. (δ (.. v_1 v_2)) ,accum))))
-                      (term (δ (.. v_1 v_2)))
+   (where any ,(foldr (λ (str accum) (term (δ (.. (δ (.. String_1 String_2))
+                                                  ,accum))))
+                      (term (δ (.. String_1 String_2)))
                       (build-list (- (term Number) 2)
-                                  (λ (nmbr) (term v_1)))))
+                                  (λ (nmbr) (term String_1)))))
    ]
 
-  [(δ (string.rep v_1 v_2 ...))
+  [(δ (string.rep v_1 v_2 v_3))
    (δ (error "string.rep: arguments of the wrong type"))]
   ;                                                          
   ;                                                          
