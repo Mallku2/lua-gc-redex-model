@@ -35,7 +35,7 @@
 
         (side-condition (is_false_cond? (term v_3)))
         
-        (where String (errmessage WrongFunCall (δ (type v_1))))]
+        (where String (errmessage WrongFunCall (δ type v_1)))]
 
    [--> (θ : (($statFunCall v_1 (v_2 ...))WrongFunCall))
         (θ : ($statFunCall any (v_1 v_2 ...)))
@@ -59,7 +59,7 @@
 
         (side-condition (is_false_cond? (term v_3)))
         
-        (where String (errmessage WrongFunCall (δ (type v_1))))]
+        (where String (errmessage WrongFunCall (δ type v_1)))]
 
    [--> (θ : ((v_1 \[ v_2 \]) explabel))
         (θ : (v_3 (v_1 v_2)))
@@ -71,7 +71,7 @@
                                    "__index"
                                    θ))
         
-        (side-condition (equal? (term (δ (type v_3))) 
+        (side-condition (equal? (term (δ type v_3))
                                 "function"))
         ]
    
@@ -85,7 +85,7 @@
                                    θ))
         
         (side-condition (not (or (is_nil? (term v_3))
-                                 (eq? (term (δ (type v_3))) 
+                                 (eq? (term (δ type v_3))
                                        "function"))))]
    
    [--> (θ : ((objref \[ v \]) WrongKey))
@@ -108,7 +108,7 @@
                                    θ))
         
         (where String (errmessage NonTable
-                                  (δ (type v_1))))]
+                                  (δ type v_1)))]
 
    [--> (θ : ((v_1 binop v_2)explabel))
         (θ : (v_3 (v_1 v_2)))
@@ -140,8 +140,8 @@
         (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage explabel 
-                                  (δ (type v_1)) 
-                                  (δ (type v_2))))]
+                                  (δ type v_1)
+                                  (δ type v_2)))]
    
    [--> (θ : ((- v_1)NegWrongOp))
         (θ : (v_2 (v_1)))
@@ -165,7 +165,7 @@
 
         (side-condition (is_false_cond? (term v_2)))
         
-        (where String (errmessage NegWrongOp (δ (type v_1))))]
+        (where String (errmessage NegWrongOp (δ type v_1)))]
    
     
    [--> (θ : ((\# v_1)StrLenWrongOp))
@@ -180,7 +180,7 @@
         (side-condition (not (is_nil? (term v_2))))]
    
    [--> (θ : ((\# objref)StrLenWrongOp))
-        (θ : (δ (\# evaluatedtable)))
+        (θ : (δ \# evaluatedtable))
         
         LenWrongOpTable
         ; Determine if we have a handler for the operation
@@ -200,7 +200,7 @@
                                     (unopeventkey \#)
                                     θ))
         
-        (where String_1 (δ (type v)))
+        (where String_1 (δ type v))
         
         (side-condition (not (equal? (term String_1) 
                                      "table")))
@@ -250,8 +250,8 @@
         (side-condition (is_false_cond? (term v_3)))
         
         (where String (errmessage OrdCompWrongOps 
-                                  (δ (type v_1))
-                                  (δ (type v_2))))]
+                                  (δ type v_1)
+                                  (δ type v_2)))]
    
    [--> (θ : ((v_1 <= v_2)OrdCompWrongOps))
         (θ : (not (v_4 (v_2 v_1))))
@@ -292,8 +292,8 @@
         (side-condition (is_false_cond? (term v_4)))
         
         (where String (errmessage OrdCompWrongOps
-                                  (δ (type v_1))
-                                  (δ (type v_2))))]
+                                  (δ type v_1)
+                                  (δ type v_2)))]
 
    
    ;                                                                                  
@@ -320,7 +320,7 @@
         ; Determine if the table efectively has a meta-table
         (where v_4 (indexMetaTable v_1 "__newindex" θ))
 
-        (side-condition (eq? (term (δ (type v_4)))
+        (side-condition (eq? (term (δ type v_4))
                              (term "function")))]
    
    [--> (θ : (((v_1 \[ v_2 \]) = v_3)statlabel))
@@ -331,7 +331,7 @@
         (where v_4 (indexMetaTable v_1 "__newindex" θ))
         ; Determine if in that field we don't have a reference to a function...
         (side-condition (not (or (is_nil? (term v_4))
-                                 (eq? (term (δ (type v_4)))
+                                 (eq? (term (δ type v_4))
                                        (term "function")))))]
 
    ; Add new field
@@ -345,7 +345,7 @@
         (side-condition (is_nil? (term any_1)))
 
         ; Create new field [v_1] = v_2
-        (where (θ_2 objref) (δ (rawset objref v_1 v_2 θ_1)))]
+        (where (θ_2 objref) (δ rawset objref v_1 v_2 θ_1))]
 
    ; Something wrong: key is nil,nan
    [--> (θ_1 : (((objref \[ v_1 \]) = v_2)WrongKey))
@@ -357,10 +357,10 @@
         (where any_1 (indexMetaTable objref "__newindex" θ_1))
         (side-condition (is_nil? (term any_1)))
 
-        (where (θ_2 ($err v)) (δ (rawset objref v_1 v_2 θ_1)))]
+        (where (θ_2 ($err v)) (δ rawset objref v_1 v_2 θ_1))]
    
    [--> (θ : (((v_1 \[ v_2 \]) = v_3)NonTable))
-        (θ : (δ (error String)))
+        (θ : (δ error String))
 
         E-FieldAssignOverNonTableNoHandler
 
@@ -368,7 +368,7 @@
         (where nil (indexMetaTable v_1 "__newindex" θ))
 
         (where String ,(string-append "attempt to index a "
-                                      (term (δ (type v_1)))
+                                      (term (δ type v_1))
                                       " value"))]
 
    ))

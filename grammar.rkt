@@ -150,16 +150,14 @@
                math.tan
                math.tanh
                ; string
+               string.dump
                string.len
                string.rep
                string.reverse
                string.sub
                ; table
-               table.pack
-               ; string
-               string.dump
-               ; table
                table.concat
+               table.pack
                table.unpack]
   
   [statlabel WrongKey ;metamethods
@@ -340,11 +338,12 @@
      (in-hole Elf (E ProtectedMode))
      (in-hole Elf (E ProtectedMode v))
      ]
-  
-  ; List of expressions where a tuple is truncated
+
+  ; tuples
+  ; list of expressions where a tuple is truncated
   [Etel (v ... hole e_1 e_2 ...)]
   
-  ; Immediate evaluation contexts where a tuple is truncated
+  ; immediate evaluation contexts where a tuple is truncated
   [Et (if hole then s else s end)
       (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in s end)
       (evar ... (hole \[ e \]) var ... = e ...)
@@ -367,13 +366,13 @@
       (\{ efield ... (\[ v \] = hole) field ... \})
       (hole \[ e \])
       (v \[ hole \])
-      ; Introduces shift/reduce and reduce/reduce conflicts
+      ; this contexts introduces shift/reduce and reduce/reduce conflicts
       ; (\( hole \))
       ]
   
-  ; List of expressions where a tuple is unwrapped
+  ; list of expressions where a tuple is unwrapped
   [Euel (v ... hole)]
-  ; Immediate evaluation contexts where a tuple is unwrapped
+  ; immediate evaluation contexts where a tuple is unwrapped
   [Eu (local Name_1 Name_2 ... = v ... hole in s end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)

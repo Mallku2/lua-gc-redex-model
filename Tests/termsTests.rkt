@@ -158,7 +158,7 @@
   (test-->> terms-rel
             (term ("" .. "b"))
             (term "b"))
-
+  ; coercion
   (test-->> terms-rel
             (term ("1" .. 2.0))
             (term "12"))
@@ -166,6 +166,14 @@
   (test-->> terms-rel
             (term (1 .. "2.0"))
             (term "12.0"))
+  
+  (test-->> terms-rel
+            (term (1 .. 2))
+            (term "12"))
+
+  (test-->> terms-rel
+            (term ($builtIn string.len (1234)))
+            (term 4))
   ; String length
   (test-->> terms-rel
             (term (\# "a"))
@@ -204,46 +212,46 @@
   ; Coercion
   (test-->> terms-rel
             (term ("0x2.0p0" + 1.0))
-            (term ((2.0 * (2 ^ 0)) + 1.0)))
+            (term 3.0))
   (test-->> terms-rel
             (term ("   0x2.0p0   " + 1.0))
-            (term ((2.0 * (2 ^ 0)) + 1.0)))
+            (term 3.0))
   (test-->> terms-rel
             (term (1 + "0x1.0p0"))
-            (term (1 + (1.0 * (2 ^ 0)))))
+            (term 2.0))
   (test-->> terms-rel
             (term ("0x1.0p0" - 1))
-            (term ((1.0 * (2 ^ 0)) - 1)))
+            (term 0.0))
   (test-->> terms-rel
             (term (1 - "0x1.0p0"))
-            (term (1 - (1.0 * (2 ^ 0)))))
+            (term 0.0))
   (test-->> terms-rel
             (term ("0x1.0p0" * 1))
-            (term ((1.0 * (2 ^ 0)) * 1)))
+            (term 1.0))
   (test-->> terms-rel
             (term (1 * "0x1.0p0"))
-            (term (1 * (1.0 * (2 ^ 0)))))
+            (term 1.0))
   (test-->> terms-rel
             (term ("0x1.0p0" / 1))
-            (term ((1.0 * (2 ^ 0)) / 1)))
+            (term 1.0))
   (test-->> terms-rel
             (term (1.0 / "0x1.0p0"))
-            (term (1.0 / (1.0 * (2 ^ 0)))))
+            (term 1.0))
   (test-->> terms-rel
             (term ("0x1.0p0" ^ 1.0))
-            (term ((1.0 * (2 ^ 0)) ^ 1.0)))
+            (term 1.0))
   (test-->> terms-rel
             (term (1.0 ^ "0x1.0p0"))
-            (term (1.0 ^ (1.0 * (2 ^ 0)))))
+            (term 1.0))
   (test-->> terms-rel
             (term ("0x1.0p0" % 1.0))
-            (term ((1.0 * (2 ^ 0)) % 1.0)))
+            (term 0.0))
   (test-->> terms-rel
             (term (1.0 % "0x1.0p0"))
-            (term (1.0 % (1.0 * (2 ^ 0)))))
+            (term 0.0))
   (test-->> terms-rel
             (term (- "0x1.0p0"))
-            (term (- (1.0 * (2 ^ 0)))))
+            (term -1.0))
   
   
   ; Abnormal expressions

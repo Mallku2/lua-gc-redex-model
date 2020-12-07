@@ -29,10 +29,10 @@
         E-GcfinalizationExp
         
         (where (σ_2 θ_2 (cid (tid)))
-               (δ (collectgarbage
+               (δ collectgarbage
                    σ_1
                    θ_1
-                   (in-hole E e))))
+                   (in-hole E e)))
         ]
 
    [--> (σ_1 : θ_1 : (in-hole E s))
@@ -42,10 +42,10 @@
         E-GcfinalizationStat
         
         (where (σ_2 θ_2 (cid (tid)))
-               (δ (collectgarbage
-                   σ_1
-                   θ_1
-                   (in-hole E s))))
+               (δ collectgarbage
+                  σ_1
+                  θ_1
+                  (in-hole E s)))
         ]
 
    [--> (σ_1 : θ_1 : s)
@@ -54,7 +54,7 @@
         E-Gc
         
         (where (σ_2 θ_2 nil)
-               (δ (collectgarbage σ_1 θ_1 s)))
+               (δ collectgarbage σ_1 θ_1 s))
 
         (side-condition (or (not (equal? (term σ_1) (term σ_2)))
                             (not (equal? (term θ_1) (term θ_2)))))

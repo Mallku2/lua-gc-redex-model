@@ -81,10 +81,10 @@
         (σ_2 : θ_2 : (in-hole E t))
 
         (where (σ_2 θ_2 t)
-               (δ (collectgarbage
+               (δ collectgarbage
                    σ_1
                    θ_1
-                   (in-hole E ($builtIn collectgarbage (v ...))))))
+                   (in-hole E ($builtIn collectgarbage (v ...)))))
 
         E-builtInCollectgarbage]
    ))

@@ -239,7 +239,7 @@
    (well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)
    
-   (side-condition ,(is_nil? (term (δ (rawget objref v_1 θ)))))
+   (side-condition ,(is_nil? (term (δ rawget objref v_1 θ))))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (((objref \[ v_1 \]) = v_2) WrongKey))]
 
@@ -445,6 +445,7 @@
   ;                                                                  
 
   [(well_formed_term any σ θ e)
+   ; e should be a function call or any intermediate state of a function call
    (side-condition ,(or (redex-match? ext-lang
                                       (s (renv ...) RetExp)
                                       (term e))
@@ -455,6 +456,10 @@
 
                         (redex-match? ext-lang
                                       (v_1 (v_2 ...))
+                                      (term e))
+
+                        (redex-match? ext-lang
+                                      ($err v)
                                       (term e))
 
                         (redex-match? ext-lang
@@ -478,6 +483,10 @@
                                       (term e))
 
                         (redex-match? ext-lang
+                                      ($err v)
+                                      (term e))
+
+                        (redex-match? ext-lang
                                       ((v_1 (v_2 ...)) WrongFunCall)
                                       (term e))))
    ------------------------------------------------------------
@@ -491,7 +500,7 @@
 
   [(well_formed_term any σ θ objref) ; checks for (refBelongsToTheta? objref θ)
    (well_formed_term any σ θ v)
-   (side-condition ,(is_nil? (term (δ (rawget objref v θ)))))
+   (side-condition ,(is_nil? (term (δ rawget objref v θ))))
    ------------------------------------------------------
    (well_formed_term any σ θ ((objref \[ v \])WrongKey))]
 
@@ -500,8 +509,8 @@
    (side-condition
     ,(or (not (is_number? (term v_1)))
          (not (is_number? (term v_2)))
-         (not (is_number? (term (δ (tonumber v_1 nil)))))
-         (not (is_number? (term (δ (tonumber v_2 nil)))))))
+         (not (is_number? (term (δ tonumber v_1 nil))))
+         (not (is_number? (term (δ tonumber v_2 nil))))))
    ----------------------------------------------------------------------------
    (well_formed_term any σ θ ((v_1 arithop v_2) ArithWrongOps))]
 
@@ -517,8 +526,8 @@
 
   [(well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)
-   (side-condition ,(not (and (equal? (term (δ (type v_1)))
-                                      (term (δ (type v_2))))
+   (side-condition ,(not (and (equal? (term (δ type v_1))
+                                      (term (δ type v_2)))
                               (or (is_string? (term v_1))
                                   (is_number? (term v_1))))))
    ---------------------------------------------------------------
@@ -530,12 +539,12 @@
    (well_formed_term any σ θ ((\# v)StrLenWrongOp))]
 
   [(side-condition ,(and (not (is_number? (term v)))
-                         (not (is_number? (term (δ (tonumber v nil)))))))
+                         (not (is_number? (term (δ tonumber v nil))))))
    (well_formed_term any σ θ v)
    ------------------------------------------------------------------------
    (well_formed_term any σ θ ((- v)NegWrongOp))]
 
-  [(side-condition ,(equal? (term (δ (== v_1 v_2)))
+  [(side-condition ,(equal? (term (δ == v_1 v_2))
                             (term false)))
    (well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)

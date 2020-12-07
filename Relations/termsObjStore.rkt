@@ -45,7 +45,7 @@
 
         E-IndexTable
 
-        (where v_2 (δ (rawget objref v_1 θ)))
+        (where v_2 (δ rawget objref v_1 θ))
 
         (side-condition (not (equal? (term v_2)
                                      (term nil))))]
@@ -56,7 +56,7 @@
         
         E-AlertKeyNotFound
         
-        (where nil (δ (rawget objref v θ)))]
+        (where nil (δ rawget objref v θ))]
    
    [--> (θ : (v_1 \[ v_2 \]))
         (θ : ((v_1 \[ v_2 \])NonTable))
@@ -64,12 +64,12 @@
         E-AlertNonTableIndexed
         
         ; v_1 is not a reference to a table
-        (side-condition (not (eq? (term (δ (type v_1)))
+        (side-condition (not (eq? (term (δ type v_1))
                                   (term "table"))))]
 
    ; built-in services
    [--> (θ : ($builtIn builtinserv (v ...)))
-        (θ : (δ (builtinserv v ... θ)))
+        (θ : (δ builtinserv v ... θ))
 
         (side-condition (member (term builtinserv)
                                 (term (; basic functions
@@ -99,7 +99,7 @@
                                        setmetatable
                                        rawset))))
         
-        (where (θ_2 any) (δ (builtinserv v ... θ_1)))
+        (where (θ_2 any) (δ builtinserv v ... θ_1))
 
         E-BuiltInThetaWrite]
 
@@ -155,13 +155,13 @@
         
         ; This way of determining if v_1 is a key of objref, is mentioned in
         ; Lua's reference manual.
-        (where v_3 (δ (rawget objref v_1 θ_1)))
+        (where v_3 (δ rawget objref v_1 θ_1))
         
         ; The key belongs to the table
         (side-condition (not (equal? (term v_3)
                                      (term nil))))
         
-        (where (θ_2 objref) (δ (rawset objref v_1 v_2 θ_1)))]
+        (where (θ_2 objref) (δ rawset objref v_1 v_2 θ_1))]
    
    [--> (θ : ((objref \[ v_1 \]) = v_2))
         (θ : (((objref \[ v_1 \]) = v_2)WrongKey))
@@ -169,14 +169,14 @@
         E-AlertFieldAssignWrongKey
 
         ; The table doesn't have v_1 as key
-        (where nil (δ (rawget objref v_1 θ)))]
+        (where nil (δ rawget objref v_1 θ))]
    
    [--> (θ : ((v_1 \[ v_2 \]) = v_3))
         (θ : (((v_1 \[ v_2 \]) = v_3)NonTable))
         
         E-AlertFieldAssignOverNonTable
         ; Determine if simplevalue is not an reference pointing to a table
-        (side-condition (not (eq? (term (δ (type v_1)))
+        (side-condition (not (eq? (term (δ type v_1))
                                   (term "table"))))]
    ))
 
