@@ -66,7 +66,7 @@
                                    UNM ; arith. negation
                                    ))
 
-(define-tokens non-empty-tokens (STRING NUMBER HEX-NMBR-BINPOT NAME))
+(define-tokens non-empty-tokens (STRING NUMBER NAME))
 
 (define-lex-abbrevs
   ; TODO: fix re for strings
@@ -152,16 +152,17 @@
     (token-NUMBER (string->number (string-replace lexeme
                                                   (regexp "0x|0X") "#x"))))
    
-   ;TODO: hex. with binary exp.
+   ; hex. with binary exp.
    (hex-number-bin-exp-lit
-    (token-HEX-NMBR-BINPOT
-     ; Extract hexadecimal number and binary exponent
+    (token-NUMBER
      ((lambda ()
         (define hex-split (string-split lexeme (regexp "p|P")))
                                
-        (list (string->number (string-replace (list-ref hex-split 0)
-                                              (regexp "0x|0X") "#x"))
-              (string->number (list-ref hex-split 1)))))))
+        (exact->inexact
+         (* (string->number (string-replace (list-ref hex-split 0)
+                                            (regexp "0x|0X") "#x"))
+            (expt 2 (string->number (list-ref hex-split 1))))))))
+    )
    
    (double-quoted-string-lit (token-STRING
                               ; Remove unprintable characters

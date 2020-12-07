@@ -513,6 +513,13 @@
               (term "12312"))
   (test-equal (term (δ (string.rep 12 3 3)))     
               (term "12312312"))
+
+   ; string.len
+  (test-equal (term (δ (string.len "a")))     
+              1)
+
+  (test-equal (term (δ (string.len "ab")))     
+              2)
                                     
   ;                           ;      
   ;                           ;      

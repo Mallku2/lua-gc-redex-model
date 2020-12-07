@@ -18,8 +18,25 @@
 ; (◇ op_1 op_2) is defined as the PLT Racket code (◇ (term op_1) (term op_2))
 ; when ◇ is also an operator of PLT Racket.
 (define-metafunction ext-lang
-  ; Arithmetic operations
-  ; From https://www.lua.org/manual/5.2/manual.html#2.1:
+  ; arithmetic operations
+  ; coercion
+  [(δ (binop v_1 v_2))
+   (δ (binop v_3 v_4))
+   
+   (side-condition (and
+                    ; the following condition triggers coercion
+                    (not (and (is_number? (term v_1))
+                              (is_number? (term v_2))))
+                    
+                    (term (isArithBinOp binop))))
+   
+   (where v_3 (δ (tonumber v_1 nil)))
+   (where v_4 (δ (tonumber v_2 nil)))
+   
+   (side-condition (not (or (is_nil? (term v_3))
+                            (is_nil? (term v_4)))))]
+  
+  ; from https://www.lua.org/manual/5.2/manual.html#2.1:
   ; "Number represents real (double-precision floating-point) numbers";
   ; we reuse racket's implementation of double-precision IEEE floating-point
   ; numbers, flonums 
@@ -1130,12 +1147,13 @@
 
   ; decimal number, no base specified
   [(δ (tonumber String nil))
-   e
+   Number
+   
    ; though the manual does not specify this, in this case tonumber
    ; converts String following the rules of the lexer, as said by the semantics;
    ; however, lexer alone will not suffice: for example, in case of malformed
    ; strings beginning with a correct string representation of numbers.
-   (where (any = e) ,(with-handlers ([exn:fail?
+   (where (any = Number) ,(with-handlers ([exn:fail?
                                       (λ (e) #f)])
                        ((λ ()
                           ; to use the parser, we need to feed it with an
@@ -1146,21 +1164,21 @@
                                       #f
                                       (void))))))
 
-   
-   (side-condition (or
-                    ; positive or negative decimal number
-                    (is_number? (term e))
-
-                    ; hexadecimal number with binary exponent (the lexer does
-                    ; not compute the result)
-                    (redex-match? ext-lang
-                                  (Number_1 * (Number_2 ^ Number_3))
-                                  (term e))
-
-                    (redex-match? ext-lang
-                                  (- (Number_1 * (Number_2 ^ Number_3)))
-                                  (term e))
-                    ))
+;   
+;   (side-condition (or
+;                    ; positive or negative decimal number
+;                    (is_number? (term e))
+;
+;                    ; hexadecimal number with binary exponent (the lexer does
+;                    ; not compute the result)
+;                    (redex-match? ext-lang
+;                                  (Number_1 * (Number_2 ^ Number_3))
+;                                  (term e))
+;
+;                    (redex-match? ext-lang
+;                                  (- (Number_1 * (Number_2 ^ Number_3)))
+;                                  (term e))
+;                    ))
    ]
 
   ; {v ∉ Number ∪ String}

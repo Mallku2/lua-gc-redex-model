@@ -480,7 +480,7 @@
                 (term (($ENV  |[| "h" |]|) = 1.1)))
 
   (check-equal? (parse-this "h = 0XffP+1" #f (void))
-                (term (($ENV  |[| "h" |]|) = (255 * (2 ^ 1)))))
+                (term (($ENV  |[| "h" |]|) = 510.0)))
   
   (check-equal? (parse-this "h = nil" #f (void))
                 (term (($ENV  |[| "h" |]|) = nil)))

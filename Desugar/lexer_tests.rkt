@@ -56,10 +56,10 @@
                 (token-NUMBER 0.1171875))
 
   (check-equal? (lua-lexer (open-input-string "0xA23p-4"))
-                (token-HEX-NMBR-BINPOT '(2595 -4)))
+                (token-NUMBER 162.1875))
   
   (check-equal? (lua-lexer (open-input-string "0X1.921FB54442D18P+1"))
-                (token-HEX-NMBR-BINPOT '(1.5707963267948966 1)))
+                (token-NUMBER 3.141592653589793))
 
   (check-equal? (lua-lexer (open-input-string "\"string\""))
                 (token-STRING "string"))
