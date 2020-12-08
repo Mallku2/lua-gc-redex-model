@@ -190,8 +190,8 @@
    ; add dummy vals
    (where σ_2 (vsp ... (r 1) ...))
 
-   ; enforce well-formedness of dom(θ_1)
-   (where (osp ...) (fix_theta_dom θ_1))
+   ; enforce well-formedness of dom(θ_1) and img
+   (where (osp ...) (fix_theta_dom_img θ_1))
    ; close free tids and cids
    (where (tid ...) ,(remove-duplicates (term (free_tids (osp ...) t_2))))
    (where (cid ...) ,(remove-duplicates (term (free_clids (osp ...) t_2))))
@@ -247,31 +247,63 @@
   )
 
 ; redex-check tends to generate stores with repeated references
-; (typically (objr 0)); fix_theta_dom implements a simple fix to that
+; (typically (objr 0)); fix_theta_dom implements a simple fix to that;
+; it also enforces well-formedness of the img
 (define-metafunction ext-lang
-  fix_theta_dom : θ -> θ
+  fix_theta_dom_img : θ -> θ
 
-  [(fix_theta_dom ())
+  [(fix_theta_dom_img ())
    ()]
 
-  [(fix_theta_dom (((any natural) object) osp ...))
-   (fix_theta_dom_aux (((any natural) object) osp ...) natural)]
+  [(fix_theta_dom_img (((any natural) object) osp ...))
+   (fix_theta_dom_img_aux (((any natural) object) osp ...) natural
+                      (((any natural) object) osp ...))]
    
   )
 
-(provide fix_theta_dom)
+(provide fix_theta_dom_img)
 
 ; enforces a well-formed dom(θ) by replacing each reference with a
-; reference that is unique
+; reference that is unique; it also enforces well-formedness of the img
 (define-metafunction ext-lang
-  fix_theta_dom_aux : θ natural -> θ
+  fix_theta_dom_img_aux : θ natural θ -> θ
 
-  [(fix_theta_dom_aux () natural)
+  [(fix_theta_dom_img_aux () natural θ)
    ()]
 
-  [(fix_theta_dom_aux (((any natural_1) object) osp_1 ...) natural_2)
-   (((any natural_2) object) osp_2 ...)
+  [(fix_theta_dom_img_aux (((objref natural_1) (tableconstructor_1 any_1 pos))
+                       osp_1 ...) natural_2 θ)
+   (((objref natural_2)
+     ; in order to bound free ids in tableconstructor_1, close_term_meta
+     ; returned a functiondef; we put it into a new table
+     ((\{ (\[ 1 \] = functiondef) \}) any_1 pos)) osp_2 ...)
 
    (where natural_3 ,(+ 1 (term natural_2)))
-   (where (osp_2 ...) (fix_theta_dom_aux (osp_1 ...) natural_3))]
+   (where (osp_2 ...) (fix_theta_dom_img_aux (osp_1 ...) natural_3))
+
+   ; table constructor must be well formed; note that, if any_1 is a ref
+   ; not in dom(θ), later steps will add it to θ
+   (where functiondef (close_term_meta tableconstructor_1))]
+
+  [(fix_theta_dom_img_aux (((objref natural_1) (tableconstructor any pos))
+                       osp_1 ...) natural_2 θ)
+   (((objref natural_2)
+     (tableconstructor any pos)) osp_2 ...)
+
+   (where natural_3 ,(+ 1 (term natural_2)))
+   (where (osp_2 ...) (fix_theta_dom_img_aux (osp_1 ...) natural_3))
+
+   ; table constructor must be well formed; note that, if any_1 is a ref
+   ; not in dom(θ), later steps will add it to θ
+   (where tableconstructor (close_term_meta tableconstructor))]
+
+  [(fix_theta_dom_img_aux (((cl natural_1) functiondef_1)
+                       osp_1 ...) natural_2 θ)
+   (((cl natural_2) functiondef_2) osp_2 ...)
+
+   (where natural_3 ,(+ 1 (term natural_2)))
+   (where (osp_2 ...) (fix_theta_dom_img_aux (osp_1 ...) natural_3))
+
+   ; functiondef_1 must be well formed
+   (where functiondef_2 (close_term_meta functiondef_1))]
   )

@@ -582,42 +582,42 @@
   )
 
 (define-metafunction ext-lang
-  well-formed-sigma : σ σ θ -> any
+  well_formed_sigma : σ σ θ -> any
   
-  [(well-formed-sigma () σ θ)
+  [(well_formed_sigma () σ θ)
    #t]
 
-  [(well-formed-sigma ((r v)) σ θ)
+  [(well_formed_sigma ((r v)) σ θ)
    #t
 
    (side-condition (term (well-formed-vsp (r v) σ θ)))]
 
-  [(well-formed-sigma ((refStdout String)) σ θ)
+  [(well_formed_sigma ((refStdout String)) σ θ)
    #t]
 
   ; stdout file
-  [(well-formed-sigma ((refStdout String) (r_1 v_2) (r_2 v_3) ...) σ θ)
-   (well-formed-sigma ((r_1 v_2) (r_2 v_3) ...) σ θ)
+  [(well_formed_sigma ((refStdout String) (r_1 v_2) (r_2 v_3) ...) σ θ)
+   (well_formed_sigma ((r_1 v_2) (r_2 v_3) ...) σ θ)
    ]
   
   ; Stores are functions: for their syntactic representation, we ask for their
   ; domains to contain as refs natural numbers in strictly increasing order
-  [(well-formed-sigma (((ref natural_1) v_1)
+  [(well_formed_sigma (((ref natural_1) v_1)
                        ((ref natural_2) v_2) (r v_3) ...) σ θ)
-   (well-formed-sigma (((ref natural_2) v_2) (r v_3) ...) σ θ)
+   (well_formed_sigma (((ref natural_2) v_2) (r v_3) ...) σ θ)
 
    (side-condition (< (term natural_1)
                       (term natural_2)))
 
    (side-condition (term (well-formed-vsp ((ref natural_1) v_1) σ θ)))]
 
-  [(well-formed-sigma any ...)
+  [(well_formed_sigma any ...)
    #f])
 
 (define-metafunction ext-lang
-  well-formed-osp : osp σ θ -> any
+  well_formed_osp : osp σ θ -> any
 
-  [(well-formed-osp (tid_1 (tableconstructor tid_2 pos)) σ θ)
+  [(well_formed_osp (tid_1 (tableconstructor tid_2 pos)) σ θ)
    #t
    
    ; meta-table tid_2 must not be removed before tid_1
@@ -628,7 +628,7 @@
                                                      tableconstructor)))
    ]
 
-  [(well-formed-osp (tid_1 (tableconstructor nil pos)) σ θ)
+  [(well_formed_osp (tid_1 (tableconstructor nil pos)) σ θ)
    #t
    
    ; table constructor must be well formed
@@ -636,7 +636,7 @@
                                                      tableconstructor)))
    ]
 
-  [(well-formed-osp (cid functiondef) σ θ)
+  [(well_formed_osp (cid functiondef) σ θ)
    #t
    
    ; functiondef must be well formed
@@ -645,40 +645,40 @@
    ]
 
   ; default
-  [(well-formed-osp any ...)
+  [(well_formed_osp any ...)
    #f]
   )
 
 (define-metafunction ext-lang
-  well-formed-theta : θ σ θ -> any
+  well_formed_theta : θ σ θ -> any
   
-  [(well-formed-theta () σ θ)
+  [(well_formed_theta () σ θ)
    #t]
 
-  [(well-formed-theta (osp) σ θ)
+  [(well_formed_theta (osp) σ θ)
    #t
 
-   (side-condition (term (well-formed-osp osp σ θ)))]
+   (side-condition (term (well_formed_osp osp σ θ)))]
 
   ; simple check to enforce θ as functions
-  [(well-formed-theta (((any_1 natural_1) any_2)
+  [(well_formed_theta (((any_1 natural_1) any_2)
                        ((any_3 natural_2) any_4) osp ...) σ θ)
-   (well-formed-theta (((any_3 natural_2) any_4) osp ...) σ θ)
+   (well_formed_theta (((any_3 natural_2) any_4) osp ...) σ θ)
 
    (side-condition (< (term natural_1)
                       (term natural_2)))
 
-   (side-condition (term (well-formed-osp ((any_1 natural_1) any_2) σ θ)))]
+   (side-condition (term (well_formed_osp ((any_1 natural_1) any_2) σ θ)))]
 
-  [(well-formed-theta any ...)
+  [(well_formed_theta any ...)
    #f])
 
 (define-metafunction ext-lang
   [(well_formed_conf (σ : θ : t))
    ,(and
-     (term (well-formed-sigma σ σ θ))
+     (term (well_formed_sigma σ σ θ))
 
-     (term (well-formed-theta θ σ θ))
+     (term (well_formed_theta θ σ θ))
      
      (judgment-holds
       (well_formed_term hole σ θ t)))])
@@ -702,9 +702,9 @@
 ;                                                                  
 ; PRE : {t is well-formed, with respect to some stores}
 (define-metafunction ext-lang
-  is-final-stat : s -> any
+  is_final_stat : s -> any
   
-  [(is-final-stat (in-hole E (return v ...)))
+  [(is_final_stat (in-hole E (return v ...)))
    #t
 
    ; (return v ...) occurs outside of a funcall
@@ -724,29 +724,29 @@
                                          (term E)))))
    ]
 
-  [(is-final-stat ($err v))
+  [(is_final_stat ($err v))
    #t]
 
-  [(is-final-stat \;)
+  [(is_final_stat \;)
    #t]
 
   ; default
-  [(is-final-stat s)
+  [(is_final_stat s)
    #f]
   )
 
 (define-metafunction ext-lang
-  is-final-conf : (σ : θ : t) -> any
+  is_final_conf : (σ : θ : t) -> any
 
   ; The concept depends only on the stat
-  [(is-final-conf (σ : θ : s))
-   (is-final-stat s)]
+  [(is_final_conf (σ : θ : s))
+   (is_final_stat s)]
 
-  [(is-final-conf (σ : θ : v))
+  [(is_final_conf (σ : θ : v))
    #t]
   )
 
-(provide is-final-conf)
+(provide is_final_conf)
 
 (define (check_conf debug conf result)
   (if debug
@@ -757,7 +757,7 @@
         (or
          ; it was a final configuration 
          (and (= (length result) 0)
-              (term (is-final-conf ,conf)))
+              (term (is_final_conf ,conf)))
          ; not a final configuration 
          (and (= (length result) 1)
               (term (well_formed_conf ,(first result)))))))
@@ -772,7 +772,7 @@
         (or
          ; it was a final configuration 
          (and (= (length result) 0)
-              (term (is-final-conf (() : () : ,t))))
+              (term (is_final_conf (() : () : ,t))))
          ; not a final configuration 
          (and (= (length result) 1)
               (term (well_formed_conf ,(first result)))))))
