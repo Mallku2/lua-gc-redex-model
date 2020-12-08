@@ -287,6 +287,13 @@
 
   (test-equal (term (δ tonumber " 6 " nil))
               6.0)
+
+  ; coercion
+  (test-equal (term (δ tonumber 6 nil))
+              6.0)
+
+  (test-equal (term (δ tonumber 10 2))
+              2)
   
   ; tostring
   (test-equal (term (δ tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1))

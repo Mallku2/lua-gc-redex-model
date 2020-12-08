@@ -60,60 +60,67 @@
         v
         E-ParenthesisOnValue]
    
-   ; Primitive Operations
-   ; Binary operations
+   ; primitive Operations
+   ; binary operations
    [--> (v_1 binop v_2)
-        (δ (binop v_1 v_2))
+        v_3
+        
         E-BinOpNumber
-        
-        (side-condition (and (is_number? (term v_1))
-                             (is_number? (term v_2))
-                             (or (term (isArithBinOp binop))
-                                 (term (isRelationalOperator binop)))))]
 
-   [--> (v_1 binop v_2)
-        (δ (binop v_1 v_2))
-        E-BinOpString
-        
-        (side-condition (and (is_string? (term v_1))
-                             (is_string? (term v_2))
-                             (or (term (isRelationalOperator binop))
-                                 (is_strconcat? (term binop)))))]
+        ; arith. or .. op, over numeric or string operands
+        (side-condition (or (term (isArithBinOp binop))
+                            (is_strconcat? (term binop))))
+
+        ; apply binop, check if the operation was successful
+        (where v_3 (δ binop v_1 v_2))
+
+        ; we are assuming the soundness of δ: successful arithops only return
+        ; numbers, successful concat only returns strings
+        (side-condition (or (is_string? (term v_3))
+                            (is_number? (term v_3))))]
    
-   ; Logical conectives
+   ; logical conectives
    [--> (v binop e)
-        (δ (binop v e))
+        (δ binop v e)
         E-LogicOp
         
         (side-condition (term (isBooleanBinOp binop)))]
    
-   ; Unary operations
-   [--> (unop v)
-        (δ (unop v))
-        E-UnOp
+   ; unary operations
+   [--> (- v)
+        Number
         
-        (side-condition (or (and (is_string? (term v))
+        E-NumNeg
+
+        ; check if the operation was successful
+        (where Number (δ - v))]
+   
+   [--> (unop v)
+        (δ unop v)
+        E-UnOp
+
+        
+        (side-condition (or (and ; there is no coercion to numbers, in this case
+                                 (is_string? (term v))
                                  (equal? (term unop) (term \#)))
-                            
-                            (and (is_number? (term v))
-                                 (equal? (term unop) (term -)))
                             
                             (equal? (term unop) (term not))))]
    
-   ; Equality comparison
+   ; equality comparison
    [--> (v_1 == v_2)
         true
         E-EqualitySuccess
-        (side-condition (is_true? (term (δ (== v_1 v_2)))))]
+        (side-condition (is_true? (term (δ == v_1 v_2))))]
 
    [--> (v_1 == v_2)
         false
         E-EqualityFailNtables
-        (side-condition (is_false? (term (δ (== v_1 v_2)))))
+        (side-condition (is_false? (term (δ == v_1 v_2))))
         (side-condition (or (not (is_tid? (term v_1)))
                             (not (is_tid? (term v_2)))))]
-   
-   ; Translation of expressions involving > and >=
+
+   ; rel ops
+   ; translation of expressions involving > and >=
    [--> (v_1 binop v_2)
         (v_2 any v_1)
         E-TranslateComparison
@@ -122,100 +129,57 @@
                             (equal? (term binop) (term >=))))
         (where any (translateComparisonOp binop))]
    
-   ; Coercion
    [--> (v_1 binop v_2)
-        (e_1 binop e_2)
-        E-ArithBinOpCoercion
-        
-        (side-condition (and
-                         ; the following condition triggers coercion
-                         (or (not (is_number? (term v_1)))
-                             (not (is_number? (term v_2))))
-                         
-                         (term (isArithBinOp binop))))
-        
-        (where e_1 (δ (tonumber v_1 nil)))
-        (where e_2 (δ (tonumber v_2 nil)))
+        (δ binop v_1 v_2)
+        E-RelOp
 
-        (side-condition (not (or (is_nil? (term e_1))
-                                 (is_nil? (term e_2)))))]
-   
-   [--> (- v)
-        (- e)
+        ; relational op (< or <=) over numeric or string operands
+        (side-condition (and (term (isRelationalOperator binop))
 
-        (side-condition (not (is_number? (term v))))
+                             (equal? (term (δ type v_1))
+                                     (term (δ type v_2)))
 
-        E-NegationCoercion
-        
-        (where e (δ (tonumber v nil)))
+                             (or (is_string? (term v_1))
+                                 (is_number? (term v_1)))))]
 
-        (side-condition (not (is_nil? (term e))))]
-
-   [--> (v_1 .. v_2)
-        (any_1 .. any_2)
-        E-StringConcatCoercion
-        
-        (side-condition (and
-                         ; the following condition triggers coercion
-                         (or (not (is_string? (term v_1)))
-                             (not (is_string? (term v_2))))
-
-                         (or (is_string? (term v_1))
-                             (is_number? (term v_1)))
-                         
-                         (or (is_string? (term v_2))
-                             (is_number? (term v_2)))))
-        ; No need to look into the store for
-        ; information about the given values, for
-        ; coercion purposes
-        (where any_1 (δ (tostring v_1 ())))
-        (where any_2 (δ (tostring v_2 ())))]
-   
-   ; Abnormal situations with primitive operators
+   ; abnormal situations with primitive operators
    [--> (v_1 binop v_2)
         ((v_1 binop v_2)ArithWrongOps)
         E-ArithBinOpWrongOps
-        
-        (side-condition (and (or (not (is_number? (term v_1)))
-                                 (not (is_number? (term v_2))))
-                         (term (isArithBinOp binop))))
-        
-        (where any_1 (δ (tonumber v_1 nil)))
-        (where any_2 (δ (tonumber v_2 nil)))
 
-        ; e cover the case of hexadecimal numbers, with binary exponents, wich
-        ; are translated into the expression nmbr * 2 ^ exp
-        (side-condition (or (not (is_e? (term any_1))) 
-                            (is_nil? (term any_1))
-                            
-                            (not (is_e? (term any_2)))
-                            (is_nil? (term any_2))))
+        ; arith op over non-numeric or non-string operands
+        (side-condition (term (isArithBinOp binop)))
+
+        ; the operation was not successful
+        (where any (δ binop v_1 v_2))
+
+        (side-condition (not (is_number? (term any))))
+
         ]
    
    [--> (- v)
         ((- v)NegWrongOp)
         E-AlertNegationWrongOperand
-        
-        (side-condition (not (is_number? (term v))))
-        (where any (δ (tonumber v nil)))
-        
-        (side-condition (or (not (is_e? (term any)))
-                            (is_nil? (term any))))]
+
+        ; the operation was not successful
+        (where any (δ - v))
+
+        (side-condition (not (is_number? (term any))))]
    
    [--> (v_1 .. v_2)
         ((v_1 .. v_2)StrConcatWrongOps)
         E-AlertStringConcatWrongOperands
-        
-        (side-condition (or (not (or (is_string? (term v_1))
-                                     (is_number? (term v_1))))
-                            
-                            (not (or (is_string? (term v_2))
-                                     (is_number? (term v_2))))))]
+
+        ; concat only fails when applied to operands of unexpected type
+        (where any (δ .. v_1 v_2))
+
+        (side-condition (not (is_string? (term any))))]
    
    [--> (\# v)
         ((\# v)StrLenWrongOp)
         E-AlertStringLengthWrongOperand
-        
+
+        ; no coercion here
         (side-condition (not (is_string? (term v))))]
    
    [--> (v_1 == v_2)
@@ -223,7 +187,7 @@
         
         E-AlertEqualityFail
         
-        (side-condition (is_false? (term (δ (== v_1 v_2)))))
+        (side-condition (is_false? (term (δ == v_1 v_2))))
         (side-condition (and (is_tid? (term v_1))
                              (is_tid? (term v_2))))]
    
@@ -233,8 +197,8 @@
         
         (side-condition (and (term (isRelationalOperator binop))
                              
-                             (not (and (equal? (term (δ (type v_1)))
-                                               (term (δ (type v_2))))
+                             (not (and (equal? (term (δ type v_1))
+                                               (term (δ type v_2)))
                                        
                                        (or (is_string? (term v_1))
                                            (is_number? (term v_1)))))))
@@ -242,8 +206,8 @@
 
 
    ; built-in services
-     [--> ($builtIn builtinserv (v ...))
-          (δ (builtinserv v ...))
+   [--> ($builtIn builtinserv (v ...))
+        (δ builtinserv v ...)
 
         (side-condition (member (term builtinserv)
                                 (term (; basic functions
@@ -286,6 +250,7 @@
                                        table.pack
                                        ))))
         E-BuiltInTerm]
+  
    ;                                                                                  
    ;                                                                                  
    ;                                                                                  

@@ -94,18 +94,33 @@
   [(δ <= Number_1 Number_2)
    (toBool ,(<= (term Number_1) (term Number_2)))]
   
-  ; String comparison)
+  ; string comparison
   [(δ < String_1 String_2)
    (toBool ,(string<? (term String_1) (term String_2)))]
   
   [(δ <= String_1 String_2)
    (toBool ,(string<=? (term String_1) (term String_2)))]
   
-  ; String concatenation
+  ; string concatenation
+  ; coercion
+  [(δ .. Number v)
+   (δ .. String v)
+
+   ; perform coercion only if the second parameter is also a string or a number
+   (side-condition (or (is_string? (term v))
+                       (is_number? (term v))))
+   
+   (where String (δ tostring Number ()))]
+
+  [(δ .. String_1 Number)
+   (δ .. String_1 String_2)
+   
+   (where String_2 (δ tostring Number ()))]
+  
   [(δ .. String_1 String_2)
    ,(string-append (term String_1) (term String_2))]
   
-  ; String length
+  ; string length
   ; Racket's bytes-string, to simulate what Lua's # operator does.
   [(δ \# String)
    ,(bytes-length (string->bytes/utf-8 (term String)))]
@@ -181,8 +196,19 @@
   
   [(δ not v) 
    false]
+
+   ; default case of binop and unop
+  [(δ any v ...)
+   (δ error String)
+
+   (side-condition (or (redex-match ext-lang unop (term any))
+                       (redex-match ext-lang binop (term any))))
+                               
+   
+   (where String ,(string-append (symbol->string (term any))
+                              ": erroneous parameters"))]
   
-  ; Built-in services
+  ; built-in services
   
   
   ;                                                                                                                          
@@ -1144,8 +1170,13 @@
   ;                                                                  
   ;                                                                  
   ;
-  [(δ tonumber Number_1 nil)
-   Number_1]
+  [(δ tonumber Number v)
+   (δ tonumber String v)
+
+   ; since Number could be in a non-decimal base v, it is easier to coerce it
+   ; to string, and apply the same algorithm of conversion over it
+   (where String (δ tostring Number ()))
+   ]
 
   ; decimal number, no base specified
   [(δ tonumber String nil)
@@ -1166,7 +1197,7 @@
                                       #f
                                       (void))))))]
 
-  ; {v ∉ Number ∪ String}
+  ; {v ∉ String ∨ v cannot be coerced to a number}
   [(δ tonumber v nil)
    nil]
 
@@ -1182,11 +1213,11 @@
   [(δ tonumber String Number)
    (convert_string String Number)]
 
-  ; it is also possible convert a number to another base
-  [(δ tonumber Number_1 Number_2)
-   (convert_number Number_1 Number_2)]
+;  ; it is also possible convert a number to another base
+;  [(δ tonumber Number_1 Number_2)
+;   (convert_number Number_1 Number_2)]
 
-  ; {v_2 ≠ nil ∧ v_1 ∉ Number ∪ String}
+  ; {v_2 ≠ nil ∧ (v_1 ∉ String ∨ v_1 cannot be coerced to a number)}
   [(δ tonumber v_1 v_2)
    (δ error String)
 
@@ -1596,14 +1627,12 @@
   ;                                  
   ;                                  
   ;                                  
-  [(δ math.fmod v_1 ... String v_2 ...)
-   (δ math.fmod Number ...)
+  [(δ math.fmod Number_1 ... String v ...)
+   (δ math.fmod Number_1 ... Number_2 v ...)
    
-   (where (Number ...) ((δ tonumber v_1 nil) ...
-                        (δ tonumber String nil)
-                        (δ tonumber v_2 nil) ...))]
+   (where Number_2 (δ tonumber String nil))]
   
-  [(δ math.fmod Number_1 Number_2 )
+  [(δ math.fmod Number_1 Number_2)
    ,(exact-floor (remainder (term Number_1) (term Number_2)))]
   
   ;                          
@@ -1621,18 +1650,15 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;
-  [(δ math.log v_1 v_2)
-   (δ math.log v_3 v_4)
-
-   (side-condition (or (is_string? (term v_1))
-                       (is_string? (term v_2))))
+  [(δ math.log Number_1 ... String v ...)
+   (δ math.log Number_1 ... Number_2 v ...)
    
-   (where (v_3 v_4) ((δ tonumber v_1 nil) (δ tonumber v_2 nil)))]
-  
+   (where Number_2 (δ tonumber String nil))]
+
   [(δ math.log Number nil)
    ,(log (term Number))]
 
-  [(δ math.log Number_1 Number_2 )
+  [(δ math.log Number_1 Number_2)
    (δ /
       (δ math.log Number_1 nil)
       (δ math.log Number_2 nil))]
@@ -1652,12 +1678,10 @@
   ;                          
   ;                          
   ;
-  [(δ math.max v_1 ... String v_2 ...)
-   (δ math.max Number ...)
+  [(δ math.max Number_1 ... String v ...)
+   (δ math.max Number_1 ... Number_2 v ...)
    
-   (where (Number ...) ((δ tonumber v_1 nil) ...
-                        (δ tonumber String nil)
-                        (δ tonumber v_2 nil) ...))]
+   (where Number_2 (δ tonumber String nil))]
   
   [(δ math.max Number ...)
    ,(foldr (λ (nmbr accum) (max nmbr accum))
@@ -1899,10 +1923,14 @@
   ;      ;;;   ;;;;   ;    ; 
   ;                          
   ;                          
-  ;                          
+  ;
+  [(δ string.len Number)
+   (δ string.len String)
+
+   (where String (δ tostring Number ()))]
+  
   [(δ string.len String)
-   (δ \# String)
-   ]
+   (δ \# String)]
   
   ;                          
   ;                          
@@ -1919,23 +1947,21 @@
   ;                   ;      
   ;                   ;      
   ;                   ;
-  [(δ string.rep v 1 any)
-   String
+  [(δ string.rep Number_1 Number_2 v)
+   (δ string.rep String Number_2 v)
 
-   (side-condition (or (is_string? (term v))
-                       (is_number? (term v))))
+   (where String (δ tostring Number_1 ()))]
 
-   ; plain conversion to string
-   (where String (δ tostring v ()))]
+  [(δ string.rep String_1 Number_1 Number_2)
+   (δ string.rep String_1 Number_1 String_2)
+
+   (where String_2 (δ tostring Number_2 ()))]
   
-  [(δ string.rep v Number nil)
+  [(δ string.rep String 1 any)
+   String]
+  
+  [(δ string.rep String Number nil)
    any
-
-   (side-condition (or (is_string? (term v))
-                       (is_number? (term v))))
-
-   ; plain conversion to string (for the case of v ∈ Number)
-   (where String (δ tostring v ()))
    
    (where any ,(foldr (λ (str accum) (term (δ .. ,str ,accum)))
                       (term String)
@@ -1946,18 +1972,8 @@
    ]
 
   ; {v_2 != nil}
-  [(δ string.rep v_1 Number v_2)
+  [(δ string.rep String_1 Number String_2)
    (δ .. any String_1)
-
-   (side-condition (or (is_string? (term v_1))
-                       (is_number? (term v_1))))
-
-   (side-condition (or (is_string? (term v_2))
-                       (is_number? (term v_2))))
-
-   ; plain conversion to string (for the case of v_1,v_2 ∈ Number)
-   (where String_1 (δ tostring v_1 ()))
-   (where String_2 (δ tostring v_2 ()))
    
    (where any ,(foldr (λ (str accum) (term (δ .. (δ .. String_1 String_2)
                                                   ,accum)))
@@ -1983,8 +1999,10 @@
   ;                                                          
   ;                                                          
   ;
-  [(δ string.reverse String)
-   ,(list->string (reverse (string->list (term String))))]
+  [(δ string.reverse Number)
+   (δ string.reverse String)
+
+   (where String (δ tostring Number ()))]
 
   [(δ string.reverse String)
    ,(list->string (reverse (string->list (term String))))]
@@ -2003,7 +2021,12 @@
   ;    ;;;;    ;;; ;  ;;;;;  
   ;                          
   ;
-  ; Correction of indices
+  [(δ string.sub Number_1 Number_2 Number_3)
+   (δ string.sub String Number_2 Number_3)
+
+   (where String (δ tostring Number_1 ()))]
+  
+  ; correction of indices
   ; Number_1 < 0
   [(δ string.sub String Number_1 Number_2)
    (δ string.sub String 1 Number_2)
@@ -2080,37 +2103,33 @@
            (objref_1 (evaluatedtable any_1 any_2))
            (objref_3 object_3) ...) θ)]
   
-  ; Simpler case
+  ; simpler case
   [(δ table.concat objref String Number_1 Number_2 θ)
    any_3
 
-   ; Quantity of fields to be accessed
+   ; quantity of fields to be accessed
    (where Number_3 ,(+ (- (term Number_2) (term Number_1))
                        1))
 
    (side-condition (> (term Number_3)
                       0))
 
-   ; Construct a list of indexing operations, with numeric indices from
+   ; construct a list of indexing operations, with numeric indices from
    ; Number_1 to Number_2
    (where (any_1 any_2 ...)
           ,(build-list (inexact->exact (term Number_3))
                        (λ (nmbr) (term (objref \[ ,(+ nmbr (term Number_1)) \])))))
 
-   ; Apply string concatenation between each field, separated by String
+   ; apply string concatenation between each field, separated by String
    (where any_3 ,(foldl (λ (field accum) (term (,accum .. (String .. ,field))))
                         (term any_1)
                         (term (any_2 ...))))]
 
-  ; Default case
+  ; default case
   [(δ table.concat objref String Number_1 Number_2 θ)
    ""]
 
-  ; Default case
-  [(δ table.concat objref String Number_1 Number_2 θ)
-   ""]
-
-  ; Wrong parameters
+  ; wrong parameters
   [(δ table.concat v_1 v_2 ... θ)
    (δ error "table.concat: table expected")
 
