@@ -244,7 +244,7 @@
         
         E-BuiltInSigmaWrite
         
-        (where σ_2 (δ (print v ... σ_1 θ)))
+        (where σ_2 (δ print v ... σ_1 θ))
         ]
    ))
 (provide terms-val-obj-store)

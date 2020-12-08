@@ -552,6 +552,10 @@
   ; acos
   (test-equal (term (δ math.acos 1))
               (term 0))
+
+  ; check parameters outside of [-1;1]
+  (test-equal (term (δ math.asin 3))
+              (term +nan.0))
   
   (test-equal (term (δ math.acos true))
               (term ($err "math.acos: bad argument #1 (number expected)")))
@@ -559,6 +563,10 @@
   ; asin
   (test-equal (term (δ math.asin 0))
               (term 0))
+
+  ; check parameters outside of [-1;1]
+  (test-equal (term (δ math.asin 3))
+              (term +nan.0))
   
   (test-equal (term (δ math.asin true))
               (term ($err "math.asin: bad argument #1 (number expected)")))

@@ -789,27 +789,27 @@
   ;   ;
 
   ; Hack to implement a simple instrumentation tool.
-  [(δ print v_1 ... ((refStdout string_1) vsp ...) θ)
-   ((refStdout string_3) vsp ...)
+  [(δ print v_1 ... ((refStdout String_1) vsp ...) θ)
+   ((refStdout String_3) vsp ...)
 
    ; concat v_1 ... into a single string
-   (where string_2 ,(foldl (λ (str accum)
+   (where String_2 ,(foldl (λ (str accum)
                              (string-append accum
                                             (term (δ tostring ,str θ))
                                             )
                             )
-                           (term string_1)
+                           (term String_1)
                            (term (v_1 ...))))
 
-   (where string_3, (string-append (term string_2)
+   (where String_3, (string-append (term String_2)
                                    "\n"))
    ]
 
   ; nothing has been written to stdout
   [(δ print v_1 ... (vsp ...) θ)
-   ((refStdout string_2) vsp ...)
+   ((refStdout String_2) vsp ...)
    
-   (where string_1 ,(foldl (λ (str accum)
+   (where String_1 ,(foldl (λ (str accum)
                              (string-append accum
                                             (term (δ tostring ,str θ))
                                             )
@@ -817,7 +817,7 @@
                            (term " ")
                            (term (v_1 ...))))
 
-   (where string_2, (string-append (term string_1)
+   (where String_2 ,(string-append (term String_1)
                                    "\n"))
    ]
   
@@ -1422,8 +1422,15 @@
    
    (where Number (δ tonumber String nil))]
   
-  [(δ math.acos Number)
-   ,(acos (term Number))]
+  [(δ math.acos Number_1)
+   Number_2
+
+   ; check that the result is in the set of real numbers
+   (where Number_2 ,(acos (term Number_1)))]
+
+  ; parameter outside of [-1;1]
+  [(δ math.cos Number)
+   +nan.0]
   
   ;                                  
   ;                     ;            
@@ -1445,8 +1452,15 @@
    
    (where Number (δ tonumber String nil))]
   
+  [(δ math.asin Number_1)
+   Number_2
+
+   ; check that the result is in the set of real numbers
+   (where Number_2 ,(asin (term Number_1)))]
+
+  ; parameter outside of [-1;1]
   [(δ math.asin Number)
-   ,(asin (term Number))]
+   +nan.0]
   
   ;                                  
   ;                                  
@@ -1801,8 +1815,13 @@
    (where Number (δ tonumber String nil))]
   
   [(δ math.sqrt Number)
-   ,(sqrt (term Number))]
+   ,(sqrt (term Number))
 
+   (side-condition (> (term Number) 0))]
+
+  ; {Number >= 0}
+  [(δ math.sqrt Number)
+   -nan.0]
   
   ;                          
   ;                          
