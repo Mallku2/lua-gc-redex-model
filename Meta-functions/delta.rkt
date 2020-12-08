@@ -1646,6 +1646,10 @@
    
    (where Number_2 (δ tonumber String nil))]
   
+  [(δ math.fmod Number_1 0)
+   -nan.0]
+
+  ; {Number_2 ≠ 0}
   [(δ math.fmod Number_1 Number_2)
    ,(exact-floor (remainder (term Number_1) (term Number_2)))]
   

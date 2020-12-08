@@ -4,6 +4,7 @@
          "../../../grammar.rkt"
          "../../../Relations/fullProgs.rkt"
          "../../../Relations/terms.rkt"
+         "../../../Relations/termsValStore.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"
@@ -811,13 +812,74 @@
   )
 
 (define (soundness_wfc_terms attempts)
-  (redex-check ext-lang t ;#:uniform-at-random 0.2
+  (redex-check ext-lang t
                (soundness_wfc_pred_term (term t) #f)
                #:prepare close_term
                #:attempts attempts
                #:source terms-rel
                ))
 
+; val-terms-rel
+(define (check_one_step_val_store_term_rel debug σ t result)
+  (if debug
+        (begin
+          (print σ)
+          (print t)
+          (println (term (well_formed_conf (,σ : () : ,t))))
+          )
+        (or
+         ; it was a final configuration 
+         (and (= (length result) 0)
+              (term (is_final_conf (,σ : () : ,t))))
+         ; not a final configuration 
+         (and (= (length result) 1)
+              (term (well_formed_conf ,(first result)))))))
+
+(define (soundness_wfc_pred_val_store_term σ t debug)
+  (let ([result (if (is_s? (term ,t))
+                    ; {(is_s? (term ,t))}
+                    (if
+                     (not (term (well_formed_conf (,σ : () : ,t))))
+                     ; TODO: naive approach to discard ill formed
+                     ; terms
+                     (term ((() : () : \;)))
+                     
+                     (apply-reduction-relation full-progs-rel
+                                               (term (,σ : () : ,t))))
+                    ; {¬ (is_s? (term ,t))}
+                    (if
+                     (not (term (well_formed_conf (,σ : () : ,t))))
+                     ; TODO: naive approach to discard ill formed
+                     ; terms
+                     (term ((() : () : \;)))
+                     
+                     (apply-reduction-relation full-progs-rel
+                                               ; generate a term that implies
+                                               ; the reduction of t
+                                               (term (,σ : () : (if ,t then \;
+                                                                    else \;
+                                                                    end))))))
+                    ])
+    (if (is_s? (term ,t))
+        (check_one_step_val_store_term_rel debug σ t result)
+        (check_one_step_val_store_term_rel debug σ
+                                           (term (if ,t then \;
+                                                     else \;
+                                                     end)) result))
+    )
+  )
+
+(define (soundness_wfc_val_store_terms attempts)
+  (redex-check ext-lang (σ : t)
+               (soundness_wfc_pred_val_store_term (term σ) (term t) #f)
+               #:prepare close_term
+               #:attempts attempts
+               #:source terms-val-store
+               ))
+
+
+
+; full-progs-rel
 (define (soundness_wfc_pred sigma theta t debug)
   (let ([result (if
                  (not (term (well_formed_conf (,sigma : ,theta : ,t))))
