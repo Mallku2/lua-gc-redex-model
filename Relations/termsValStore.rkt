@@ -11,18 +11,19 @@
 (define terms-val-store
   (reduction-relation
    ext-lang
-   #:domain (side-condition (σ : any) (is_term? (term any)))
+   ;#:domain (σ : t)
    
-   ; Implicit dereferencing
+   ; implicit dereferencing
    ;
-   ; Note that we don't need to mention explicitly the context where this
+   ; note that we don't need to mention explicitly the context where this
    ; operation occurs, as the evaluation contexts never allow reduction on
    ; l-values, if they are not fields of tables.
-   ; As an example of a situation where evaluation contexts are needed
-   ; in order to describe correctly the meaning of a contraction, see
-   ; E-ConvertVoidToNilWhereTruncate.
-   [--> ((vsp_1 ... (r v) vsp_2 ...) : r)
+   [--> (σ : r)
         ((vsp_1 ... (r v) vsp_2 ...) : v)
+
+        ; defined in this way, to help redex-check to generate correct stores
+        (where (vsp_1 ... (r v) vsp_2 ...) σ)
+        
         E-RefDeref]
    
    ;                                                                                  
@@ -42,25 +43,26 @@
    ;
 
    
-   ; State change
-   [--> ((vsp_1 ... (r v_1) vsp_2 ...) : (r = v_2))
+   ; state change
+   [--> (σ : (r = v_2))
         ((vsp_1 ... (r v_2) vsp_2 ...) : \;)
+
+        ; defined in this way, to help redex-check to generate correct stores
+        (where (vsp_1 ... (r v_1) vsp_2 ...) σ)
+        
         E-RefMapChange]
    
-   ; Local variables
-   ; Equal quantity of l-values and r-values (forced by using ..._1 on both
+   ; local variables
+   ; equal quantity of l-values and r-values (forced by using ..._1 on both
    ; sides)
-   [--> (σ_1 : (local Name ..._1 = v ..._1 in s_1 end))
-;        (σ_2 : (local Name ... = renv ... in
-;                 (substBlock s_1 ((id_1 e_1) ...))
-;                 end))
+   [--> (σ_1 : (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 in s_1 end))
         (σ_2 : ((substBlock s_1 ((id_1 e_1) ...)) (renv ...) LocalBody))
         E-Local
 
-        (where (σ_2 (r ...)) (addSimpVal σ_1 (v ...)))
+        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_1 v_2 ...)))
         
         (where ((id_1 e_1) ...) ,(map (lambda (id ref) (list id ref))
-                                      (term (Name ...))
+                                      (term (Name_1 Name_2 ...))
                                       (term (r ...))))
 
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))

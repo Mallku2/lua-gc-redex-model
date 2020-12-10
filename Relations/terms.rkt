@@ -11,7 +11,7 @@
 (define terms-rel
   (reduction-relation
    ext-lang                                             
-   #:domain (side-condition any (is_term? (term any)))
+   ;#:domain t
 
    ; tuples
    [--> (in-hole Et (< v_1 v_2 ... >))
@@ -317,23 +317,23 @@
    ; List length-equating rules for assignment statements
    ; The rule only make sense when there are 2 or more r-values (spec. useful
    ; for redex-check'ing purposes)
-   [--> (evar ... = v_1 v_2 v_3 ...)
-        (evar ... = v_4 ...)
+   [--> (evar_1 evar_2 ... = v_1 v_2 ...)
+        (evar_1 evar_2 ... = v_3 ...)
         AssignDiscardRvalues
         
-        (where Number_1 ,(length (term (evar ...))))
-        (where Number_2 ,(length (term (v_1 v_2 v_3 ...))))
+        (where Number_1 ,(length (term (evar_1 evar_2 ...))))
+        (where Number_2 ,(length (term (v_1 v_2 ...))))
         
         (side-condition (< (term Number_1) (term Number_2)))
         
-        (where (v_4 ...) ,(take (term (v_1 v_2 v_3 ...)) (term Number_1)))
+        (where (v_3 ...) ,(take (term (v_1 v_2 ...)) (term Number_1)))
         ]
 
-   [--> (evar_1 evar_2 evar_3 ... = v_1 ...)
-        (evar_1 evar_2 evar_3 ... = v_2 ...)
+   [--> (evar_1 evar_2 ... = v_1 ...)
+        (evar_1 evar_2 ... = v_2 ...)
         AssignCompleteRvalues
         
-        (where Number_1 ,(length (term (evar_1 evar_2 evar_3 ...))))
+        (where Number_1 ,(length (term (evar_1 evar_2 ...))))
         (where Number_2 ,(length (term (v_1 ...))))
         
         (side-condition (> (term Number_1) 
@@ -351,24 +351,24 @@
         (side-condition (= (length (term (evar_1 evar_2 ... evar_3)))
                            (length (term (v_1 v_2 ... v_3)))))]
 
-   [--> (local Name_1 Name_2 ... = v_1 v_2 v_3 ... in s end)
-        (local Name_1 Name_2 ... = v_4 ... in s end)
+   [--> (local Name_1 Name_2 ... = v_1 v_2 ... in s end)
+        (local Name_1 Name_2 ... = v_3 ... in s end)
         
         LocalDiscardRvalues
         
         (where Number_1 ,(length (term (Name_1 Name_2 ...))))
-        (where Number_2 ,(length (term (v_1 v_2 v_3 ...))))
+        (where Number_2 ,(length (term (v_1 v_2 ...))))
         
         (side-condition (< (term Number_1) (term Number_2)))
 
-        (where (v_4 ...) ,(take (term (v_1 v_2 v_3 ...)) (term Number_1)))]
+        (where (v_3 ...) ,(take (term (v_1 v_2 ...)) (term Number_1)))]
 
-   [--> (local Name_1 Name_2 Name_3 ... = v_1 ... in s end)
-        (local Name_1 Name_2 Name_3 ... = v_2 ... in s end)
+   [--> (local Name_1 Name_2 ... = v_1 ... in s end)
+        (local Name_1 Name_2 ... = v_2 ... in s end)
         
         LocalCompleteRvalues
 
-        (where Number_1 ,(length (term (Name_1 Name_2 Name_3 ...))))
+        (where Number_1 ,(length (term (Name_1 Name_2 ...))))
         (where Number_2 ,(length (term (v_1 ...))))
         
         (side-condition (> (term Number_1) (term Number_2)))

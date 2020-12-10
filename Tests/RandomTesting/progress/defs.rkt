@@ -749,169 +749,49 @@
 
 (provide is_final_conf)
 
-(define (check_conf debug conf result)
+(define (check_one_step debug c result)
   (if debug
         (begin
-          (print conf)
-          (println (term (well_formed_conf ,conf)))
+          (print (term ,c))
+          (println (term (well_formed_conf ,c)))
           )
         (or
          ; it was a final configuration 
          (and (= (length result) 0)
-              (term (is_final_conf ,conf)))
+              (term (is_final_conf ,c)))
          ; not a final configuration 
          (and (= (length result) 1)
               (term (well_formed_conf ,(first result)))))))
 
-; terms-rel
-(define (check_one_step_term_rel debug t result)
-  (if debug
-        (begin
-          (print t)
-          (println (term (well_formed_conf (() : () : ,t))))
-          )
-        (or
-         ; it was a final configuration 
-         (and (= (length result) 0)
-              (term (is_final_conf (() : () : ,t))))
-         ; not a final configuration 
-         (and (= (length result) 1)
-              (term (well_formed_conf ,(first result)))))))
-
-(define (soundness_wfc_pred_term t debug)
-  (let ([result (if (is_s? (term ,t))
-                    ; {(is_s? (term ,t))}
-                    (if
-                     (not (term (well_formed_conf (() : () : ,t))))
+(define (soundness_wfc_pred c debug)
+  (let ([result (if (not (term (well_formed_conf ,c)))
                      ; TODO: naive approach to discard ill formed
                      ; terms
                      (term ((() : () : \;)))
                      
                      (apply-reduction-relation full-progs-rel
-                                               (term (() : () : ,t))))
-                    ; {¬ (is_s? (term ,t))}
-                    (if
-                     (not (term (well_formed_conf (() : () : ,t))))
-                     ; TODO: naive approach to discard ill formed
-                     ; terms
-                     (term ((() : () : \;)))
-                     
-                     (apply-reduction-relation full-progs-rel
-                                               ; generate a term that implies
-                                               ; the reduction of t
-                                               (term (() : () : (if ,t then \;
-                                                                    else \;
-                                                                    end))))))
+                                               (term ,c)))
                     ])
-    (if (is_s? (term ,t))
-        (check_one_step_term_rel debug t result)
-        (check_one_step_term_rel debug (term (if ,t then \;
-                                                 else \;
-                                                 end)) result))
+    (check_one_step debug c result)
     )
   )
 
-(define (soundness_wfc_terms attempts)
-  (redex-check ext-lang t
-               (soundness_wfc_pred_term (term t) #f)
-               #:prepare close_term
-               #:attempts attempts
-               #:source terms-rel
-               ))
-
-; val-terms-rel
-(define (check_one_step_val_store_term_rel debug σ t result)
-  (if debug
-        (begin
-          (print σ)
-          (print t)
-          (println (term (well_formed_conf (,σ : () : ,t))))
-          )
-        (or
-         ; it was a final configuration 
-         (and (= (length result) 0)
-              (term (is_final_conf (,σ : () : ,t))))
-         ; not a final configuration 
-         (and (= (length result) 1)
-              (term (well_formed_conf ,(first result)))))))
-
-(define (soundness_wfc_pred_val_store_term σ t debug)
-  (let ([result (if (is_s? (term ,t))
-                    ; {(is_s? (term ,t))}
-                    (if
-                     (not (term (well_formed_conf (,σ : () : ,t))))
-                     ; TODO: naive approach to discard ill formed
-                     ; terms
-                     (term ((() : () : \;)))
-                     
-                     (apply-reduction-relation full-progs-rel
-                                               (term (,σ : () : ,t))))
-                    ; {¬ (is_s? (term ,t))}
-                    (if
-                     (not (term (well_formed_conf (,σ : () : ,t))))
-                     ; TODO: naive approach to discard ill formed
-                     ; terms
-                     (term ((() : () : \;)))
-                     
-                     (apply-reduction-relation full-progs-rel
-                                               ; generate a term that implies
-                                               ; the reduction of t
-                                               (term (,σ : () : (if ,t then \;
-                                                                    else \;
-                                                                    end))))))
-                    ])
-    (if (is_s? (term ,t))
-        (check_one_step_val_store_term_rel debug σ t result)
-        (check_one_step_val_store_term_rel debug σ
-                                           (term (if ,t then \;
-                                                     else \;
-                                                     end)) result))
-    )
-  )
-
-(define (soundness_wfc_val_store_terms attempts)
-  (redex-check ext-lang (σ : t)
-               (soundness_wfc_pred_val_store_term (term σ) (term t) #f)
-               #:prepare close_term
-               #:attempts attempts
-               #:source terms-val-store
-               ))
-
-
-
-; full-progs-rel
-(define (soundness_wfc_pred sigma theta t debug)
-  (let ([result (if
-                 (not (term (well_formed_conf (,sigma : ,theta : ,t))))
-                 ; TODO: naive approach to discard ill formed
-                 ; terms
-                 (term ((() : () : \;)))
-                                 
-                 (apply-reduction-relation
-                  full-progs-rel
-                  (term (,sigma : ,theta : ,t))))])
-    (check_conf debug (term (,sigma : ,theta : ,t)) result)
-    )
-  )
-
-
-
-(define (soundness_wfc attempts)
-  (redex-check ext-lang (σ : θ : s) ;#:uniform-at-random 0.2
-               (soundness_wfc_pred (term σ) (term θ) (term s) #f)
+(define (soundness_wfc rel attempts)
+  (redex-check ext-lang any
+               (soundness_wfc_pred (term any) #f)
                #:prepare close_conf
                #:attempts attempts
-               #:source full-progs-rel
+               #:source rel
                ))
 
-(define (soundness_wfc_coverage attempts test rel)
+(define (soundness_wfc_coverage rel attempts)
   ; create records to register test coverage related with ↦
   (let ([rel-coverage (make-coverage rel)]
         [full-progs-rel-coverage (make-coverage full-progs-rel)])
     (parameterize
         ; supply data-structures
         ([relation-coverage (list rel-coverage full-progs-rel-coverage)])
-      (test attempts)
+      (soundness_wfc rel attempts)
       (values (covered-cases rel-coverage)
               (covered-cases full-progs-rel-coverage)))))
 
