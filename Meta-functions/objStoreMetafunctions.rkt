@@ -67,39 +67,33 @@
 (define objStoreFirstLocation 6)
 (provide objStoreFirstLocation)
 
-; Meta-function that generates a fresh tid. Its definition depends
-; heavily on the fact that references are implicit generated only by this
-; function and that we don't have any kind of garbage collection.
+; meta-function that generates a fresh tid
 (define-metafunction ext-lang
   freshObjRef : θ -> tid
-  ; Empty Store
+  ; empty Store
   [(freshObjRef ())
    (objr ,objStoreFirstLocation)]
   
-  ; An store with at least one reference
-  ; Look for the table stored in the highest position 
-  [(freshObjRef (osp ... ((objr Number_1) object) (cid functiondef) ...))
+  ; an store with at least one object
+  [(freshObjRef (((any Number) object) ...))
    (objr Number_2)
-   (where Number_2 ,(+ (term Number_1) 1))]
-
-  ; An store with no tid
-  [(freshObjRef θ)
-   (objr ,objStoreFirstLocation)]
+   
+   (where Number_2 ,(+ 1 (argmax max (term (Number ...)))))]
   )
 
 (provide freshObjRef)
 
 (define-metafunction ext-lang
   freshClosId : θ -> cid
-  ; Empty Store
+  ; empty Store
   [(freshClosId ())
    (cl ,objStoreFirstLocation)]
   
-  ; An store with at least one object
-  ; look for the object stored in the highest position 
-  [(freshClosId (osp_1 ... ((any Number_1) object)))
+  ; an store with at least one object
+  [(freshClosId (((any Number) object) ...))
    (cl Number_2)
-   (where Number_2 ,(+ (term Number_1) 1))]
+   
+   (where Number_2 ,(+ 1 (argmax max (term (Number ...)))))]
   )
 
 (provide freshClosId)

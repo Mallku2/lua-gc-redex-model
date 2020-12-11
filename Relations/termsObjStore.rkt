@@ -10,7 +10,7 @@
 (define terms-obj-store
   (reduction-relation
    ext-lang
-   #:domain (side-condition (θ : any) (is_term? (term any)))
+   #:domain (θ : t)
 
    ;                                                                                          
    ;                                                             ;                            
@@ -30,13 +30,13 @@
 
    
    ; Table creation
-   [--> ((osp_1 ...) : evaluatedtable)
+   [--> ((osp ...) : evaluatedtable)
         ; New table, not set for finalization
-        ((osp_1 ... (objref ((addKeys evaluatedtable) nil ⊥))) : objref)
+        ((osp ... (objref ((addKeys evaluatedtable) nil ⊥))) : objref)
 
         E-CreateTable
 
-        (where objref (freshObjRef (osp_1 ...)))
+        (where objref (freshObjRef (osp ...)))
         ]
    
    ; Table indexing
