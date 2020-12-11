@@ -93,13 +93,13 @@
                                 end)))
 
             (term ((((ref 1) (objr 6))
-                    ((ref 2) (cl 6))
+                    ((ref 2) (cl 7))
                     ((ref 3) (objr 6)))
                    :
                    (((objr 6) ((|{| (|[| "z" |]| = 30.0)
                                     (|[| "x" |]| = 10.0)
                                     (|[| "y" |]| = 20.0) |}|) nil ⊥))
-                    ((cl 6)
+                    ((cl 7)
                      (function $func1
                       ()
                       (return

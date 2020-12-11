@@ -1880,12 +1880,12 @@
   
   ; functiondef
   (test-equal
-   (term (free_tids () (function x (y) ((objr 1) = 1) end)))
+   (term (free_tids () (function x (y) (y = (objr 1)) end)))
    (term ((objr 1))))
 
   (test-equal
    (term (free_tids (((objr 1 ) ((\{ \}) nil 1)))
-                    (function x (y) ((objr 1) = 1) end)))
+                    (function x (y) (y = (objr 1)) end)))
    '())
 
   (test-equal
@@ -1894,7 +1894,7 @@
 
   (test-equal
    (term (free_tids (((objr 1 ) ((\{ \}) nil 1)))
-                    (function x (<<<) ((ref 1) = (objr 1) end))))
+                    (function x (<<<) ((ref 1) = (objr 1)) end)))
    '())
 
   ; Name
@@ -2185,7 +2185,8 @@
    '())
   
   (test-equal
-   (term (free_clids (((cl 1) (function x () \; end))) (((cl 1) \[ 1 \]) = 2)))
+   (term (free_clids (((cl 1) (function x () \; end)))
+                     (((objr 1) \[ (cl 1) \]) = 2)))
    '())
 
   (test-equal
@@ -2261,7 +2262,7 @@
   ; WrongKey
   (test-equal
    ; just testing the syntactic form; WrongKey forces values and tids as tables
-   (term (free_clids () ((((cl 1) \[ 1 \]) = 2) WrongKey)))
+   (term (free_clids () ((((objr 1) \[ (cl 1) \]) = 2) WrongKey)))
    (term ((cl 1))))
   
   ; NonTable
@@ -2327,12 +2328,12 @@
   
   ; functiondef
   (test-equal
-   (term (free_clids () (function x (y) ((cl 1) = 1) end)))
+   (term (free_clids () (function x (y) (y = (cl 1)) end)))
    (term ((cl 1))))
 
   (test-equal
    (term (free_clids (((cl 1 ) (function x () \; end)))
-                     (function x (y) ((cl 1) = 1) end)))
+                     (function x (y) (y = (cl 1)) end)))
    '())
 
   (test-equal
@@ -2340,8 +2341,8 @@
    (term ((cl 1))))
 
   (test-equal
-   (term (free_clids (((cl 1 ) (function x () \; end)))
-                     (function x (<<<) ((ref 1) = (cl 1) end))))
+   (term (free_clids (((cl 1) (function x () \; end)))
+                     (function x (<<<) ((ref 1) = (cl 1)) end)))
    '())
 
   ; Name
@@ -2471,7 +2472,7 @@
   
   ; WrongKey
   (test-equal
-   (term (free_clids () (((cl 1) \[ 1 \]) WrongKey)))
+   (term (free_clids () (((objr 1) \[ (cl 1) \]) WrongKey)))
    (term ((cl 1))))
   
   ; ArithWrongOps

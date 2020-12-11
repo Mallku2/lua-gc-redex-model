@@ -1429,7 +1429,7 @@
    (where Number_2 ,(acos (term Number_1)))]
 
   ; parameter outside of [-1;1]
-  [(δ math.cos Number)
+  [(δ math.acos Number)
    +nan.0]
   
   ;                                  

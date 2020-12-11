@@ -95,16 +95,11 @@
   [(freshClosId ())
    (cl ,objStoreFirstLocation)]
   
-  ; An store with at least one cid
-  ; Look for the fdef stored in the highest position 
-  [(freshClosId (osp_1 ... ((cl Number_1) functiondef) (tid intreptable) ...))
+  ; An store with at least one object
+  ; look for the object stored in the highest position 
+  [(freshClosId (osp_1 ... ((any Number_1) object)))
    (cl Number_2)
    (where Number_2 ,(+ (term Number_1) 1))]
-
-  ; An store with no cid
-  [(freshClosId θ)
-   (cl ,objStoreFirstLocation)]
-
   )
 
 (provide freshClosId)

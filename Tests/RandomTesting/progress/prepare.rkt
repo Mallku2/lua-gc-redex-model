@@ -57,6 +57,8 @@
                       (remove* (term (r_1 ...)) (term (r_2 ...)))))]
   )
 
+(provide free_val_refs)
+
 ; free val refs in θ (from the environment of closures)
 (define-metafunction ext-lang
   free_val_refs_theta : σ θ -> (r ...)
@@ -182,6 +184,8 @@
                         (remove* (term (any ...)) (term (tid_1 ...)))))]
   )
 
+(provide free_tids)
+
 ; extract closures ids from a term t
 (define (get_clids t)
   (map (lambda (match)
@@ -197,6 +201,7 @@
              match
              '()))))
 
+(provide free_clids)
 ; closures ids not bound in θ
 (define-metafunction ext-lang
   free_clids : θ t -> (cid ...)
