@@ -235,7 +235,16 @@
   
   ; Ordinary refs
   [(r vr) (ref natural)]
-  
+
+  ; values store pair
+  [vsp (r v)
+       (refStdout String)]
+
+  ; to force just one stdout file on σ, helping redex-check
+  [σ ((r v) ...)
+     ((refStdout String) (r v) ...)]
+
+  ; table id
   [(objref tid) (objr natural)]
 
   ; closure id
@@ -249,14 +258,6 @@
   [object intreptable
           functiondef]
   
-  ; values store pair
-  [vsp (r v)
-       (refStdout String)]
-
-  ; to force just one stdout file on σ, helping redex-check
-  [σ ((r v) ...)
-     ((refStdout String) (r v) ...)]
-
   ; id-object binding: objects store's pairs  
   [osp (tid intreptable)
        (cid functiondef)]

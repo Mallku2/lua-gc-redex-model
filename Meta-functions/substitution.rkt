@@ -2,7 +2,7 @@
 (require redex
          "../grammar.rkt")
 
-; Substitution function over expressions
+; substitution function over expressions
 ; PARAMS:
 ; exp : the expression to which the substitution is applied
 ; parameters : a list of identifiers to be subtituted
@@ -231,8 +231,6 @@
             (term ( = ))
             (term (substexplist (e_1 ...) ((id e_2) ...))))]
 
-
-  
   ;                                                                  
   ;                                             ;                    
   ;                                                                  
@@ -278,6 +276,28 @@
   )
 
 
+; substitution function for θ, useful for preparation of terms in redex-check
+(define-metafunction ext-lang
+  substTheta : θ ((id e) ...) -> θ
+
+  [(substTheta () _)
+   ()]
+
+  [(substTheta ((cid functiondef_1) osp_1 ...) ((id e) ...))
+   ((cid functiondef_2) osp_2 ...)
+
+   (where (osp_2 ...) (substTheta (osp_1 ...) ((id e) ...)))
+   (where functiondef_2 (substExp functiondef_1 ((id e) ...)))]
+
+  ; we only need to substitute into the evaluated table
+  [(substTheta ((tid (evaluatedtable_1 any pos)) osp_1 ...) ((id e) ...))
+   ((tid (evaluatedtable_1 any pos)) osp_2 ...)
+
+   (where (osp_2 ...) (substTheta (osp_1 ...) ((id e) ...)))
+   (where evaluatedtable_2 (substExp evaluatedtable_1 ((id e) ...)))]
+  )
+
+(provide substTheta)
 ;                                                                  
 ;                                                                  
 ;                                                                  

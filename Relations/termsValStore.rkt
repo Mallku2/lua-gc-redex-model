@@ -56,17 +56,14 @@
    ; equal quantity of l-values and r-values (forced by using ..._1 on both
    ; sides)
    [--> (σ_1 : (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 in s_1 end))
-        (σ_2 : ((substBlock s_1 ((id_1 e_1) ...)) (renv ...) LocalBody))
+        (σ_2 : ((substBlock s_1 ((Name_1 r_1) (Name_2 r_2) ...)) (renv ...)
+                                                                 LocalBody))
         E-Local
 
-        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_1 v_2 ...)))
-        
-        (where ((id_1 e_1) ...) ,(map (lambda (id ref) (list id ref))
-                                      (term (Name_1 Name_2 ...))
-                                      (term (r ...))))
-
+        (where (σ_2 (r_1 r_2 ...)) (addSimpVal σ_1 (v_1 v_2 ...)))
+       
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
-                                (term (r ...))))
+                                (term (r_1 r_2 ...))))
         ]
    
    ))

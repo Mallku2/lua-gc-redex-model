@@ -36,7 +36,8 @@
         
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((id e) ...)) (renv ...) RetExp))
+                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...)) (renv ...)
+                                                                RetExp))
 
         E-ApplyExp   
 
@@ -66,11 +67,9 @@
         ; Add, to the value store, mappings to the actual paramaters
         (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
 
-        ; Create the substitution mapping that will replace formal
-        ; parameters' identifiers by the corresponding references
-        (where ((id e) ...) ,(map (lambda (id ref) (list id ref))
-                                  (term (Name_2 ...))
-                                  (term (r ...))))
+;        ; Create the substitution mapping that will replace formal
+;        ; parameters' identifiers by the corresponding references
+;        (where ((id e) ...) ((Name_2 r) ...))
 
         ; Tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
@@ -83,7 +82,8 @@
          
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((id e) ...)) (renv ...) RetStat))
+                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...)) (renv ...)
+                                                                RetStat))
 
         E-ApplyStat              
 
@@ -112,13 +112,7 @@
 
         ; Add, to the value store, mappings to the actual paramaters
         (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
-
-        ; Create the substitution mapping that will replace formal
-        ; parameters' identifiers by the corresponding references
-        (where ((id e) ...) ,(map (lambda (id ref) (list id ref))
-                                  (term (Name_2 ...))
-                                  (term (r ...))))
-
+        
         ; Tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
                                 (term (r ...))))
@@ -131,7 +125,7 @@
         
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((id_1 e_1) ...
+                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...
                                                (<<< (< v_3 ... >))))
                               (renv ...) RetExp))
 
@@ -168,16 +162,10 @@
         ; (v_3 ...) are the values that go wrapped into the tuple
         (where (v_3 ...) ,(take-right (term (v ...)) (term Number_5)))
 
-        ; Add, to the value store, mappings to the actual paramaters
+        ; add, to the value store, mappings to the actual paramaters
         (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
 
-        ; Create the substitution mapping that will replace formal
-        ; parameters' identifiers by the corresponding references
-        (where ((id_1 e_1) ...) ,(map (lambda (id ref) (list id ref))
-                                      (term (Name_2 ...))
-                                      (term (r ...))))
-
-        ; Tag the references to convert them into renv
+        ; tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
                                 (term (r ...))))]
 
@@ -187,7 +175,7 @@
         
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((id_1 e_1) ...
+                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...
                                                (<<< (< v_3 ... >))))
                               (renv ...) RetStat))
 
@@ -226,12 +214,6 @@
 
         ; Add, to the value store, mappings to the actual paramaters
         (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
-
-        ; Create the substitution mapping that will replace formal
-        ; parameters' identifiers by the corresponding references
-        (where ((id_1 e_1) ...) ,(map (lambda (id ref) (list id ref))
-                                      (term (Name_2 ...))
-                                      (term (r ...))))
 
         ; Tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
