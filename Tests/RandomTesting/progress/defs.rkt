@@ -5,6 +5,8 @@
          "../../../Relations/fullProgs.rkt"
          "../../../Relations/terms.rkt"
          "../../../Relations/termsValStore.rkt"
+         "../../../Relations/termsObjStore.rkt"
+         "../../../Relations/termsValObjStore.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"

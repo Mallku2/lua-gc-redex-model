@@ -147,8 +147,9 @@
   ; simpvalref, objref
   [(substExp any ((id e_2) ...))
    any]
-
   )
+
+(provide substExp)
 
 ; Substitution function for blocks
 (define-metafunction ext-lang
@@ -275,6 +276,7 @@
    ((substBlock s ((id e) ...)) (renv ...) RetExp)]
   )
 
+(provide substBlock)
 
 ; substitution function for θ, useful for preparation of terms in redex-check
 (define-metafunction ext-lang
@@ -298,6 +300,19 @@
   )
 
 (provide substTheta)
+
+; to ease the use of substBlock and substExp
+(define-metafunction ext-lang
+  subst : t ((id e) ...) -> t
+
+  [(subst e_1 ((id e_2) ...))
+   (substExp e_1 ((id e_2) ...))]
+
+  [(subst s ((id e) ...))
+   (substBlock s ((id e) ...))]
+  )
+
+(provide subst)
 ;                                                                  
 ;                                                                  
 ;                                                                  
@@ -381,11 +396,6 @@
   [(substfield (field_1 field ...) ((id e) ...))
    ,(append (term (substfield (field_1) ((id e) ...))) 
             (term (substfield (field ...) ((id e) ...))))])
-
-; Export subst meta-function
-(provide substBlock
-         substExp)
-
 
 ;                  
 ;                  

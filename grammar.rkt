@@ -87,10 +87,13 @@
      ((v == v) EqFail)
      ]
 
-   ; Variables' Identifiers' syntactic category, to ease the definition of the
-  ; substitution function.
+  ; identifiers of variables and refs., to ease the definition of several
+  ; substitution functions
   [id Name
-      <<<]
+      <<<
+      r
+      tid
+      cid]
 
   [parameters (Name ...)
               (Name ... <<<)]
@@ -225,8 +228,8 @@
        ⊥
        ⊘]
   
-  [intreptable (tableconstructor tid pos)
-               (tableconstructor nil pos)
+  [intreptable (evaluatedtable tid pos)
+               (evaluatedtable nil pos)
                ]
 
   ; References for the representation of the environment 
