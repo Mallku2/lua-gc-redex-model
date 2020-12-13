@@ -559,12 +559,7 @@
   ; deault case: redex-check generated something that is not in s ∪ e: we
   ; default it to the conf. () : () ;
   [(int_close_conf_meta any)
-   (() : () : \;)
-
-   ; print ill formed term
-   (side-condition (begin
-                     (println (term any))
-                     #t))]
+   (() : () : \;)]
   ) 
 
 (define (close_conf c)

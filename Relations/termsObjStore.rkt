@@ -10,7 +10,7 @@
 (define terms-obj-store
   (reduction-relation
    ext-lang
-   #:domain (θ : t)
+   ;#:domain (θ : t)
 
    ;                                                                                          
    ;                                                             ;                            

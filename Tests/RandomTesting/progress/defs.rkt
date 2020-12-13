@@ -797,6 +797,25 @@
       (values (covered-cases rel-coverage)
               (covered-cases full-progs-rel-coverage)))))
 
+(define (soundness_wfc_full_coverage attempts)
+  ; create records to register test coverage related with ↦
+  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
+    (parameterize
+        ; supply data-structures
+        ([relation-coverage (list full-progs-rel-coverage)])
+      (begin
+        ; 50 rules in terms-rel
+        (soundness_wfc terms-rel (floor (* attempts (/ 50 90))))
+        ; 3 rules in terms-val-store
+        (soundness_wfc terms-val-store (floor (* attempts (/ 3 90))))
+        ; 11 rules in terms-obj-store
+        (soundness_wfc terms-obj-store (floor (* attempts (/ 11 90))))
+        ; 3 rules in terms-val-obj-store
+        (soundness_wfc terms-val-obj-store (floor (* attempts (/ 3 90))))
+        ; 23 rules in meta
+        (soundness_wfc meta (floor (* attempts (/ 23 90))))
+        (values (covered-cases full-progs-rel-coverage))))))
+
 ;                  
 ;      ;;          
 ;     ;            

@@ -388,29 +388,29 @@
         FinalizationWhile]
 
    ; Call over a non-function value
-   [--> (v (v_1 ...))
-        ((v (v_1 ...))WrongFunCall)
+;   [--> (v (v_1 ...))
+;        ((v (v_1 ...))WrongFunCall)
+;
+;        E-AlertWrongFunCall
+;        ; Determine that v_1 is not a reference to a function
+;        (side-condition (not (is_cid? (term v))))]
 
-        E-AlertWrongFunCall
-        ; Determine that v_1 is not a reference to a function
-        (side-condition (not (is_cid? (term v))))]
-
-   [--> ($statFunCall v (v_1 ...))
-        (($statFunCall v (v_1 ...))WrongFunCall)
+   [--> ($statFunCall ..._1 v (v_1 ...))
+        (($statFunCall ..._1 v (v_1 ...))WrongFunCall)
 
         E-AlertWrongStatFunCall
         ; Determine that v_1 is not a reference to a function
         (side-condition (not (is_cid? (term v))))]
    
    ; Method call
-   [--> (v : Name (e ...))
-        ((v \[ String \]) (v e ...))
-        E-MethodCall
+;   [--> (v : Name (e ...))
+;        ((v \[ String \]) (v e ...))
+;        E-MethodCall
+;
+;        (where String ,(symbol->string (term Name)))]
 
-        (where String ,(symbol->string (term Name)))]
-
-   [--> ($statFunCall v : Name (e ...))
-        ($statFunCall (v \[ String \]) (v e ...))
+   [--> ($statFunCall ..._1 v : Name (e ...))
+        ($statFunCall ..._1 (v \[ String \]) (v e ...))
         E-MethodCallStat
 
         (where String ,(symbol->string (term Name)))]

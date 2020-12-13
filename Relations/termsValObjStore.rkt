@@ -12,7 +12,7 @@
 (define terms-val-obj-store
   (reduction-relation
    ext-lang
-   #:domain (side-condition (σ : θ : any) (is_term? (term any)))
+   #:domain (σ : θ : t)
    
    ;                                                          
    ;      ;;                                   ;;;     ;;;    
@@ -30,62 +30,63 @@
    ;                                                          
    ;                                                          
    ; Function call
-   [--> (σ_1 : (osp_1 ...
-                (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : (cid (v ...)))
-        
-        (σ_2 : (osp_1 ...
-                (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...)) (renv ...)
-                                                                RetExp))
-
-        E-ApplyExp   
-
-        ; Length of the formal parameters list
-        (where Number_1 ,(length (term (Name_2 ...))))
-
-        ; Length of the actual parameters list
-        (where Number_2 ,(length (term (v ...))))
-
-        ; Take the corresponding amount of actual parameters
-        (where (v_1 ...) ,(take (term (v ...))
-                                (min (term Number_1)
-                                     (term Number_2))))
-
-        (where Number_3 ,(- (term Number_1) (term Number_2)))
-
-        ; Calculate the amount of extra nil values
-        (where Number_4 ,(if (>= (term Number_3) 0)
-                             (term Number_3)
-                             0))
-        
-        ; Add nil values, if needed
-        (where (v_2 ...) ,(append (term (v_1 ...))
-                                  (make-list (term Number_4)
-                                             (term nil))))
-
-        ; Add, to the value store, mappings to the actual paramaters
-        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
-
-;        ; Create the substitution mapping that will replace formal
-;        ; parameters' identifiers by the corresponding references
-;        (where ((id e) ...) ((Name_2 r) ...))
-
-        ; Tag the references to convert them into renv
-        (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
-                                (term (r ...))))
-        ]
+;   [--> (σ_1 : (osp_1 ...
+;                (cid (function Name_1 (Name_2 ...) s_1 end))
+;                osp_2 ...) : (cid (v ...)))
+;        
+;        (σ_2 : (osp_1 ...
+;                (cid (function Name_1 (Name_2 ...) s_1 end))
+;                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...)) (renv ...)
+;                                                                RetExp))
+;
+;        E-ApplyExp   
+;
+;        ; Length of the formal parameters list
+;        (where Number_1 ,(length (term (Name_2 ...))))
+;
+;        ; Length of the actual parameters list
+;        (where Number_2 ,(length (term (v ...))))
+;
+;        ; Take the corresponding amount of actual parameters
+;        (where (v_1 ...) ,(take (term (v ...))
+;                                (min (term Number_1)
+;                                     (term Number_2))))
+;
+;        (where Number_3 ,(- (term Number_1) (term Number_2)))
+;
+;        ; Calculate the amount of extra nil values
+;        (where Number_4 ,(if (>= (term Number_3) 0)
+;                             (term Number_3)
+;                             0))
+;        
+;        ; Add nil values, if needed
+;        (where (v_2 ...) ,(append (term (v_1 ...))
+;                                  (make-list (term Number_4)
+;                                             (term nil))))
+;
+;        ; Add, to the value store, mappings to the actual paramaters
+;        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
+;
+;;        ; Create the substitution mapping that will replace formal
+;;        ; parameters' identifiers by the corresponding references
+;;        (where ((id e) ...) ((Name_2 r) ...))
+;
+;        ; Tag the references to convert them into renv
+;        (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
+;                                (term (r ...))))
+;        ]
 
     [--> (σ_1 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : ($statFunCall cid (v ...)))
+                osp_2 ...)
+              : ($statFunCall ..._1 cid (v ...)))
          
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ...) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...)) (renv ...)
-                                                                RetStat))
+                osp_2 ...)
+             : ((substBlock s_1 ((Name_2 r) ...)) (renv ...) any))
 
-        E-ApplyStat              
+        E-ApplyNonVararg             
 
         ; Length of the formal parameters list
         (where Number_1 ,(length (term (Name_2 ...))))
@@ -116,68 +117,75 @@
         ; Tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
                                 (term (r ...))))
+
+        ; choose apropriate function call label
+        (where any ,(if (= (length (term ($statFunCall ..._1))) 1)
+                        (term RetStat)
+                        (term RetExp)))
         ]
 
    ; Vararg function call
+;   [--> (σ_1 : (osp_1 ...
+;                (cid (function Name_1 (Name_2 ... <<<) s_1 end))
+;                osp_2 ...) : (cid (v ...)))
+;        
+;        (σ_2 : (osp_1 ...
+;                (cid (function Name_1 (Name_2 ... <<<) s_1 end))
+;                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...
+;                                               (<<< (< v_3 ... >))))
+;                              (renv ...) RetExp))
+;
+;        E-ApplyVararg
+;
+;        ; Length of the formal parameters list
+;        (where Number_1 ,(length (term (Name_2 ...))))
+;
+;        ; Length of the actual parameters list
+;        (where Number_2 ,(length (term (v ...))))
+;
+;        ; Take the corresponding amount of actual parameters
+;        (where (v_1 ...) ,(take (term (v ...))
+;                                (min (term Number_1)
+;                                     (term Number_2))))
+;
+;        (where Number_3 ,(- (term Number_1) (term Number_2)))
+;
+;        ; Calculate the amount of extra nil values
+;        (where Number_4 ,(if (>= (term Number_3) 0)
+;                             (term Number_3)
+;                             0))
+;
+;        ; Take the extra-arguments, if present
+;        (where Number_5 ,(if (= (term Number_4) 0)
+;                             (- (term Number_2) (term Number_1))
+;                             0))
+;        
+;        ; Add nil values, if needed
+;        (where (v_2 ...) ,(append (term (v_1 ...))
+;                                  (make-list (term Number_4)
+;                                             (term nil))))
+;
+;        ; (v_3 ...) are the values that go wrapped into the tuple
+;        (where (v_3 ...) ,(take-right (term (v ...)) (term Number_5)))
+;
+;        ; add, to the value store, mappings to the actual paramaters
+;        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
+;
+;        ; tag the references to convert them into renv
+;        (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
+;                                (term (r ...))))]
+
    [--> (σ_1 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : (cid (v ...)))
+                osp_2 ...)
+             : ($statFunCall ..._1 cid (v ...)))
         
         (σ_2 : (osp_1 ...
                 (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...
-                                               (<<< (< v_3 ... >))))
-                              (renv ...) RetExp))
-
-        E-ApplyVararg
-
-        ; Length of the formal parameters list
-        (where Number_1 ,(length (term (Name_2 ...))))
-
-        ; Length of the actual parameters list
-        (where Number_2 ,(length (term (v ...))))
-
-        ; Take the corresponding amount of actual parameters
-        (where (v_1 ...) ,(take (term (v ...))
-                                (min (term Number_1)
-                                     (term Number_2))))
-
-        (where Number_3 ,(- (term Number_1) (term Number_2)))
-
-        ; Calculate the amount of extra nil values
-        (where Number_4 ,(if (>= (term Number_3) 0)
-                             (term Number_3)
-                             0))
-
-        ; Take the extra-arguments, if present
-        (where Number_5 ,(if (= (term Number_4) 0)
-                             (- (term Number_2) (term Number_1))
-                             0))
-        
-        ; Add nil values, if needed
-        (where (v_2 ...) ,(append (term (v_1 ...))
-                                  (make-list (term Number_4)
-                                             (term nil))))
-
-        ; (v_3 ...) are the values that go wrapped into the tuple
-        (where (v_3 ...) ,(take-right (term (v ...)) (term Number_5)))
-
-        ; add, to the value store, mappings to the actual paramaters
-        (where (σ_2 (r ...)) (addSimpVal σ_1 (v_2 ...)))
-
-        ; tag the references to convert them into renv
-        (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
-                                (term (r ...))))]
-
-   [--> (σ_1 : (osp_1 ...
-                (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : ($statFunCall cid (v ...)))
-        
-        (σ_2 : (osp_1 ...
-                (cid (function Name_1 (Name_2 ... <<<) s_1 end))
-                osp_2 ...) : ((substBlock s_1 ((Name_2 r) ...
-                                               (<<< (< v_3 ... >))))
-                              (renv ...) RetStat))
+                osp_2 ...)
+             : ((substBlock s_1 ((Name_2 r) ...
+                                 (<<< (< v_3 ... >))))
+                (renv ...) any))
 
         E-ApplyVarargStat
 
@@ -217,7 +225,12 @@
 
         ; Tag the references to convert them into renv
         (where (renv ...) ,(map (lambda (r) (term (rEnv (unquote r))))
-                                (term (r ...))))]
+                                (term (r ...))))
+
+        ; choose apropriate function call label
+        (where any ,(if (= (length (term ($statFunCall ..._1))) 1)
+                        (term RetStat)
+                        (term RetExp)))]
 
    
    ; built-in services

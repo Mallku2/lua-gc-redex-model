@@ -768,8 +768,11 @@
   ;   ;                                      
   ;   ;                                      
   
-  [(δ pcall v v_1 ...)
-   ((v (v_1 ...)) ProtectedMode)]
+  [(δ pcall v_1 v_2 ...)
+   ; pcall is defined in terms of xpcall
+   ($builtIn xpcall (v_1
+                     (function $handler (errMsg) (return false errMsg) end)
+                     v_2 ...))]
 
   
   ;                                          
