@@ -413,11 +413,11 @@
 ;                  
 ;                  
 ;                  
-;                  
-
+;
 (define-metafunction ext-lang
-  fv : (side-condition any (or (is_e? (term any))
-                               (is_s? (term any)))) -> (id ...)
+  ; in some contexts, like in wfc's definition, fv will be applied over terms
+  ; which are not in s ∪ e; we need to weaken its domain
+  fv : any -> (id ...)
 
   
   ;                                          
@@ -447,91 +447,86 @@
   [(fv (return))
    ()]
 
-  [(fv (return e_1 e_2 ...))
+  [(fv (return any_1 any_2 ...))
    (id_1 ... id_2 ... ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv (e_1 (e_2 ...)))
+  [(fv (any_1 : Name (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv (e_1 : Name (e_2 ...)))
+  [(fv ($statFunCall any_1 (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv ($statFunCall e_1 (e_2 ...)))
+  [(fv ($statFunCall any_1 : Name (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
-
-  [(fv ($statFunCall e_1 : Name (e_2 ...)))
-   (id_1 ... id_2 ... ...)
-
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
   [(fv ($builtIn builtinserv ()))
    ()]
 
-  [(fv ($builtIn builtinserv (e_1 e_2 ...)))
+  [(fv ($builtIn builtinserv (any_1 any_2 ...)))
    (id_1 ... id_2 ... ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where ((id_2 ...) ...) ((fv e_2) ...))]
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv (var_1 var_2 ... = e ...))
+  [(fv (var_1 var_2 ... = any ...))
    (id_1 ... id_2 ... ... id_3 ... ...)
 
    (where (id_1 ...) (fv var_1))
    (where ((id_2 ...) ...) ((fv var_2) ...))
-   (where ((id_3 ...) ...) ((fv e) ...))]
+   (where ((id_3 ...) ...) ((fv any) ...))]
 
-  [(fv (do s end))
-   (fv s)]
+  [(fv (do any end))
+   (fv any)]
 
-  [(fv (if e then s_1 else s_2 end))
+  [(fv (if any_1 then any_2 else any_3 end))
    (id_1 ... id_2 ... id_3 ...)
 
-   (where (id_1 ...) (fv e))
-   (where (id_2 ...) (fv s_1))
-   (where (id_3 ...) (fv s_2))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))
+   (where (id_3 ...) (fv any_3))]
 
-  [(fv (while e do s end))
+  [(fv (while any_1 do any_2 end))
    (id_1 ... id_2 ...)
 
-   (where (id_1 ...) (fv e))
-   (where (id_2 ...) (fv s))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))]
 
-  [(fv (local Name ... = e ... in s end))
+  [(fv (local Name ... = any_1 ... in any_2 end))
    (id_4 ...)
 
-   (where ((id_1 ...) ...) ((fv e) ...))
-   (where (id_2 ...) (fv s))
+   (where ((id_1 ...) ...) ((fv any_1) ...))
+   (where (id_2 ...) (fv any_2))
    (where (id_3 ...) ,(remove* (term (Name ...))
                                (term (id_2 ...))))
    (where (id_4 ...) ,(remove-duplicates (term (id_3 ... id_1 ... ...))))]
 
-  [(fv (s_1 s_2 ...))
-   (id_2 ... id_3 ... ...)
+  [(fv (s_1 s_2 s_3 ...))
+   (id_2 ... id_3 ... id_4 ... ...)
 
    (where (id_2 ...) (fv s_1))
-   (where ((id_3 ...) ...) ((fv s_2) ...))]
+   (where (id_3 ...) (fv s_2))
+   (where ((id_4 ...) ...) ((fv s_3) ...))]
 
-  [(fv ($err e))
-   (fv e)]
+  [(fv ($err any))
+   (fv any)]
 
-  [(fv ($iter e do s end))
+  [(fv ($iter any_1 do any_2 end))
    (id_1 ... id_2 ...)
 
-   (where (id_1 ...) (fv e))
-   (where (id_2 ...) (fv s))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))]
   
   ;                                                                          
   ;                                                                          
@@ -551,17 +546,17 @@
   ;                                                                          
   ;                                                                          
 
-  [(fv (s (renv ...) LocalBody))
-   (fv s)]
+  [(fv (any (renv ...) LocalBody))
+   (fv any)]
 
-  [(fv (s (renv ...) RetStat))
-   (fv s)]
+  [(fv (any (renv ...) RetStat))
+   (fv any)]
 
-  [(fv (s Break))
-   (fv s)]
+  [(fv (any Break))
+   (fv any)]
 
-  [(fv (s statlabel))
-   (fv s)]
+  [(fv (any statlabel))
+   (fv any)]
   
   ;                                  
   ;                                  
@@ -593,20 +588,48 @@
   [(fv String)
    ()]
 
-  [(fv objid)
+  [(fv tid)
    ()]
 
-  [(fv (function Name_1 (Name_2 ...) s end))
+  [(fv cid)
+   ()]
+
+  [(fv (function Name_1 (Name_2 ...) any end))
    (id ...)
 
    (where (id ...) ,(remove* (term (Name_2 ...))
-                             (term (fv s))))]
+                             (term (fv any))))]
 
-  [(fv (function Name_1 (Name_2 ... <<<) s end))
+  [(fv (function Name_1 (Name_2 ... <<<) any_1 end))
    (id ...)
 
+   ; there is a non-captured vararg
+   (side-condition
+    (redex-match ext-lang
+                 (side-condition
+                  (in-hole C_1 (function Name_3 (Name_4 ...) any_2 end))
+                  (member (term <<<)
+                          (term (fv any_2))))
+                 (term any_1)))
+   ; do not remove occurrences of <<<
+   (where (id ...) ,(remove* (term (Name_2 ...))
+                             (term (fv any_1))))]
+
+  [(fv (function Name_1 (Name_2 ... <<<) any_1 end))
+   (id ...)
+
+   ; there is a not a non-captured vararg
+   (side-condition
+    (not (redex-match ext-lang
+                      (side-condition
+                       (in-hole C_1 (function Name_3 (Name_4 ...) any_2 end))
+                       (member (term <<<)
+                               (term (fv any_2))))
+                      (term any_1))))
+   
+   ; remove occurrences of <<<
    (where (id ...) ,(remove* (term (Name_2 ... <<<))
-                             (term (fv s))))]
+                             (term (fv any_1))))]
 
   [(fv <<<)
    (<<<)]
@@ -614,14 +637,14 @@
   [(fv Name)
    (Name)]
 
-  [(fv (e_1 \[ e_2 \]))
+  [(fv (any_1 \[ any_2 \]))
    (id_1 ... id_2 ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where (id_2 ...) (fv e_2))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))]
 
-  [(fv (\( e \)))
-   (fv e)]
+  [(fv (\( any \)))
+   (fv any)]
 
   [(fv (\{ field ... \}))
    (id ... ...)
@@ -629,28 +652,34 @@
    (where ((id ...) ...) ((fv field) ...))]
 
   ; Table field with key defined
-  [(fv (\[ e_1 \] = e_2))
+  [(fv (\[ any_1 \] = any_2))
    (id_1 ... id_2 ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where (id_2 ...) (fv e_2))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))]
 
-  [(fv (e_1 binop e_2))
+  [(fv (any_1 binop any_2))
    (id_1 ... id_2 ...)
 
-   (where (id_1 ...) (fv e_1))
-   (where (id_2 ...) (fv e_2))]
+   (where (id_1 ...) (fv any_1))
+   (where (id_2 ...) (fv any_2))]
 
-  [(fv (unop e))
-   (fv e)]
+  [(fv (unop any))
+   (fv any)]
 
   [(fv r)
    ()]
 
-  [(fv (< e ... >))
+  [(fv (< any ... >))
    (id ... ...)
 
-   (where ((id ...) ...) ((fv e) ...))]
+   (where ((id ...) ...) ((fv any) ...))]
+
+   [(fv (any_1 (any_2 ...)))
+   (id_1 ... id_2 ... ...)
+
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
 
   
   ;                                                                  
@@ -680,11 +709,11 @@
    (where (id_1 ...) (fv e))
    (where (id_2 ...) (fv v))]
 
-  [(fv (e explabel))
-   (fv e)]
+  [(fv (any explabel))
+   (fv any)]
 
-  [(fv (s (renv ...) RetExp))
-   (fv s)]
+  [(fv (any (renv ...) RetExp))
+   (fv any)]
   )
 
 (provide fv)

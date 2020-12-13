@@ -7,6 +7,7 @@
          "../../../Relations/termsValStore.rkt"
          "../../../Relations/termsObjStore.rkt"
          "../../../Relations/termsValObjStore.rkt"
+         "../../../Relations/meta.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
          "../../../Meta-functions/valStoreMetafunctions.rkt"
@@ -322,10 +323,9 @@
    (well_formed_term any σ θ (function Name_1 (Name_2 ... <<<) s end))]
 
   ; vararg mark
-  [(side-condition ,(redex-match ext-lang
-                                 (in-hole C_2 (function Name_1 (Name_2 ... <<<)
-                                                        C_3 end))
-                                 (term any)))
+  [; <<< is being captured, according to the scoping rules codified in fv
+   (side-condition ,(not (member (term <<<)
+                                 (term (fv ,(plug (term any) (term <<<)))))))
    ---------------------------------------------------------------------------
    (well_formed_term any σ θ <<<)]
 
