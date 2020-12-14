@@ -103,6 +103,10 @@
   ;                                                                  
   ;                                                                  
   ;
+  
+  [(substExp (s (renv ...) RetExp) ((id e) ...))
+   ((substBlock s ((id e) ...)) (renv ...) RetExp)]
+  
   [(substExp ($err v) ((id e) ...))
    ($err v)]
 
@@ -271,9 +275,6 @@
 
   [(substBlock (s (renv ...) RetStat) ((id e) ...))
    ((substBlock s ((id e) ...)) (renv ...) RetStat)]
-
-  [(substBlock (s (renv ...) RetExp) ((id e) ...))
-   ((substBlock s ((id e) ...)) (renv ...) RetExp)]
   )
 
 (provide substBlock)

@@ -882,8 +882,7 @@
    v_3
    
    (side-condition (equal? (term (δ == v_1 v_2))
-                           'true))
-   ]
+                           'true))]
   
   ; {v isn't a key of the table pointed by objref}
   [(δ rawget objref v θ)
