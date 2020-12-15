@@ -778,12 +778,22 @@
     )
   )
 
+; generates "attempts" examples taking into account left side of the rules
+; from "rel"
 (define (soundness_wfc rel attempts)
   (redex-check ext-lang any
                (soundness_wfc_pred (term any) #f)
                #:prepare close_conf
                #:attempts attempts
                #:source rel
+               ))
+
+; generates "attempts" examples following the pattern (σ : θ : s)
+(define (soundness_wfc_no_rel attempts)
+  (redex-check ext-lang (σ : θ : s)
+               (soundness_wfc_pred (term (σ : θ : s)) #f)
+               #:prepare close_conf
+               #:attempts attempts
                ))
 
 (define (soundness_wfc_coverage rel attempts)
@@ -797,6 +807,21 @@
       (values (covered-cases rel-coverage)
               (covered-cases full-progs-rel-coverage)))))
 
+; TODO: any way to automate this?
+(define terms-rel-rules 50)
+(define terms-val-store-rules 3)
+(define terms-obj-store-rules 11)
+(define terms-val-obj-store-rules 3)
+(define meta-rules 23)
+(define full-rules (+ terms-rel-rules
+                      terms-val-store-rules
+                      terms-obj-store-rules
+                      terms-val-obj-store-rules
+                      meta-rules))
+; ratio of the examples generated following the left side of rules, with respect
+; to the total amount of examples
+(define ratio-prepare (/ 2 3))
+
 (define (soundness_wfc_full_coverage attempts)
   ; create records to register test coverage related with ↦
   (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
@@ -805,15 +830,30 @@
         ([relation-coverage (list full-progs-rel-coverage)])
       (begin
         ; 50 rules in terms-rel
-        (soundness_wfc terms-rel (floor (* attempts (/ 50 90))))
+        (soundness_wfc terms-rel (floor (* (* attempts (/ terms-rel-rules
+                                                          full-rules))
+                                           ratio-prepare)))
         ; 3 rules in terms-val-store
-        (soundness_wfc terms-val-store (floor (* attempts (/ 3 90))))
+        (soundness_wfc terms-val-store (floor (* (* attempts (/ terms-val-store-rules
+                                                                full-rules))
+                                                 ratio-prepare)))
         ; 11 rules in terms-obj-store
-        (soundness_wfc terms-obj-store (floor (* attempts (/ 11 90))))
+        (soundness_wfc terms-obj-store (floor (* (* attempts (/ terms-obj-store-rules
+                                                                full-rules))
+                                                 ratio-prepare)))
         ; 3 rules in terms-val-obj-store
-        (soundness_wfc terms-val-obj-store (floor (* attempts (/ 3 90))))
+        (soundness_wfc terms-val-obj-store (floor (* (* attempts (/ terms-val-obj-store-rules
+                                                                    full-rules))
+                                                     ratio-prepare)))
         ; 23 rules in meta
-        (soundness_wfc meta (floor (* attempts (/ 23 90))))
+        (soundness_wfc meta (floor (* (* attempts (/ meta-rules
+                                                     full-rules))
+                                      ratio-prepare)))
+
+        ; remaining tests taken just from arbitrary terms of the grammar
+        (soundness_wfc_no_rel (floor (* attempts
+                                        (- 1 ratio-prepare))))
+        
         (values (covered-cases full-progs-rel-coverage))))))
 
 ;                  

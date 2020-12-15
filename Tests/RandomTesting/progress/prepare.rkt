@@ -85,42 +85,39 @@
 ; redex-check tends to generate stores with repeated references
 ; (typically (ref 0)); fix_sigma_dom implements a simple fix to that
 (define-metafunction ext-lang
-  fix_sigma_dom : σ θ t -> (σ θ t)
+  fix_sigma_dom : σ -> (σ ((r r) ...))
 
   ; empty store or refStdout
-  [(fix_sigma_dom ((refStdout String) ...) θ t)
-   (((refStdout String) ...) θ t)]
+  [(fix_sigma_dom ((refStdout String) ...))
+   (((refStdout String) ...) ())]
 
   ; with or without refStdout
-  [(fix_sigma_dom ((refStdout String) ... ((ref natural) v) vsp_1 ...) θ_1 t_1)
-   (((refStdout String) ... vsp_2 ...) θ_2 t_2)
+  [(fix_sigma_dom ((refStdout String) ... ((ref natural) v) vsp_1 ...))
+   (((refStdout String) ... vsp_2 ...) ((r_1 r_2) ...))
    
-   (where ((vsp_2 ...) θ_2 t_2) (fix_sigma_dom_aux (((ref natural) v) vsp_1 ...)
-                                                   natural
-                                                   θ_1 t_1))]
+   (where ((vsp_2 ...) ((r_1 r_2) ...))
+          (fix_sigma_dom_aux (((ref natural) v) vsp_1 ...)
+                             natural
+                             ()))]
   )
 
 ; enforces a well-formed dom(σ) by replacing each reference with a
-; reference that is unique; applies the corresponding substitution of references
-; in θ and t
+; reference that is unique; returns the list of substitutes for each reference
 ; PRE : {refStdout ∉ dom(σ)}
 (define-metafunction ext-lang
-  fix_sigma_dom_aux : σ natural θ t -> (σ θ t)
+  fix_sigma_dom_aux : σ natural ((r r) ...) -> (σ ((r r) ...))
 
-  [(fix_sigma_dom_aux () natural θ t)
-   (() θ t)]
+  [(fix_sigma_dom_aux () natural ((r r) ...))
+   (() ((r r) ...))]
 
-  [(fix_sigma_dom_aux ((r_1 v) vsp_1 ...) natural_1 θ_1 t_1)
-   ((((ref natural_1) v) vsp_2 ...) θ_3 t_3)
+  [(fix_sigma_dom_aux ((r_1 v) vsp_1 ...) natural_1 ((r_2 r_3) ...))
+   ((((ref natural_1) v) vsp_2 ...)
+    ((r_2 r_3) ... (r_1 (ref natural_1)) (r_4 r_5) ...))
 
    (where natural_2 ,(+ 1 (term natural_1)))
    
-   ; replace the old ref by the new one in θ_1 and t_1
-   (where θ_2 (substTheta θ_1 ((r_1 (ref natural_1)))))
-   (where t_2 (subst t_1 ((r_1 (ref natural_1)))))
-   
-   (where ((vsp_2 ...) θ_3 t_3)
-          (fix_sigma_dom_aux (vsp_1 ...) natural_2 θ_2 t_2))]
+   (where ((vsp_2 ...) ((r_4 r_5) ...))
+          (fix_sigma_dom_aux (vsp_1 ...) natural_2 ()))]
   )
 
 
@@ -283,8 +280,11 @@
    ; add dummy vals. and bound free refs
    (where σ_1 (vsp ... (r_1 1) ... (r_2 1) ...))
    ; enforce well-formedness of dom(σ_1), apply expected substitution of refs
-   ; in θ and t
-   (where (σ_2 (osp_2 ...) t_2) (fix_sigma_dom σ_1 (osp_1 ...) t_1))
+   ; in (osp_1 ...) and t_1
+   (where (σ_2 ((r_3 r_4) ...)) (fix_sigma_dom σ_1))
+   ; replace the old refs by the new ones in (osp_1 ...) and t_1
+   (where (osp_2 ...) (substTheta (osp_1 ...) ((r_3 r_4) ...)))
+   (where t_2 (subst t_1 ((r_3 r_4) ...)))
    
    ; get free tids, cids from t and θ
    (where (tid_1 ...) (free_tids (osp_2 ...) t_2))
@@ -301,22 +301,29 @@
                (cid_1 (function x () \; end)) ...
                (cid_2 (function x () \; end)) ...))
    
-   ; enforce well-formedness of dom(θ_1) and img; applies the expected
-   ; substitutions in t
-   (where (θ_2 t_3) (fix_theta_dom_img θ_1 t_2))]
+   ; enforce well-formedness of dom(θ_1) and img
+   (where (θ_2 ((objid_1 objid_2) ...)) (fix_theta_dom_img θ_1))
+   ; apply the expected substitutions in t
+   (where t_3 (subst t_2 ((objid_1 objid_2) ...)))
+   ]
   )
 
 ; redex-check tends to generate stores with repeated references
 ; (typically (objr 0)); fix_theta_dom implements a simple fix to that;
 ; it also enforces well-formedness of the img
 (define-metafunction ext-lang
-  fix_theta_dom_img : θ t -> (θ t)
+  fix_theta_dom_img : θ -> (θ ((objid objid) ...))
 
-  [(fix_theta_dom_img () t)
-   (() t)]
+  [(fix_theta_dom_img ())
+   (() ())]
 
-  [(fix_theta_dom_img (((any natural) object) osp ...) t)
-   (fix_theta_dom_img_aux () (((any natural) object) osp ...) natural t)]
+  [(fix_theta_dom_img (((any natural) object) osp ...))
+   (θ_2 ((objid_1 objid_2) ...))
+
+   (where (θ_1 ((objid_1 objid_2) ...))
+          (fix_theta_dom_img_aux (((any natural) object) osp ...) natural ()))
+   ; apply substitution in img of θ_1
+   (where θ_2 (substTheta θ_1 ((objid_1 objid_2) ...)))]
    
   )
 
@@ -324,98 +331,81 @@
 ; reference that is unique; it also enforces well-formedness of the img
 ; PRE : {θ_1 ++ θ_2 = θ}
 (define-metafunction ext-lang
-  fix_theta_dom_img_aux : θ θ natural t -> (θ t)
+  fix_theta_dom_img_aux : θ natural ((objid objid) ...) -> (θ ((objid objid) ...))
 
-  [(fix_theta_dom_img_aux θ () natural t)
-   (θ t)]
+  [(fix_theta_dom_img_aux () natural ((objid_1 objid_2) ...))
+   (() ((objid_1 objid_2) ...))]
 
-  [(fix_theta_dom_img_aux θ_1
-                          (((objr natural_1) (tableconstructor_1 any_1 pos))
+  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor any pos))
                            osp_1 ...)
-                          natural_2 t_1)
-   (fix_theta_dom_img_aux
-    (osp_2 ... ((objr natural_2)
-                ; in order to bound free ids in tableconstructor_1,
-                ; close_term_meta returned a functiondef; we put it into a new
-                ; table
-                ((\{ (\[ 1 \] = functiondef) \}) any_2 pos)))
-    (osp_3 ...) natural_3 t_2)
+                          natural_2
+                          ((objid_1 objid_2) ...))
+   ((((objr natural_2)
+      ; in order to bound free ids in tableconstructor_1,
+      ; close_term_meta returned a functiondef; we put it into a new
+      ; table
+      ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
+     osp_3 ...)
 
-   ; substitute (objr natural_1) by (objr natural_2) in t_1 and θ = θ_1 ++ ...
-   (where t_2 (subst t_1 (((objr natural_1) (objr natural_2)))))
-   (where (osp_2 ...) (substTheta θ_1 (((objr natural_1) (objr natural_2)))))
-   ; substitution into (tableconstructor_1 any_1 pos)
-   (where tableconstructor_2 (substExp tableconstructor_1
-                                       (((objr natural_1) (objr natural_2)))))
-   (where any_2 (substExp any_1
-                          (((objr natural_1) (objr natural_2)))))
-   ; substitution in what remains of θ
-   (where (osp_3 ...) (substTheta (osp_1 ...)
-                                  (((objr natural_1) (objr natural_2)))))
+   ((objid_1 objid_2) ...
+     ((objr natural_1) (objr natural_2))
+     (objid_3 objid_4) ...))
 
-   ; table constructor must be well formed; note that, if any_1 is a ref
-   ; not in dom(θ), it will add it to θ when bounding free refs;
+   ; table constructor must be well formed; 
    ; the following holds when tableconstructor has free variables id
-   (where functiondef (close_term_meta tableconstructor_2))
+   (where functiondef (close_term_meta tableconstructor))
 
     ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))]
+   (where natural_3 ,(+ 1 (term natural_2)))
+
+   (where ((osp_3 ...) ((objid_3 objid_4) ...))
+          (fix_theta_dom_img_aux (osp_1 ...)
+                                 natural_3
+                                 ()))]
+
+  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor any pos))
+                           osp_1 ...)
+                          natural_2
+                          ((objid_1 objid_2) ...))
+   ((((objr natural_2) (tableconstructor any pos)) osp_3 ...)
+
+   ((objid_1 objid_2) ...
+     ((objr natural_1) (objr natural_2))
+     (objid_3 objid_4) ...))
+
+   ; table constructor must be well formed; 
+   ; the following holds when tableconstructor does not have free vars
+   (where tableconstructor (close_term_meta tableconstructor))
+
+    ; next pos in θ
+   (where natural_3 ,(+ 1 (term natural_2)))
+
+   (where ((osp_3 ...) ((objid_3 objid_4) ...))
+          (fix_theta_dom_img_aux (osp_1 ...)
+                                 natural_3
+                                 ()))]
 
   
-  [(fix_theta_dom_img_aux θ_1
-                          (((objr natural_1) (tableconstructor_1 any_1 pos))
+  [(fix_theta_dom_img_aux (((cl natural_1) functiondef_1)
                            osp_1 ...)
-                          natural_2 t_1)
-   (fix_theta_dom_img_aux
-    (osp_2 ... ((objr natural_2) (tableconstructor_2 any_2 pos)))
-    (osp_3 ...) natural_3 t_2)
+                          natural_2
+                          ((objid_1 objid_2) ...))
+   ((((cl natural_2) functiondef_2) osp_3 ...)
 
-   ; substitute (objr natural_1) by (objr natural_2) in t_1 and θ = θ_1 ++ ...
-   (where t_2 (subst t_1 (((objr natural_1) (objr natural_2)))))
-   (where (osp_2 ...) (substTheta θ_1 (((objr natural_1) (objr natural_2)))))
-   ; substitution into (tableconstructor_1 any_1 pos)
-   (where tableconstructor_2 (substExp tableconstructor_1
-                                       (((objr natural_1) (objr natural_2)))))
-   (where any_2 (substExp any_1
-                          (((objr natural_1) (objr natural_2)))))
-   ; substitution in what remains of θ
-   (where (osp_3 ...) (substTheta (osp_1 ...)
-                                  (((objr natural_1) (objr natural_2)))))
+   ((objid_1 objid_2) ...
+     ((cl natural_1) (cl natural_2))
+     (objid_3 objid_4) ...))
 
-   ; table constructor must be well formed; note that, if any_1 is a ref
-   ; not in dom(θ), it will add it to θ when bounding free refs;
-   ; the following holds when tableconstructor does not have free vars
-   (where tableconstructor_2 (close_term_meta tableconstructor_2))
+   ; functiondef_1 must be well-formed
+   (where functiondef_2 (close_term_meta functiondef_1))
 
     ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))]
+   (where natural_3 ,(+ 1 (term natural_2)))
 
-  
-  [(fix_theta_dom_img_aux θ_1
-                          (((cl natural_1) functiondef_1)
-                           osp_1 ...)
-                          natural_2 t_1)
-   (fix_theta_dom_img_aux
-    (osp_2 ... ((cl natural_2) functiondef_3))
-    (osp_3 ...) natural_3 t_2)
-
-   ; substitute (objr natural_1) by (objr natural_2) in t_1 and θ = θ_1 ++ ...
-   (where t_2 (subst t_1 (((objr natural_1) (objr natural_2)))))
-   (where (osp_2 ...) (substTheta θ_1 (((objr natural_1) (objr natural_2)))))
-   ; substitution into functiondef_1
-   (where functiondef_2 (substExp functiondef_1
-                                  (((objr natural_1) (objr natural_2)))))
-   ; substitution in what remains of θ
-   (where (osp_3 ...) (substTheta (osp_1 ...)
-                                  (((objr natural_1) (objr natural_2)))))
-
-   ; table constructor must be well formed; note that, if any_1 is a ref
-   ; not in dom(θ), it will add it to θ when bounding free refs;
-   ; the following holds when tableconstructor does not have free vars
-   (where functiondef_3 (close_term_meta functiondef_2))
-
-    ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))]
+   (where ((osp_3 ...) ((objid_3 objid_4) ...))
+          (fix_theta_dom_img_aux (osp_1 ...)
+                                 natural_3
+                                 ()))]
   )
 
 ;                                                                                                                       

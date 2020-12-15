@@ -1457,7 +1457,8 @@
   [(δ math.asin Number_1)
    Number_2
 
-   ; check that the result is in the set of real numbers
+   ; check that the result is in the set of real numbers (for parameter outside
+   ; of [-1;1], the result will be a number with a non-zero complex part
    (where Number_2 ,(asin (term Number_1)))]
 
   ; parameter outside of [-1;1]
@@ -1675,13 +1676,18 @@
    
    (where Number_2 (δ tonumber String nil))]
 
-  [(δ math.log Number nil)
-   ,(log (term Number))]
+  [(δ math.log Number_1 nil)
+   ,(log (term Number_2))
+
+   (where Number_2 ,(exact->inexact (term Number_1)))]
 
   [(δ math.log Number_1 Number_2)
    (δ /
-      (δ math.log Number_1 nil)
-      (δ math.log Number_2 nil))]
+      (δ math.log Number_3 nil)
+      (δ math.log Number_4 nil))
+
+   (where Number_3 ,(exact->inexact (term Number_1)))
+   (where Number_4 ,(exact->inexact (term Number_2)))]
 
   ;                          
   ;                          
