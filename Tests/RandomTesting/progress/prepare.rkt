@@ -2,6 +2,7 @@
 
 (require redex
          "../../../grammar.rkt"
+         "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
          )
 
@@ -336,7 +337,7 @@
   [(fix_theta_dom_img_aux () natural ((objid_1 objid_2) ...))
    (() ((objid_1 objid_2) ...))]
 
-  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor any pos))
+  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
                            osp_1 ...)
                           natural_2
                           ((objid_1 objid_2) ...))
@@ -351,9 +352,11 @@
      ((objr natural_1) (objr natural_2))
      (objid_3 objid_4) ...))
 
-   ; table constructor must be well formed; 
-   ; the following holds when tableconstructor has free variables id
-   (where functiondef (close_term_meta tableconstructor))
+   ; table constructor must be well formed: deleted nil, nan or repeated keys;
+   ; bound free variables
+   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
+   ; the following holds when tableconstructor_2 has free variables id
+   (where functiondef (close_term_meta tableconstructor_2))
 
     ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))
@@ -363,19 +366,21 @@
                                  natural_3
                                  ()))]
 
-  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor any pos))
+  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
                            osp_1 ...)
                           natural_2
                           ((objid_1 objid_2) ...))
-   ((((objr natural_2) (tableconstructor any pos)) osp_3 ...)
+   ((((objr natural_2) (tableconstructor_2 any pos)) osp_3 ...)
 
    ((objid_1 objid_2) ...
      ((objr natural_1) (objr natural_2))
      (objid_3 objid_4) ...))
 
-   ; table constructor must be well formed; 
+   ; table constructor must be well formed: deleted nil, nan or repeated keys;
+   ; bound free variables
+   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
    ; the following holds when tableconstructor does not have free vars
-   (where tableconstructor (close_term_meta tableconstructor))
+   (where tableconstructor_2 (close_term_meta tableconstructor_2))
 
     ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))
@@ -408,6 +413,44 @@
                                  ()))]
   )
 
+; fix repeated keys and nil, nan keys
+(define-metafunction ext-lang
+  fix_tableconstructor : tableconstructor -> tableconstructor
+
+  [(fix_tableconstructor (\{ field_1 ... \}))
+   (\{ field_2 ... \})
+
+   (where (field_2 ...) (fix_tableconstructor_aux (field_1 ...) ()))]
+  )
+
+(define-metafunction ext-lang
+  fix_tableconstructor_aux : (field ...) (field ...) -> (field ...)
+
+  [(fix_tableconstructor_aux () (field ...))
+   (field ...)]
+
+  ; discard fields with nil or nan key
+  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...) (field_2 ...))
+   (fix_tableconstructor_aux (field_1 ...) (field_2 ...))
+
+   (side-condition (or (is_nil? (term v_1))
+                       (equal? (term v_1)
+                               +nan.0)))]
+
+  ; discard fields with repeated key, according to (δ ==)
+  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...)
+                             ((\[ v_3 \] = v_4) ...))
+   (fix_tableconstructor_aux (field_1 ...) ((\[ v_3 \] = v_4) ...))
+
+   (side-condition (memf (lambda (arg)
+                           (equal? (term (δ == v_1 ,arg))
+                                   (term true)))
+                           (term (v_3 ...))))]
+
+  ; default: field does not have a nil, nan or repeated key
+  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...) (field_2 ...))
+   (fix_tableconstructor_aux (field_1 ...) (field_2 ... (\[ v_1 \] = v_2)))]
+  )
 ;                                                                                                                       
 ;                                                                                                                       
 ;                                                                                                                       

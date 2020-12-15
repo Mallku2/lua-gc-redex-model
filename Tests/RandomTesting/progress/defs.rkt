@@ -32,13 +32,54 @@
 ;                                                                                          
 ;                                                                                          
 ;
+; stored tables have more constraints than regular tableconstructor; the
+; following formal systems checks them
+(define-judgment-form
+  ext-lang
+  #:mode (well_formed_stored_table I I I I)
+  #:contract (well_formed_stored_table C σ θ (field ...))
+
+  ; rule added to simplify the use of this system
+  [---------------------------------------------------------------------------
+   (well_formed_stored_table any σ θ ())]
+
+  [; key must not be nil or nan
+   (side-condition ,(not (or (is_nil? (term e_1))
+                             (equal? (term e_1)
+                                     +nan.0))))
+   ; value must not be nil
+   (side-condition ,(not (is_nil? (term e_2))))
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2)
+   ---------------------------------------------------------------------------
+   (well_formed_stored_table any σ θ ((\[ e_1 \] = e_2)))]
+
+  [; key must not be nil or nan
+   (side-condition ,(not (or (is_nil? (term e_1))
+                             (equal? (term e_1)
+                                     +nan.0))))
+   ; key must not be repeated
+   (where ((\[ e_3 \] = e_4) ...) (field_1 field_2 ...))
+   ; value must not be nil
+   (side-condition ,(not (is_nil? (term e_2))))
+   
+   (side-condition ,(memf (lambda (arg)
+                            (equal? (term (δ == e_1 ,arg))
+                                    (term true)))
+                          (term (e_3 ...))))
+   
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2)
+   (well_formed_stored_table any σ θ (field_1 field_2 ...))
+   ---------------------------------------------------------------------------
+   (well_formed_stored_table any σ θ ((\[ e_1 \] = e_2) field_1 field_2 ...))]
+  )
+
 (define-judgment-form
   ext-lang
   #:mode (well_formed_conf_table_field I I I I)
-  #:contract (well_formed_conf_table_field C σ θ (side-condition
-                                                  any
-                                                  (is_term? (term any))))
-  
+  #:contract (well_formed_conf_table_field C σ θ (field ...))
+
   [(well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
    ---------------------------------------------------------------------------
@@ -62,12 +103,11 @@
   )
 
 
+
 (define-judgment-form
   ext-lang
   #:mode (well_formed_term I I I I)
-  #:contract (well_formed_term C σ θ (side-condition
-                                      any
-                                      (is_term? (term any))))
+  #:contract (well_formed_term C σ θ t)
 
 
   ;                                          
@@ -156,19 +196,13 @@
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (local Name ... = e ... in s end))]
 
-  [(well_formed_term any σ θ r)
+  [(well_formed_term any σ θ r) ...
    (well_formed_term ,(plug (term any)
-                            (term (hole ((rEnv r)) LocalBody))) σ θ s)
-   --------------------------------------------------------------------------
-   (well_formed_term any σ θ (s ((rEnv r)) LocalBody))]
-
-  [(well_formed_term any σ θ renv) ...
-   (well_formed_term ,(plug (term any)
-                            (term (hole (renv ...)
+                            (term (hole ((rEnv r) ...)
                                         LocalBody))) σ θ s)
    --------------------------------------------------------------------------
    (well_formed_term any σ θ
-                     (s (renv ...) LocalBody))]
+                     (s ((rEnv r) ...) LocalBody))]
 
   ; conc stats
   [(well_formed_term any σ θ s_1)
@@ -619,33 +653,30 @@
 
 (define-metafunction ext-lang
   well_formed_osp : osp σ θ -> any
-
-  [(well_formed_osp (tid_1 (tableconstructor tid_2 pos)) σ θ)
+  
+  [(well_formed_osp (tid_1 ((\{ field ... \}) tid_2 pos)) σ θ)
    #t
    
    ; meta-table tid_2 must not be removed before tid_1
    (side-condition (term (refBelongsToTheta? tid_2 θ)))
 
    ; table constructor must be well formed
-   (side-condition (judgment-holds (well_formed_term hole σ θ 
-                                                     tableconstructor)))
-   ]
+   (side-condition (judgment-holds (well_formed_stored_table hole σ θ 
+                                                             (field ...))))]
 
-  [(well_formed_osp (tid_1 (tableconstructor nil pos)) σ θ)
+  [(well_formed_osp (tid_1 ((\{ field ... \}) nil pos)) σ θ)
    #t
    
    ; table constructor must be well formed
-   (side-condition (judgment-holds (well_formed_term hole σ θ 
-                                                     tableconstructor)))
-   ]
+   (side-condition (judgment-holds (well_formed_stored_table hole σ θ 
+                                                             (field ...))))]
 
   [(well_formed_osp (cid functiondef) σ θ)
    #t
    
    ; functiondef must be well formed
    (side-condition (judgment-holds (well_formed_term hole σ θ 
-                                                     functiondef)))
-   ]
+                                                     functiondef)))]
 
   ; default
   [(well_formed_osp any ...)

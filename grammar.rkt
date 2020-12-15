@@ -170,15 +170,20 @@
             StrLenWrongOp
             WrongFunCall]
 
+  ; tables
+  [field (\[ e \] = e)
+         ; we need to allow fields like this
+         e]
+
+  [tableconstructor (\{ field ... \})]
+  
   [(efield ef) (\[ v \] = v)
                v]
   
-  [field (\[ e \] = e)
-         ; We need to allow fields like this
-         e]
-  
-  [tableconstructor (\{ field ... \})]
-  
+  [evaluatedtable (\{ efield ... \})]
+
+
+  ; primitive operators
   [arithop + - * / ^ %]
   
   [relop < <= > >=]
@@ -201,8 +206,6 @@
        ; run-time expression
        evar]
   
-  [evaluatedtable (\{ efield ... \})]
-
   ; terms: s ∪ e; for better spec. of some relations
   [t s e]
     
@@ -227,9 +230,10 @@
   [pos natural
        ⊥
        ⊘]
-  
-  [intreptable (evaluatedtable tid pos)
-               (evaluatedtable nil pos)
+
+  ; we need to force tables with fields with keys and values
+  [intreptable ((\{ (\[ v \] = v) ... \}) tid pos)
+               ((\{ (\[ v \] = v) ... \}) nil pos)
                ]
 
   ; References for the representation of the environment 

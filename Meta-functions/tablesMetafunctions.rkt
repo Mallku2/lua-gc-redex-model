@@ -14,7 +14,7 @@
   [(addKeys (\{ efield ... \}))
    ,(append (term (\{ ))
             (term any_3)
-            (term any_4)
+            (term any_5)
             (term ( \})))
    
    ; From "efield ..." extract fields of the form "value"
@@ -39,14 +39,14 @@
                       ; List of values.
                       (term any_1)))
 
-   ; Delete nil valued fields
+   ; delete nil valued fields
    (where any_3 ,(filter (lambda (field)
                             (not (redex-match ext-lang
                                         (\[ v \] = nil)
                                         field)))
                          (term any_2)))
 
-   ; From "efield ...", extract fields of the form "[ key ] = value"
+   ; from "efield ...", extract fields of the form "[ key ] = value"
    (where any_4 ,(filter (lambda (field)
                            ; Omit fields with numeric keys in [1; Number]
                            ((lambda (match)
@@ -68,7 +68,19 @@
                             (redex-match ext-lang
                                          (\[ any_1 \] = any_2)
                                          field)))
-                         (term (efield ...))))]
+                         (term (efield ...))))
+
+   ; Delete nil valued fields, or fields with key nil or nan
+   (where any_5 ,(filter (lambda (field)
+                            (not (redex-match ext-lang
+                                        (side-condition
+                                         (\[ v_1 \] = v_2)
+                                         (or (is_nil? (term v_1))
+                                             (equal? (term v_1)
+                                                     +nan.0)
+                                             (is_nil? (term v_2))))
+                                        field)))
+                         (term any_4)))]
 
   ; Default case: empty table constructor
   [(addKeys evaluatedtable)
