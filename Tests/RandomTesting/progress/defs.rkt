@@ -60,13 +60,14 @@
                                      +nan.0))))
    ; key must not be repeated
    (where ((\[ e_3 \] = e_4) ...) (field_1 field_2 ...))
+   
+   (side-condition ,(not (memf (lambda (arg)
+                                 (equal? (term (δ == e_1 ,arg))
+                                         (term true)))
+                               (term (e_3 ...)))))
+
    ; value must not be nil
    (side-condition ,(not (is_nil? (term e_2))))
-   
-   (side-condition ,(memf (lambda (arg)
-                            (equal? (term (δ == e_1 ,arg))
-                                    (term true)))
-                          (term (e_3 ...))))
    
    (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
