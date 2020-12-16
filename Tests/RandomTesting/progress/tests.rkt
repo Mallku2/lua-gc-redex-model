@@ -149,7 +149,7 @@
   ; do - end
   (test-equal
    (judgment-holds
-    (well_formed_term hole () () (do (function x (y) break end) end)))
+    (well_formed_term hole () () (do (x = (function x (y) break end)) end)))
    #f)
 
   ; conditional
@@ -261,11 +261,6 @@
     (well_formed_term hole () () ($err 1)))
    #t)
 
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole () () ($err (function x (y) break end))))
-   #f)
-
   
   ;                                                                          
   ;                                                                          
@@ -309,10 +304,10 @@
     (well_formed_term hole () () (\; Break)))
    #t)
 
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole () () ((if true then \; else \; end) Break)))
-   #f)
+;  (test-equal
+;   (judgment-holds
+;    (well_formed_term hole () () ((if true then \; else \; end) Break)))
+;   #f)
 
   (test-equal
    (judgment-holds
@@ -357,26 +352,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      (((objr 1) ((\{ \}) nil 0)))
-                      ((((objr 1) \[ (function x (y) break end) \]) = 2)
-                       WrongKey)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      (((objr 1) ((\{ \}) nil 0)))
-                      ((((objr 1) \[ (function x (y) break end) \]) = 2)
-                       WrongKey)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      (((objr 1) ((\{ \}) nil 0)))
-                      ((((objr 1) \[ 1 \]) = (function x (y) break end))
+                      (((objr 1) ((\{ (\[ 1 \] = 2) (\[ 1 \] = 2) \}) nil 0)))
+                      ((((objr 1) \[ 1 \]) = 2)
                        WrongKey)))
    #f)
 
@@ -385,7 +362,7 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      (((objr 1) ((\{ \}) nil 0)))
+                      ()
                       (((1 \[ 2 \]) = 3)
                        NonTable)))
    #t)
@@ -403,17 +380,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      ()
-                      (((1 \[ (function x (y) break end) \]) = 3)
-                       NonTable)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      (((1 \[ 2 \]) = (function x (y) break end))
+                      (((objr 1) ((\{ \}) nil 0)))
+                      ((((objr 1) \[ 1 \]) = 3)
                        NonTable)))
    #f)
 
@@ -422,8 +390,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      ()
-                      (($statFunCall (function x (y) break end) ())
+                      (((cl 1) (function x (y) break end)))
+                      (($statFunCall (cl 1) ())
                        WrongFunCall)))
    #f)
 
@@ -447,16 +415,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      ()
-                      ((1 ((function x (y) break end))) WrongFunCall)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 (2 (function x (y) break end))) WrongFunCall)))
+                      (((cl 1) (function x (y) break end)))
+                      (((cl 1) (1)) WrongFunCall)))
    #f)
 
   ; FunCall
@@ -887,14 +847,6 @@
                       ((1 (2)) ProtectedMode 1)))
    #t)
 
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 (2)) ProtectedMode x)))
-   #f)
-
   ; NonTable
   (test-equal
    (judgment-holds
@@ -908,24 +860,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      ()
-                      ((x \[ 2 \]) NonTable)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 \[ x \]) NonTable)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      (((objr 1) \[ x \]) NonTable)))
+                      (((objr 1) ((\{ \}) nil 1)))
+                      (((objr 1) \[ 2 \]) NonTable)))
    #f)
 
   ; WrongKey
@@ -941,16 +877,8 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      ()
-                      ((x \[ 1 \]) WrongKey)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      (((objr 1) ((\{ \}) nil 1)))
-                      (((objr 1) \[ x \]) WrongKey)))
+                      (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))
+                      (((objr 1) \[ 1 \]) WrongKey)))
    #f)
 
   ; ArithWrongOps
@@ -967,16 +895,8 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((x + true) ArithWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 + x) ArithWrongOps)))
-   #f)
+                      (("1" + "1") ArithWrongOps)))
+   #t)
 
   (test-equal
    (judgment-holds
@@ -1000,7 +920,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((x .. 1) StrConcatWrongOps)))
+                      (("1" .. 1) StrConcatWrongOps)))
    #f)
 
   (test-equal
@@ -1008,7 +928,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((1 .. x) StrConcatWrongOps)))
+                      ((1 .. "1") StrConcatWrongOps)))
    #f)
 
   (test-equal
@@ -1033,23 +953,15 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((x < 1) OrdCompWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((true < x) OrdCompWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
                       ((1 < 1) OrdCompWrongOps)))
+   #f)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      (("1" < "1") OrdCompWrongOps)))
    #f)
 
   ; StrLenWrongOp
@@ -1066,15 +978,23 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((\# "a")StrLenWrongOp)))
-   #f)
+                      ((\# false)StrLenWrongOp)))
+   #t)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      (((objr 1) ((\{ \}) nil 0)))
+                      ((\# (objr 1))StrLenWrongOp)))
+   #t)
 
   (test-equal
    (judgment-holds
     (well_formed_term hole
                       ()
                       ()
-                      ((\# x)StrLenWrongOp)))
+                      ((\# "a")StrLenWrongOp)))
    #f)
 
   ; NegWrongOp
@@ -1099,8 +1019,8 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((- x)NegWrongOp)))
-   #f)
+                      ((- "a")NegWrongOp)))
+   #t)
 
   ; EqFail
   (test-equal
@@ -1124,7 +1044,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((x == 2) EqFail)))
+                      (("a" == "a") EqFail)))
    #f)
 
   (test-equal
@@ -1132,7 +1052,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((1 == x) EqFail)))
+                      ((true == true) EqFail)))
    #f)
   
   (test-results)
