@@ -4,7 +4,7 @@
          "../Relations/fullProgs.rkt")
 
 (define (full-progs-rel-test-suite)
-  ; Full "while" loop
+  ; full "while" loop
   (test-->> full-progs-rel
             (term ((((ref 1) 2))
                    : ()
@@ -149,33 +149,7 @@
             (term (() : () : (local X = ($builtIn error ("error")) in \; end)))
             (term (() : () : ($err "error"))))
 
-  ; Protected Mode
-;  (test-->> full-progs-rel
-;            (term (()
-;                   : ()
-;                   : (return
-;                      (((function
-;                         $pcall (v <<<)
-;                         (return
-;                          ((((function $1 ()
-;                                       (return
-;                                        (((function $error (message level)
-;                                                    (return
-;                                                     ($builtIn
-;                                                      error
-;                                                      ("error"
-;                                                       nil)))
-;                                                    end)
-;                                          ())
-;                                         ReturnExp))
-;                                       end) ())
-;                            ReturnExp)
-;                           ProtectedMode))
-;                         end)
-;                        ()) ReturnExp))))
-;            (term (() : () : (return false "error"))))
-
-
+  ; protected Mode
   (test-->> full-progs-rel
             (term (()
                    : ()
@@ -184,15 +158,22 @@
                                 ((function $1 ()
                                   (return ($builtIn error ("error")))
                                   end))))))
-            (term (()
+            (term ((((ref 1) "error"))
                    :
                    (((cl 6)
-                    (function
-                     $1
-                     ()
-                     (return ($builtIn error ("error")))
-                     end)))
-                   : (return false "error"))))
+                     (function
+                      $1
+                      ()
+                      (return ($builtIn error ("error")))
+                      end))
+                    ((cl 7)
+                     (function
+                      $handler
+                      (errMsg)
+                      (return false errMsg)
+                      end)))
+                   :
+                   (return false "error"))))
   
   (test-->> full-progs-rel
             (term (()

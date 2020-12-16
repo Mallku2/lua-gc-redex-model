@@ -443,7 +443,12 @@
   (test-->> terms-rel
             (term ($builtIn pcall ((objr 1) 1 2)))
             
-            (term (((objr 1) (1 2)) ProtectedMode)))
+            (term ($builtIn
+                   xpcall
+                   ((objr 1)
+                    (function $handler (errMsg) (return false errMsg) end)
+                    1
+                    2))))
   
   ; tonumber
   (test-->> terms-rel
@@ -585,7 +590,7 @@
   (test-->> terms-rel
             (term ($builtIn math.log (1 nil)))
             
-            (term 0))
+            (term 0.0))
   
   ; rad
   (test-->> terms-rel

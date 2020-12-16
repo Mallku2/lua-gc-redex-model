@@ -419,7 +419,12 @@
   
   ; pcall
   (test-equal (term (δ pcall (objr 1) 1 2))
-              (term (((objr 1) (1 2)) ProtectedMode)))
+              (term ($builtIn
+                     xpcall
+                     ((objr 1)
+                      (function $handler (errMsg) (return false errMsg) end)
+                      1
+                      2))))
   
   ; select
   (test-equal (term (δ select -3 1 2))
@@ -623,7 +628,7 @@
 
   ; log
   (test-equal (term (δ math.log 1 nil))
-              (term 0))
+              (term 0.0))
 
   (test-equal (term (δ math.log 8 2))
               (term 3.0))
