@@ -10,10 +10,11 @@
 (define meta
   (reduction-relation
    ext-lang
+   #:arrow -->meta
    ;#:domain (θ : t)
    
    ; Call over a non-function value
-   [--> (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WrongFunCall))
+   [-->meta (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WrongFunCall))
         (θ : ($statFunCall ..._1 any (v_1 v_2 ...)))
         
         E-WrongStatFunCallWithHandler
@@ -24,7 +25,7 @@
 
         (side-condition (not (is_false_cond? (term any))))]
    
-   [--> (θ : (($statFunCall ... v_1 (v_2 ...)) WrongFunCall))
+   [-->meta (θ : (($statFunCall ... v_1 (v_2 ...)) WrongFunCall))
         (θ : ($err String))
         
         E-WrongStatFunCallNoHandler
@@ -37,14 +38,14 @@
         
         (where String (errmessage WrongFunCall (δ type v_1)))]
 
-   [--> (θ : ((v_1 \[ v_2 \]) explabel))
+   [-->meta (θ : ((v_1 \[ v_2 \]) explabel))
         (θ : (cid (v_1 v_2)))
         
         E-KeyNotFoundWithHandlerNormal
         ; determine if v_1 has a meta-table
         (where cid (indexMetaTable v_1 "__index" θ))]
    
-   [--> (θ : ((v_1 \[ v_2 \]) explabel))
+   [-->meta (θ : ((v_1 \[ v_2 \]) explabel))
         (θ : (v_3 \[ v_2 \]))
         
         E-KeyNotFoundWithHandlerRepeat
@@ -55,7 +56,7 @@
                                  (eq? (term (δ type v_3))
                                        "function"))))]
    
-   [--> (θ : ((tid \[ v \]) WrongKey))
+   [-->meta (θ : ((tid \[ v \]) WrongKey))
         (θ : nil)
         
         E-KeyNotFoundNoHandler
@@ -65,7 +66,7 @@
                                    "__index"
                                    θ))]
    
-   [--> (θ : ((v_1 \[ v_2 \]) NonTable))
+   [-->meta (θ : ((v_1 \[ v_2 \]) NonTable))
         (θ : ($builtIn error (String)))
         
         E-NonTableIndexedNoHandler
@@ -77,7 +78,7 @@
         (where String (errmessage NonTable
                                   (δ type v_1)))]
 
-   [--> (θ : ((v_1 binop v_2) explabel))
+   [-->meta (θ : ((v_1 binop v_2) explabel))
         (θ : (v_3 (v_1 v_2)))
         
         E-ArithOpWrongOperandsWithHandler
@@ -93,7 +94,7 @@
         
         (side-condition (not (is_false_cond? (term v_3))))]
    
-   [--> (θ : ((v_1 binop v_2) explabel))
+   [-->meta (θ : ((v_1 binop v_2) explabel))
         (θ : ($builtIn error (String)))
         
         E-ArithWrongOperandsNoHandler
@@ -110,7 +111,7 @@
                                   (δ type v_1)
                                   (δ type v_2)))]
    
-   [--> (θ : ((- v_1 )NegWrongOp))
+   [-->meta (θ : ((- v_1 )NegWrongOp))
         (θ : (v_2 (v_1)))
         
         E-NegationWrongOperandWithHandler
@@ -121,7 +122,7 @@
         
         (side-condition (not (is_false_cond? (term v_2))))]
    
-   [--> (θ : ((- v_1) NegWrongOp))
+   [-->meta (θ : ((- v_1) NegWrongOp))
         (θ : ($builtIn error (String)))
         
         E-NegationWrongOperandNoHandler
@@ -135,7 +136,7 @@
         (where String (errmessage NegWrongOp (δ type v_1)))]
    
     
-   [--> (θ : ((\# v_1) StrLenWrongOp))
+   [-->meta (θ : ((\# v_1) StrLenWrongOp))
         (θ : (v_2 (v_1)))
         
         LenWrongOpHandler
@@ -146,7 +147,7 @@
         
         (side-condition (not (is_nil? (term v_2))))]
    
-   [--> (θ : ((\# objref) StrLenWrongOp))
+   [-->meta (θ : ((\# objref) StrLenWrongOp))
         (θ : (δ \# evaluatedtable))
         
         LenWrongOpTable
@@ -158,7 +159,7 @@
         (where (osp_1 ... (objref (evaluatedtable any ...)) osp_2 ...)
                θ)]
    
-   [--> (θ : ((\# v) StrLenWrongOp))
+   [-->meta (θ : ((\# v) StrLenWrongOp))
         (θ : ($builtIn error (String_2)))
         
         E-LenWrongOpNoHandler
@@ -175,7 +176,7 @@
         (where String_2 (errmessage StrLenWrongOp String_1))]
    
    ; Abnormal expressions with relational operators
-   [--> (θ : ((v_1 == v_2)EqFail))
+   [-->meta (θ : ((v_1 == v_2)EqFail))
         (θ : (v_3 (v_1 v_2)))
         
         E-EqualityFailWithHandler
@@ -183,7 +184,7 @@
         (where v_3 (getEqualHandler v_1 v_2 θ))
         (side-condition (not (is_false_cond? (term v_3))))]
    
-   [--> (θ : ((v_1 == v_2)EqFail))
+   [-->meta (θ : ((v_1 == v_2)EqFail))
         (θ : false)
         
         E-EqualityFailNoHandler
@@ -192,7 +193,7 @@
         
         (side-condition (is_false_cond? (term v_3)))]
    
-   [--> (θ : ((v_1 relop v_2)OrdCompWrongOps))
+   [-->meta (θ : ((v_1 relop v_2)OrdCompWrongOps))
         (θ : (v_3 (v_1 v_2)))
         
         E-OrdCompFailWithHandler
@@ -204,7 +205,7 @@
         
         (side-condition (not (is_false_cond? (term v_3))))]
    
-   [--> (θ : ((v_1 < v_2)OrdCompWrongOps))
+   [-->meta (θ : ((v_1 < v_2)OrdCompWrongOps))
         (θ : ($builtIn error (String)))
         
         E-LessThanFailNoHandler
@@ -220,7 +221,7 @@
                                   (δ type v_1)
                                   (δ type v_2)))]
    
-   [--> (θ : ((v_1 <= v_2)OrdCompWrongOps))
+   [-->meta (θ : ((v_1 <= v_2)OrdCompWrongOps))
         (θ : (not (v_4 (v_2 v_1))))
         
         E-LessThanOrEqualFailWithAltHandler
@@ -239,7 +240,7 @@
         
         (side-condition (not (is_false_cond? (term v_4))))]
    
-   [--> (θ : ((v_1 <= v_2)OrdCompWrongOps))
+   [-->meta (θ : ((v_1 <= v_2)OrdCompWrongOps))
         (θ : ($builtIn error (String)))
         
         E-LessThanOrEqualFailNoHandler
@@ -280,14 +281,14 @@
    ;
    
    ; abnormal statements involving table field assignment
-   [--> (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
+   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
         (θ : ($statFunCall cid (v_1 v_2 v_3)))
         
         E-FieldAssignWrongKeyNormal
         ; determine if v_1 has a meta-table with a handler
         (where cid (indexMetaTable v_1 "__newindex" θ))]
    
-   [--> (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
+   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
         (θ : ((v_4 \[ v_2 \]) = v_3))
         
         E-FieldAssignWrongKeyRepeat
@@ -299,7 +300,7 @@
                                        (term "function")))))]
 
    ; add new field 
-   [--> (θ_1 : (((tid \[ v_1 \]) = v_2) WrongKey))
+   [-->meta (θ_1 : (((tid \[ v_1 \]) = v_2) WrongKey))
         (θ_2 : any_2)
 
         E-FieldAssignWrongKeyNoHandler
@@ -318,7 +319,7 @@
                                        ; nil,nan
                           ))]
    
-   [--> (θ : (((v_1 \[ v_2 \]) = v_3) NonTable))
+   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) NonTable))
         (θ : (δ error String))
 
         E-FieldAssignOverNonTableNoHandler
@@ -329,7 +330,7 @@
         (where String ,(string-append "attempt to index a "
                                       (term (δ type v_1))
                                       " value"))]
-
+;
    ))
 
 (provide meta)

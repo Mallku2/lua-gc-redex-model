@@ -12,21 +12,22 @@
   (reduction-relation
    ext-lang                                             
    ;#:domain t
+   #:arrow -->s/e
 
    ; tuples
-   [--> (in-hole Et (< v_1 v_2 ... >))
+   [-->s/e (in-hole Et (< v_1 v_2 ... >))
         (in-hole Et v_1)
         E-TruncateNonEmptyTuple]
 
-   [--> (in-hole Et (< >))
+   [-->s/e (in-hole Et (< >))
         (in-hole Et nil)
         E-TruncateEmptyTuple]
    
-   [--> (in-hole Eu (< v_1 v_2 ... >))
+   [-->s/e (in-hole Eu (< v_1 v_2 ... >))
         (fixUnwrap Eu (v_1 v_2 ...))
         E-UnwrapNonEmptyTuple]
 
-   [--> (in-hole Eu (< >))
+   [-->s/e (in-hole Eu (< >))
         (fixUnwrap Eu '())
         E-UnwrapEmptyTuple]
    ;                                                                                          
@@ -48,21 +49,21 @@
    ; Operator ()
    ; Defined like this, and not in terms of evaluation contexts, to avoid
    ; shift/reduce and reduce/reduce conflicts
-   [--> (\( (< v_1 v ... >) \))
+   [-->s/e (\( (< v_1 v ... >) \))
         v_1
         E-ParenthesOnNonEmptyTuple]
    
-   [--> (\( (< >) \))
+   [-->s/e (\( (< >) \))
         nil
         E-ParenthesOnEmptyTuple]
    
-   [--> (\( v \))
+   [-->s/e (\( v \))
         v
         E-ParenthesisOnValue]
    
    ; primitive Operations
    ; binary operations
-   [--> (v_1 binop v_2)
+   [-->s/e (v_1 binop v_2)
         v_3
         
         E-BinOpNumber
@@ -80,14 +81,14 @@
                             (is_number? (term v_3))))]
    
    ; logical conectives
-   [--> (v binop e)
+   [-->s/e (v binop e)
         (δ binop v e)
         E-LogicOp
         
         (side-condition (term (isBooleanBinOp binop)))]
    
    ; unary operations
-   [--> (- v)
+   [-->s/e (- v)
         Number
         
         E-NumNeg
@@ -95,7 +96,7 @@
         ; check if the operation was successful
         (where Number (δ - v))]
    
-   [--> (unop v)
+   [-->s/e (unop v)
         (δ unop v)
         E-UnOp
 
@@ -107,12 +108,12 @@
                             (equal? (term unop) (term not))))]
    
    ; equality comparison
-   [--> (v_1 == v_2)
+   [-->s/e (v_1 == v_2)
         true
         E-EqualitySuccess
         (side-condition (is_true? (term (δ == v_1 v_2))))]
 
-   [--> (v_1 == v_2)
+   [-->s/e (v_1 == v_2)
         false
         E-EqualityFailNtables
         (side-condition (is_false? (term (δ == v_1 v_2))))
@@ -121,7 +122,7 @@
 
    ; rel ops
    ; translation of expressions involving > and >=
-   [--> (v_1 binop v_2)
+   [-->s/e (v_1 binop v_2)
         (v_2 any v_1)
         E-TranslateComparison
         
@@ -129,7 +130,7 @@
                             (equal? (term binop) (term >=))))
         (where any (translateComparisonOp binop))]
    
-   [--> (v_1 binop v_2)
+   [-->s/e (v_1 binop v_2)
         (δ binop v_1 v_2)
         E-RelOp
 
@@ -143,7 +144,7 @@
                                  (is_number? (term v_1)))))]
 
    ; abnormal situations with primitive operators
-   [--> (v_1 binop v_2)
+   [-->s/e (v_1 binop v_2)
         ((v_1 binop v_2)ArithWrongOps)
         E-ArithBinOpWrongOps
 
@@ -157,7 +158,7 @@
 
         ]
    
-   [--> (- v)
+   [-->s/e (- v)
         ((- v)NegWrongOp)
         E-AlertNegationWrongOperand
 
@@ -166,7 +167,7 @@
 
         (side-condition (not (is_number? (term any))))]
    
-   [--> (v_1 .. v_2)
+   [-->s/e (v_1 .. v_2)
         ((v_1 .. v_2)StrConcatWrongOps)
         E-AlertStringConcatWrongOperands
 
@@ -175,14 +176,14 @@
 
         (side-condition (not (is_string? (term any))))]
    
-   [--> (\# v)
+   [-->s/e (\# v)
         ((\# v)StrLenWrongOp)
         E-AlertStringLengthWrongOperand
 
         ; no coercion here
         (side-condition (not (is_string? (term v))))]
    
-   [--> (v_1 == v_2)
+   [-->s/e (v_1 == v_2)
         ((v_1 == v_2)EqFail)
         
         E-AlertEqualityFail
@@ -191,7 +192,7 @@
         (side-condition (and (is_tid? (term v_1))
                              (is_tid? (term v_2))))]
    
-   [--> (v_1 binop v_2)
+   [-->s/e (v_1 binop v_2)
         ((v_1 binop v_2)OrdCompWrongOps)
         E-AlertOrdCompWrongOps
         
@@ -206,7 +207,7 @@
 
 
    ; built-in services
-   [--> ($builtIn builtinserv (v ...))
+   [-->s/e ($builtIn builtinserv (v ...))
         (δ builtinserv v ...)
 
         (side-condition (member (term builtinserv)
@@ -269,28 +270,28 @@
 
 
    ; If statement
-   [--> (if v then s_1 else s_2 end)
+   [-->s/e (if v then s_1 else s_2 end)
         s_1
         IfTrue
       
         (side-condition (not (is_false_cond? (term v))))]
    
-   [--> (if v then s_1 else s_2 end)
+   [-->s/e (if v then s_1 else s_2 end)
         s_2
         IfFalse
       
         (side-condition (is_false_cond? (term v)))]
 
    ; While statement
-   [--> (while e do s end)
+   [-->s/e (while e do s end)
         (($iter e do s end) Break)
         SignpostWhile]
    
-   [--> ($iter e do ssing end)
+   [-->s/e ($iter e do ssing end)
         (if e then (ssing ($iter e do ssing end)) else \; end)
         While_single_stat]
 
-   [--> ($iter e do (ssing_1 ssing_2 ssing_3 ...) end)
+   [-->s/e ($iter e do (ssing_1 ssing_2 ssing_3 ...) end)
         (if e then
             (ssing_1 ssing_2 ssing_3 ...
                      ($iter e do (ssing_1 ssing_2 ssing_3 ...) end))
@@ -301,23 +302,23 @@
    ; Concatenation of statements
    ; This added rule has to do with the concrete grammar used
    ; in this mechanization.
-   [--> (\; ssing)
+   [-->s/e (\; ssing)
         ssing
         ConcatBehavior]
 
-   [--> (\; ssing_1 ssing_2 ssing_3 ...)
+   [-->s/e (\; ssing_1 ssing_2 ssing_3 ...)
         (ssing_1 ssing_2 ssing_3 ...)
         ConcatBehavior2]
 
    ; Do ... End block
-   [--> (do \; end)
+   [-->s/e (do \; end)
         \;
         DoEnd]
 
    ; List length-equating rules for assignment statements
    ; The rule only make sense when there are 2 or more r-values (spec. useful
    ; for redex-check'ing purposes)
-   [--> (evar_1 evar_2 ... = v_1 v_2 ...)
+   [-->s/e (evar_1 evar_2 ... = v_1 v_2 ...)
         (evar_1 evar_2 ... = v_3 ...)
         AssignDiscardRvalues
         
@@ -329,7 +330,7 @@
         (where (v_3 ...) ,(take (term (v_1 v_2 ...)) (term Number_1)))
         ]
 
-   [--> (evar_1 evar_2 ... = v_1 ...)
+   [-->s/e (evar_1 evar_2 ... = v_1 ...)
         (evar_1 evar_2 ... = v_2 ...)
         AssignCompleteRvalues
         
@@ -344,14 +345,14 @@
                                              (term nil))))
         ]
 
-   [--> (evar_1 evar_2 ... evar_3 = v_1 v_2 ... v_3)
+   [-->s/e (evar_1 evar_2 ... evar_3 = v_1 v_2 ... v_3)
         ((evar_3 = v_3) (evar_1 evar_2 ... = v_1 v_2 ...))
         AssignSplit
         
         (side-condition (= (length (term (evar_1 evar_2 ... evar_3)))
                            (length (term (v_1 v_2 ... v_3)))))]
 
-   [--> (local Name_1 Name_2 ... = v_1 v_2 ... in s end)
+   [-->s/e (local Name_1 Name_2 ... = v_1 v_2 ... in s end)
         (local Name_1 Name_2 ... = v_3 ... in s end)
         
         LocalDiscardRvalues
@@ -363,7 +364,7 @@
 
         (where (v_3 ...) ,(take (term (v_1 v_2 ...)) (term Number_1)))]
 
-   [--> (local Name_1 Name_2 ... = v_1 ... in s end)
+   [-->s/e (local Name_1 Name_2 ... = v_1 ... in s end)
         (local Name_1 Name_2 ... = v_2 ... in s end)
         
         LocalCompleteRvalues
@@ -379,23 +380,23 @@
         ]
 
    ; Break
-   [--> ((in-hole Elf break) Break)
+   [-->s/e ((in-hole Elf break) Break)
         \;
         Break]
 
-   [--> (\; Break)
+   [-->s/e (\; Break)
         \;
         FinalizationWhile]
 
    ; Call over a non-function value
-;   [--> (v (v_1 ...))
+;   [-->s/e (v (v_1 ...))
 ;        ((v (v_1 ...))WrongFunCall)
 ;
 ;        E-AlertWrongFunCall
 ;        ; Determine that v_1 is not a reference to a function
 ;        (side-condition (not (is_cid? (term v))))]
 
-   [--> ($statFunCall ..._1 v (v_1 ...))
+   [-->s/e ($statFunCall ..._1 v (v_1 ...))
         (($statFunCall ..._1 v (v_1 ...))WrongFunCall)
 
         E-AlertWrongStatFunCall
@@ -403,69 +404,69 @@
         (side-condition (not (is_cid? (term v))))]
    
    ; Method call
-;   [--> (v : Name (e ...))
+;   [-->s/e (v : Name (e ...))
 ;        ((v \[ String \]) (v e ...))
 ;        E-MethodCall
 ;
 ;        (where String ,(symbol->string (term Name)))]
 
-   [--> ($statFunCall ..._1 v : Name (e ...))
+   [-->s/e ($statFunCall ..._1 v : Name (e ...))
         ($statFunCall ..._1 (v \[ String \]) (v e ...))
         E-MethodCallStat
 
         (where String ,(symbol->string (term Name)))]
 
    ; Return
-   [--> ((in-hole Elf (return v ...)) (renv ...) RetStat)
+   [-->s/e ((in-hole Elf (return v ...)) (renv ...) RetStat)
         \;
         E-DiscardValues]
 
-   [--> (\; (renv ...) RetStat)
+   [-->s/e (\; (renv ...) RetStat)
         \;
         E-ReturnNoValues]
 
-   [--> ((in-hole Elf (return v ...)) (renv ...) RetExp)
+   [-->s/e ((in-hole Elf (return v ...)) (renv ...) RetExp)
         (< v ... >)
         E-ReturnValues]
 
-   [--> (\; (renv ...) RetExp)
+   [-->s/e (\; (renv ...) RetExp)
         (< >)
         E-ReturnEmptyTuple]
 
    
-   [--> ((in-hole Elf (return v ...)) Break)
+   [-->s/e ((in-hole Elf (return v ...)) Break)
         (return v ...)
         E-InteractionReturnBreak]
 
    ; loc. variables
-    [--> (\; (renv ...) LocalBody)
+    [-->s/e (\; (renv ...) LocalBody)
         \;
         E-RemoveLocal]
    
    ; Protected mode
-   [--> ((in-hole Enp ($err v)) ProtectedMode)
+   [-->s/e ((in-hole Enp ($err v)) ProtectedMode)
         (< false v >)
         
         E-ProtectedModeErrorCatched]
 
-   [--> ((in-hole Enp ($err v_1)) ProtectedMode v_2)
+   [-->s/e ((in-hole Enp ($err v_1)) ProtectedMode v_2)
         ((in-hole Enp ($err "error in error handling")) ProtectedMode)
         
         E-XProtectedModeErrorCatchedNoHandler
 
         (side-condition (not (is_cid? (term v_2))))]
 
-   [--> ((in-hole Enp ($err v)) ProtectedMode cid)
+   [-->s/e ((in-hole Enp ($err v)) ProtectedMode cid)
         (cid (v))
         
         E-XProtectedModeErrorCatchedHandler]
    
-   [--> ((< v ... >) ProtectedMode)
+   [-->s/e ((< v ... >) ProtectedMode)
         (< true (< v ... >) >)
         
         E-ProtectedModeNoErrorWithReturnedValues]
 
-   [--> ((< v_1 ... >) ProtectedMode v_2)
+   [-->s/e ((< v_1 ... >) ProtectedMode v_2)
         (< true (< v_1 ... >) >)
         
         E-XProtectedModeNoErrorWithReturnedValues]

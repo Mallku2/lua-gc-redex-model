@@ -10,9 +10,10 @@
   (reduction-relation
    ext-lang
    #:domain (σ : θ : s)
+   #:arrow ↦GC
    
    ; full-progs-rel
-   [--> (σ_1 : θ_1 : s_1)
+   [↦GC (σ_1 : θ_1 : s_1)
         (σ_2 : θ_2 : s_2)
         
         E-FullProgsRel
@@ -22,7 +23,7 @@
                                      (term (σ_1 : θ_1 : s_1))))]
 
    ; GC
-   [--> (σ_1 : θ_1 : (in-hole E e))
+   [↦GC (σ_1 : θ_1 : (in-hole E e))
         (σ_2 : θ_2 : (in-hole E ((function $1 () (return e) end)
                                  ((cid (tid))))))
 
@@ -35,7 +36,7 @@
                    (in-hole E e)))
         ]
 
-   [--> (σ_1 : θ_1 : (in-hole E s))
+   [↦GC (σ_1 : θ_1 : (in-hole E s))
         (σ_2 : θ_2 : (in-hole E ((cid (tid))
                                  s)))
 
@@ -48,7 +49,7 @@
                   (in-hole E s)))
         ]
 
-   [--> (σ_1 : θ_1 : s)
+   [↦GC (σ_1 : θ_1 : s)
         (σ_2 : θ_2 : s)
 
         E-Gc

@@ -11,6 +11,7 @@
   (reduction-relation
    ext-lang
    ;#:domain (θ : t)
+   #:arrow -->θ
 
    ;                                                                                          
    ;                                                             ;                            
@@ -30,7 +31,7 @@
 
    
    ; Table creation
-   [--> ((osp ...) : evaluatedtable)
+   [-->θ ((osp ...) : evaluatedtable)
         ; New table, not set for finalization
         ((osp ... (objref ((addKeys evaluatedtable) nil ⊥))) : objref)
 
@@ -40,7 +41,7 @@
         ]
    
    ; Table indexing
-   [--> (θ : (objref \[ v_1 \]))
+   [-->θ (θ : (objref \[ v_1 \]))
         (θ : v_2)
 
         E-IndexTable
@@ -51,14 +52,14 @@
                                      (term nil))))]
    
    ; Abnormal situations
-   [--> (θ : (objref \[ v \]))
+   [-->θ (θ : (objref \[ v \]))
         (θ : ((objref \[ v \])WrongKey))
         
         E-AlertKeyNotFound
         
         (where nil (δ rawget objref v θ))]
    
-   [--> (θ : (v_1 \[ v_2 \]))
+   [-->θ (θ : (v_1 \[ v_2 \]))
         (θ : ((v_1 \[ v_2 \])NonTable))
         
         E-AlertNonTableIndexed
@@ -68,7 +69,7 @@
                                   (term "table"))))]
 
    ; built-in services
-   [--> (θ : ($builtIn builtinserv (v ...)))
+   [-->θ (θ : ($builtIn builtinserv (v ...)))
         (θ : (δ builtinserv v ... θ))
 
         (side-condition (member (term builtinserv)
@@ -91,7 +92,7 @@
 
         E-BuiltInThetaRead]
 
-   [--> (θ_1 : ($builtIn builtinserv (v ...)))
+   [-->θ (θ_1 : ($builtIn builtinserv (v ...)))
         (θ_2 : any)
 
         (side-condition (member (term builtinserv)
@@ -104,7 +105,7 @@
         E-BuiltInThetaWrite]
 
    ; Closure creation
-   [--> ((osp ...) : functiondef_1)
+   [-->θ ((osp ...) : functiondef_1)
         ; New table, not set for finalization
         ((osp ... (cid_2 functiondef_1)) : cid_2)
 
@@ -126,7 +127,7 @@
         (where cid_2 (freshClosId (osp ...)))
         ]
 
-   [--> ((osp_1 ... (cid functiondef) osp_2 ...) : functiondef)
+   [-->θ ((osp_1 ... (cid functiondef) osp_2 ...) : functiondef)
         ; No need to create a new closure
         ((osp_1 ... (cid functiondef) osp_2 ...) : cid)
 
@@ -149,7 +150,7 @@
 ;                                                                                  
 ;                                                                                  
 ; Table assignment
-   [--> (θ_1 : ((objref \[ v_1 \]) = v_2))
+   [-->θ (θ_1 : ((objref \[ v_1 \]) = v_2))
         (θ_2 : \;)
         E-AssignTable
         
@@ -163,7 +164,7 @@
         
         (where (θ_2 objref) (δ rawset objref v_1 v_2 θ_1))]
    
-   [--> (θ : ((objref \[ v_1 \]) = v_2))
+   [-->θ (θ : ((objref \[ v_1 \]) = v_2))
         (θ : (((objref \[ v_1 \]) = v_2)WrongKey))
         
         E-AlertFieldAssignWrongKey
@@ -171,7 +172,7 @@
         ; The table doesn't have v_1 as key
         (where nil (δ rawget objref v_1 θ))]
    
-   [--> (θ : ((v_1 \[ v_2 \]) = v_3))
+   [-->θ (θ : ((v_1 \[ v_2 \]) = v_3))
         (θ : (((v_1 \[ v_2 \]) = v_3)NonTable))
         
         E-AlertFieldAssignOverNonTable
