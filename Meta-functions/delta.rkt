@@ -1,7 +1,6 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "./tablesMetafunctions.rkt"
          "./objStoreMetafunctions.rkt"
          "./valStoreMetafunctions.rkt"
          "./grammarMetafunctions.rkt"
@@ -2214,7 +2213,7 @@
    
    (where Number ,(length (term (v ...))))
    
-   ; Take the list of keys (naturals starting from 1),
+   ; take the list of keys (naturals starting from 1),
    ; the list of values received, and construct
    ; table fields taking 2 elements, one from each list.
    (where any ,(map (λ (number value)
@@ -2261,17 +2260,13 @@
   [(δ table.unpack objref_1 v_1 v_2 v_3 ... θ)
    any_2
    
-   ;   (where ((objref_2 object_2) ...
-   ;           (objref_1 (evaluatedtable any_1 Number))
-   ;           (objref_3 object_3) ...)
-   ;          θ)
    (where evaluatedtable (getTable objref_1 θ))
 
-   ; Set range of indexes. v_1 and v_2 should be nil or a number 
+   ; set range of indexes. v_1 and v_2 should be nil or a number 
    (where Number_1 ,(if (not (equal? (term v_1)
                                      (term nil)))
                         (term v_1)
-                        1) ; Default first index
+                        1) ; default first index
           )
    
    (where Number_2 ,(if (not (equal? (term v_2)
@@ -2280,7 +2275,7 @@
                         (term (δ \# evaluatedtable)) ; Default last index
                         ))
 
-   ; Construct a tuple of table indexing expressions
+   ; construct a tuple of table indexing expressions
    (where any_2 ,(append (term (< ))
 
                          (map (λ (index)
@@ -2729,44 +2724,3 @@
    "__unm"])
 
 (provide unopeventkey)
-
-(define-metafunction ext-lang
-  keyBelongsTo? : tableconstructor v -> any
-  
-  [(keyBelongsTo? (\{ field ... (\[ v_1 \] = v_2) field ... \}) v_3)
-   #t
-
-   (side-condition (equal? (term (δ == v_1 v_3))
-                           'true))]
-  
-  ; Default case
-  [(keyBelongsTo? tableconstructor v)
-   #f])
-
-; To ease the comparation of the keys of a table, reusing (δ == ...)  
-(define-metafunction ext-lang
-  extractField : (field ...) v -> any
-  
-  [(extractField (field ...) v)
-   ,(filter (λ (field)
-              ; Take each field that equals to
-              ; (\[ v \] = any), according to delta
-              ((λ (match)
-                 (if match
-                     
-                     ; There must be just one match structure
-                     ((λ (bindings)
-                        ; Compare the keys
-                        (if (equal? (term (δ == ,(bind-exp (list-ref bindings 0)) v))
-                                    (term true))
-                            #t
-                            #f))
-                      ; Pass the only match structure obtained
-                      (match-bindings (list-ref match 0)))
-                     
-                     #f))
-               ; Extract each component of the field
-               (redex-match ext-lang
-                            (\[ any_1 \] = any_2)
-                            field)))
-            (term (field ...)))])

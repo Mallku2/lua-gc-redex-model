@@ -1,8 +1,6 @@
 #lang racket
 (require redex
-         "../grammar.rkt"
-         "./tablesMetafunctions.rkt"
-         )
+         "../grammar.rkt")
 
 (define-metafunction ext-lang
   getTable : tid θ -> any

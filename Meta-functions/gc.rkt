@@ -6,8 +6,6 @@
          "../grammar.rkt"
          "./objStoreMetafunctions.rkt"
          "./valStoreMetafunctions.rkt"
-         "./tablesMetafunctions.rkt"
-         ;"./delta.rkt"
          )
 ;                                                                                   
 ;                                                                                   

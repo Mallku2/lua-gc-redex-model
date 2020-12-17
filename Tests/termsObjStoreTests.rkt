@@ -15,6 +15,11 @@
                                    (\[ 2 \] = 2) 
                                    (\[ 4 \] = 4) \}) nil ⊥))) 
                    : (objr 6))))
+
+  (test-->> terms-obj-store
+            (term (() : (\{ (\[ 1 \] = 2) (\[ 1 \] = 3) \})))
+            (term ((((objr 6) ((\{ (\[ 1 \] = 3) \}) nil ⊥))) 
+                   : (objr 6))))
   
   ; Table indexing
   (test-->> terms-obj-store
