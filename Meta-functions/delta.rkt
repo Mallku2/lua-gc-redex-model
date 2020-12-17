@@ -481,19 +481,21 @@
    
    (where any_1 ,(with-handlers
                      ([exn:fail?
+                       ; the string cannot be parsed
                        (λ (e) (append (term (< nil ))
-                                      (list (if (equal? (term v_1) (term nil))
+                                      (list (if (is_nil? (term v_1))
                                                 
                                                 (string-append "[string "
                                                                (term String)
                                                                "]")
                                                            
-                                                           (term v_1)))
-                                                 (term ( >))))])
+                                                (term v_1)))
+                                      (term ( >))))])
                    
                    (parse-this (term String)
                                #t
                                ; TODO: the reference to _G is hardcoded here...
+                               ; abstract grammar representation of (ref 1)
                                (term (to-abstract (ref 1)))
                                )
                    
@@ -502,11 +504,11 @@
    (where any_2 ,(if (not (redex-match ext-lang
                                        (< e ... >)
                                        (term any_1)))
-                     ; If the parsing succeeded, return the code obtained
-                     ; wrapped into a vararg function.
+                     ; if the parsing succeeded, return the code obtained
+                     ; wrapped into a vararg function
                      (append (term (function $loaded (<<<)))
                              (if (not (equal? (term v_3) (term nil)))
-                                 ; Received new value for the global
+                                 ; received new value for the global
                                  ; environment
                                  (list (term
                                         (local $old_env $ret = (ref 1) nil
@@ -523,10 +525,10 @@
                                  (list (term any_1)))
                              
                              (term (end)))
-                     ; Otherwise, return the error message. 
+                     ; otherwise, return the error message
                      (term any_1)))]
 
-  ; Default behavior for mode: "bt"
+  ; default behavior for mode: "bt"
   [(δ load String v_1 v_2 v_3)
    any
 
@@ -1977,6 +1979,7 @@
   ;                   ;      
   ;                   ;      
   ;                   ;
+  ; coercion
   [(δ string.rep Number_1 Number_2 v)
    (δ string.rep String Number_2 v)
 
@@ -1986,6 +1989,12 @@
    (δ string.rep String_1 Number_1 String_2)
 
    (where String_2 (δ tostring Number_2 ()))]
+
+  ; negative number of reps.: returns empty string
+  [(δ string.rep String Number any)
+   ""
+
+   (side-condition (< (term Number) 0))]
   
   [(δ string.rep String 1 any)
    String]

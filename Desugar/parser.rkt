@@ -16,11 +16,11 @@
                  (list (string->symbol "_ENV"))))
 
 
-; Replacement for $ENV, in case the parser is called in run-time
+; replacement for $ENV, in case the parser is called in run-time
 (define global-env-subst
   (id-name '$ENV))
 
-; Parser for Lua
+; parser for Lua 5.2
 (define lua-parser
   (parser
    
@@ -700,12 +700,19 @@
       (var-table-field global-env-subst (str (symbol->string var)))
       ))
 
-; From doc of 2 LALR(1) Parsers: The result of a parser expression with one
+; from doc of 2 LALR(1) Parsers: The result of a parser expression with one
 ; start non-terminal is a function, parse, that takes one argument. This
 ; argument must be a zero argument function, gen, that produces successive
 ; tokens of the input each time it is called. 
 (define (lex-this lexer input) (lambda () (lexer input)))
 
+; parses "input" string, allowing for the replacement of the global environment
+; id (if the parser is invoked at "runtime", i.e., from within a Lua program)
+; example:
+; > (parse-this "a = 1" #t (term (to-abstract (ref 1))))
+; '(((ref 1) |[| "a" |]|) = 1.0)
+; > (parse-this "a = 1" #f (void))
+; '(($ENV |[| "a" |]|) = 1.0)
 (define (parse-this input runtime? ref)
   (if runtime?
       (set! global-env-subst ref)

@@ -215,7 +215,7 @@
 (struct exps (el))
 
 
-; Concrete-to-abstract grammar translation...
+; concrete-to-abstract grammar translation...
 (define-metafunction ext-lang
   [(to-abstract (ref Number))
    ,(val-ref (nmbr (term Number)))]

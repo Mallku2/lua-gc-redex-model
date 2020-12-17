@@ -545,7 +545,7 @@
   
   [(close_conf_meta  (σ_1 : θ_1 : e_1))
    ; transform e_2 into a statement, ready for reduction with full-progs-rel
-   (σ_2 : θ_2 : (if e_3 then \; else \; end))
+   (σ_2 : θ_2 : (return e_3))
 
    ; close var. identifiers
    (where e_2 (close_term_meta e_1))

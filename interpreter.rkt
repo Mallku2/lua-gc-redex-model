@@ -11,7 +11,7 @@
 ; PARAM : selec_servs, a list containing the name of the library services
 ; required for the execution of the program
 ;
-; Example:
+; example:
 ; (execute "print(\"hello, world!\")" (list "print"))
 
 (define (execute code selec_servs)
