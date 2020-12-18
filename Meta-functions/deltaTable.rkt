@@ -113,17 +113,73 @@
   ;                                                  
   ;                                                  
   ;
-  [(δtable table.insert objref_1 nil v
-                    ((objref_2 object_2) ...
-                     (objref_1 ((\{ field ... \}) any ...))
-                     (objref_3 object_3) ...))
+  ; no pos provided: insert v at the end of tid
+  [(δtable table.insert tid v
+                    (osp_1 ...
+                     (tid ((\{ field ... \}) any ...))
+                     osp_2 ...))
 
-   (((objref_2 object_2) ...
-     (objref_1 ((\{ field ... (\[  Number \] = v) \}) any ...))
-     (objref_3 object_3) ...) (< >))
+   ((osp_1 ...
+     (tid ((\{ field ... (\[  Number \] = v) \}) any ...))
+     osp_2 ...) (< >))
+
+   ; default value for pos is #list+1
+   (where Number (δbasic + 1 (δbasic \# (\{ field ... \}))))]
+
+  ; pos provided
+  [(δtable table.insert tid Number_1 v_1
+                    (osp_1 ...
+                     (tid ((\{ efield_1 ... \}) any ...))
+                     osp_2 ...))
+
+   ((osp_1 ...
+     (tid ((\{ efield_2 ...
+               ; value inserted
+               (\[ Number_1 \] = v_1) 
+               ; fields in list[pos], list[pos+1], ···, list[#list]
+               (\[ Number_3 \] = v_5) ... 
+               \}) any ...))
+     osp_2 ...) (< >))
+
+   ; obtain list length
+   (where Number_2 (δbasic \# (\{ efield_1 ... \})))
    
-   (where Number (δbasic \# (\{ field ... \})))]
-  
+   ; extract fields in tid[Number_1: Number_2]
+   (where ((\[ v_4 \] = v_5) ...)
+    ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (and (is_number? (term v_2))
+                                                        (= (floor (term v_2))
+                                                           (term v_2))
+                                                        (>= (term v_2)
+                                                            (term Number_1))
+                                                        (<= (term v_2)
+                                                            (term Number_2))))
+                                   (term ,field)))
+                   (term (efield_1 ...))))
+
+   ; extract remaining fields
+   (where (efield_2 ...)
+    ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (not (and (is_number? (term v_2))
+                                                             (= (floor (term v_2))
+                                                                (term v_2))
+                                                             (>= (term v_2)
+                                                                 (term Number_1))
+                                                             (<= (term v_2)
+                                                                 (term Number_2)))))
+                                   (term ,field)))
+                   (term (efield_1 ...))))
+
+   ; list of new numeric keys: v_1
+   (where (Number_3 ...) ,(build-list (length (term ((\[ v_4 \] = v_5) ...)))
+                                      (lambda (nmbr) (+ nmbr
+                                                        (+ 1 (term Number_1))))))
+   
+   ]
   ;                                  
   ;                           ;      
   ;                           ;      

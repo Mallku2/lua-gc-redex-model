@@ -98,7 +98,9 @@
         (side-condition (member (term builtinserv)
                                 (term (; basic functions
                                        setmetatable
-                                       rawset))))
+                                       rawset
+                                       ;table
+                                       table.insert))))
         
         (where (θ_2 any) (δ builtinserv v ... θ_1))
 
