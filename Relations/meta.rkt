@@ -3,6 +3,8 @@
          "../grammar.rkt"
          "../Meta-functions/objStoreMetafunctions.rkt"
          "../Meta-functions/delta.rkt"
+         ; indexMetaTable
+         "../Meta-functions/deltaBasic.rkt"
          "../Meta-functions/tablesMetafunctions.rkt")
 
 ; Expressions handled by the meta-table mechanism.

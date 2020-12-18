@@ -153,6 +153,7 @@
                string.sub
                ; table
                table.concat
+               table.insert
                table.pack
                table.unpack]
   
