@@ -463,20 +463,21 @@
   ;                                  
   ;
   [(δbasic load String v_1 "b" v_3)
-   any_2
+   any
 
    ; String should be a string (flattened) representation of a function
    ; (obtained through string.dump). We reuse Racket's reader to
    ; try to parse it and obtain the corresponding redex term.
-   (where any_1 ,(read (open-input-string (term String))))
-   
-   (where any_2 ,(if (is_fdef? (term any_1))
-
-                     (term any_1)
-
-                     (term (< nil
-                              "attempt to load a text chunk (mode is 'b')"
-                              >))))]
+   (where any ,(with-handlers
+                     ([exn:fail?
+                       ; the string cannot be parsed
+                       (λ (e) (term (< nil
+                                       "attempt to load a text chunk (mode is 'b')"
+                                       >)))])
+                   
+                   (read (open-input-string (term String)))
+                   ))
+   ]
  
   ; Lua program expressed into a string, either syntactically correct or not 
   [(δbasic load String v_1 "t" v_3)

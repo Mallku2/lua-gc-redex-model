@@ -167,12 +167,18 @@
 (define-metafunction ext-lang
   convert_string : String Number -> any
 
+  ; discard empty strings
+  [(convert_string "" _)
+   nil]
+
   ; negative number
   [(convert_string String_1 Number_1)
    ,(* (term Number_3) -1)
 
    ; it is a negative number
    (side-condition (equal? "-"
+                           ; {length String_1 >= 1}
+                           ; no need for exception catch
                            (substring (term String_1) 0 1)))
    ; get remaining characters
    (where String_2 ,(substring (term String_1) 1

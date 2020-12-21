@@ -542,6 +542,22 @@
 ; reduction with full-progs-rel
 (define-metafunction ext-lang
   close_conf_meta  : (σ : θ : t) -> (σ : θ : s)
+
+  ; guarantee the presence of the global environment: load and loadstring assume
+  ; its presence at the first position in σ
+  [(close_conf_meta  ((vsp ...)
+                      : (osp ...)
+                      : (in-hole E ($builtIn builtinserv (e ...)))))
+   (close_conf_meta  ((((ref 1) (objr 1)) vsp ...)
+                      : (((objr 1) ((\{ \}) nil ⊥)) osp ...)
+                      : (in-hole E ($builtIn builtinserv (e ...)))))
+
+   (side-condition (member (term builtinserv)
+                           (term (load loadstring))))
+   ; global environment is not set to ref 1
+   (side-condition (not (redex-match? ext-lang
+                                      (vsp_1 ... ((ref 1) tid) vsp_2 ...)
+                                      (term (vsp ...)))))]
   
   [(close_conf_meta  (σ_1 : θ_1 : e_1))
    ; transform e_2 into a statement, ready for reduction with full-progs-rel
