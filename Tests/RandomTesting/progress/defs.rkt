@@ -242,24 +242,33 @@
   [(well_formed_term ,(plug (term any)
                             (term (hole Break))) σ θ 
                                                  s_1)
-   ; Is s_1 a statement that represents the execution of a while loop?
-   (side-condition ,(or (redex-match? ext-lang
-                                      ($iter e do s_2 end)
-                                      (term s_1))
-
-                        (redex-match? ext-lang
-                                      (if e_1 then
-                                          (s_2
-                                           ($iter e_1 do s_2 end))
-                                          else \; end)
-                                      (term s_1))
-
-                        (redex-match? ext-lang
-                                      (s_2 ($iter e do s_2 end))
-                                      (term s_1))
-
-                        (is_skip? (term s_1))
-                        ))
+;   ; Is s_1 a statement that represents the execution of a while loop?
+;   (side-condition ,(or (redex-match? ext-lang
+;                                      ($iter e do s_2 end)
+;                                      (term s_1))
+;
+;                        (redex-match? ext-lang
+;                                      (if e_1 then
+;                                          (s_2
+;                                           ($iter e_1 do s_2 end))
+;                                          else \; end)
+;                                      (term s_1))
+;                        ; particular to s-expressions: we need to distinguish
+;                        ; between a single statement or a sequence of 2 or more
+;                        ; stats
+;                        (redex-match? ext-lang
+;                                      (if e_1 then
+;                                          (s_2 s_3 s_4 ...
+;                                           ($iter e_1 do (s_2 s_3 s_4 ...) end))
+;                                          else \; end)
+;                                      (term s_1))
+;
+;                        (redex-match? ext-lang
+;                                      (s_2 ($iter e do s_2 end))
+;                                      (term s_1))
+;
+;                        (is_skip? (term s_1))
+;                        ))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (s_1 Break))]
 
@@ -277,7 +286,8 @@
   [(well_formed_term any σ θ objref) ; checks for membership of objref to θ
    (well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)
-   
+
+   ; v_1 should not belong to dom(θ (objref))
    (side-condition ,(is_nil? (term (δ rawget objref v_1 θ))))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (((objref \[ v_1 \]) = v_2) WrongKey))]
@@ -827,6 +837,22 @@
                #:prepare close_conf
                #:attempts attempts
                ))
+
+(define (soundness_wfc_builtIn attempts)
+  (redex-check ext-lang (σ : θ : (return ($builtIn builtinserv (v ...))))
+               (soundness_wfc_pred (term (σ : θ : (return ($builtIn builtinserv (v ...))))) #f)
+               #:prepare close_conf
+               #:attempts attempts
+               ))
+
+(define (soundness_wfc_builtIn_coverage attempts)
+  ; create records to register test coverage related with ↦
+  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
+    (parameterize
+        ; supply data-structures
+        ([relation-coverage (list full-progs-rel-coverage)])
+      (soundness_wfc_builtIn attempts)
+      (values (covered-cases full-progs-rel-coverage)))))
 
 (define (soundness_wfc_coverage rel attempts)
   ; create records to register test coverage related with ↦
