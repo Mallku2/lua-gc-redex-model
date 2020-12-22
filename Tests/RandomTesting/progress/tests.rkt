@@ -352,7 +352,7 @@
    (judgment-holds
     (well_formed_term hole
                       ()
-                      (((objr 1) ((\{ (\[ 1 \] = 2) (\[ 1 \] = 2) \}) nil 0)))
+                      (((objr 1) ((\{ (\[ 1 \] = 2) (\[ 3 \] = 2) \}) nil 0)))
                       ((((objr 1) \[ 1 \]) = 2)
                        WrongKey)))
    #f)

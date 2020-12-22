@@ -113,6 +113,13 @@
   ;                                                  
   ;                                                  
   ;
+  ; special cases
+  [(δtable table.insert tid nil θ)
+   (θ (< >))]
+
+  [(δtable table.insert tid Number nil θ)
+   (θ (< >))]
+  
   ; no pos provided: insert v at the end of tid
   [(δtable table.insert tid v
                     (osp_1 ...

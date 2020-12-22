@@ -117,7 +117,6 @@
                rawget
                rawlen
                rawset
-               require
                select
                setmetatable
                tonumber
@@ -145,6 +144,8 @@
                math.sqrt
                math.tan
                math.tanh
+               ; package
+               require
                ; string
                string.dump
                string.len
@@ -232,10 +233,10 @@
        ⊥
        ⊘]
 
-  ; we need to force tables with fields with keys and values
-  [intreptable ((\{ (\[ v \] = v) ... \}) tid pos)
-               ((\{ (\[ v \] = v) ... \}) nil pos)
-               ]
+  ; we need to force tables with fields that have both, (different) keys and
+  ; values
+  [intreptable ((\{ (\[ v_!_ \] = v) ... \}) tid pos)
+               ((\{ (\[ v_!_ \] = v) ... \}) nil pos)]
 
   ; References for the representation of the environment 
   [renv (rEnv r)]
@@ -249,8 +250,9 @@
        (refStdout String)]
 
   ; to force just one stdout file on σ, helping redex-check
-  [σ ((r v) ...)
-     ((refStdout String) (r v) ...)]
+  ; every ref must be different
+  [σ ((r_!_ v) ...)
+     ((refStdout String) (r_!_ v) ...)]
 
   ; table id
   [(objref tid) (objr natural)]
@@ -270,7 +272,7 @@
   [osp (tid intreptable)
        (cid functiondef)]
   
-  [θ (osp ...)]
+  [θ ((objid_!_ object) ...)]
 
   ;                                                                          
   ;                                                                          
