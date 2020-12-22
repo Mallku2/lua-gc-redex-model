@@ -239,24 +239,25 @@
    ; get free val. refs from t and σ
    (where (r_1 ...) (free_val_refs (vsp ...) t))
    (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp ...)))
+   ; remove repeated refs.
+   (where (r_3 ...) ,(remove-duplicates (term (r_1 ... r_2 ...))))
    
    ; add dummy vals. and bound free refs
-   (where σ_1 (vsp ... (r_1 1) ... (r_2 1) ...))
+   (where σ_1 (vsp ... (r_3 1) ... ))
    
    ; get free tids, cids from t and θ
    (where (tid_1 ...) (free_tids (osp ...) t))
    (where (tid_2 ...) (free_tids_theta (osp ...)))
+   (where (tid_3 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ...))))
    
    (where (cid_1 ...) (free_clids (osp ...) t))
    (where (cid_2 ...) (free_clids_theta (osp ...)))
+   (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))
    
    ; add dummy tables and closures to bound tids and cids
    (where θ_1 (osp ...
-               (tid_1 ((\{ \}) nil ⊥)) ...
-               (tid_2 ((\{ \}) nil ⊥)) ...
-               
-               (cid_1 (function x () \; end)) ...
-               (cid_2 (function x () \; end)) ...))
+               (tid_3 ((\{ \}) nil ⊥)) ...
+               (cid_3 (function x () \; end)) ...))
    
    ; enforce well-formedness of img(θ_1)
    (where θ_2 (fix_theta_img θ_1))

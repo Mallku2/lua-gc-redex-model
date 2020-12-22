@@ -48,7 +48,6 @@
                                   rawget
                                   rawlen
                                   rawset
-                                  require
                                   select
                                   setmetatable
                                   tonumber
@@ -136,11 +135,22 @@
   ;                        ;                                 
   ;                        ;                                 
   ;                        ;
-  ; Basic implementation of the require service
-  [(δ package.require String_1 θ)
-   (δ load String_2 nil nil nil θ)
+  [(δ require θ)
+   (δbasic error "bad argument #1 to 'require' (string expected, got no value)")]
+  
+  ; basic implementation of the require service
+  [(δ require String_1 θ)
+   (δbasic load String_2 nil nil nil θ)
 
-   (where String_2 ,(file->string (term String_1)))]
+   (where String_2
+          ,(with-handlers ([exn:fail?
+                            (λ (e) #f)])
+             ((λ ()
+                (file->string (term String_1))))))]
+  
+  ; something went wrong when trying to open file String
+  [(δ require v_1 v_2 ... θ)
+   (δbasic error "module not found")]
 )
 
 ; To export the delta function
