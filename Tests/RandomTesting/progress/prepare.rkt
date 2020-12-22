@@ -83,44 +83,6 @@
    (where (r_3 ...) ,(remove-duplicates (term (r_1 ... r_2 ...))))]
   )
 
-; redex-check tends to generate stores with repeated references
-; (typically (ref 0)); fix_sigma_dom implements a simple fix to that
-(define-metafunction ext-lang
-  fix_sigma_dom : σ -> (σ ((r r) ...))
-
-  ; empty store or refStdout
-  [(fix_sigma_dom ((refStdout String) ...))
-   (((refStdout String) ...) ())]
-
-  ; with or without refStdout
-  [(fix_sigma_dom ((refStdout String) ... ((ref natural) v) vsp_1 ...))
-   (((refStdout String) ... vsp_2 ...) ((r_1 r_2) ...))
-   
-   (where ((vsp_2 ...) ((r_1 r_2) ...))
-          (fix_sigma_dom_aux (((ref natural) v) vsp_1 ...)
-                             natural
-                             ()))]
-  )
-
-; enforces a well-formed dom(σ) by replacing each reference with a
-; reference that is unique; returns the list of substitutes for each reference
-; PRE : {refStdout ∉ dom(σ)}
-(define-metafunction ext-lang
-  fix_sigma_dom_aux : σ natural ((r r) ...) -> (σ ((r r) ...))
-
-  [(fix_sigma_dom_aux () natural ((r r) ...))
-   (() ((r r) ...))]
-
-  [(fix_sigma_dom_aux ((r_1 v) vsp_1 ...) natural_1 ((r_2 r_3) ...))
-   ((((ref natural_1) v) vsp_2 ...)
-    ((r_2 r_3) ... (r_1 (ref natural_1)) (r_4 r_5) ...))
-
-   (where natural_2 ,(+ 1 (term natural_1)))
-   
-   (where ((vsp_2 ...) ((r_4 r_5) ...))
-          (fix_sigma_dom_aux (vsp_1 ...) natural_2 ()))]
-  )
-
 
 ;                                               
 ;                                               
@@ -269,88 +231,55 @@
 ; bound free tids, cids from a given conf; enforces well-formedness of the domain
 ; and img of given stores
 (define-metafunction ext-lang
-  close_fix_theta_sigma : σ θ t -> (σ θ t)
+  close_fix_theta_sigma : σ θ t -> (σ θ)
 
-  [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
-   (σ_2 θ_2 t_3)
+  [(close_fix_theta_sigma (vsp ...) (osp ...) t)
+   (σ_1 θ_2)
 
    ; get free val. refs from t and σ
-   (where (r_1 ...) (free_val_refs (vsp ...) t_1))
-   (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp_1 ...)))
+   (where (r_1 ...) (free_val_refs (vsp ...) t))
+   (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp ...)))
    
    ; add dummy vals. and bound free refs
    (where σ_1 (vsp ... (r_1 1) ... (r_2 1) ...))
-   ; enforce well-formedness of dom(σ_1), apply expected substitution of refs
-   ; in (osp_1 ...) and t_1
-   (where (σ_2 ((r_3 r_4) ...)) (fix_sigma_dom σ_1))
-   ; replace the old refs by the new ones in (osp_1 ...) and t_1
-   (where (osp_2 ...) (substTheta (osp_1 ...) ((r_3 r_4) ...)))
-   (where t_2 (subst t_1 ((r_3 r_4) ...)))
    
    ; get free tids, cids from t and θ
-   (where (tid_1 ...) (free_tids (osp_2 ...) t_2))
-   (where (tid_2 ...) (free_tids_theta (osp_2 ...)))
+   (where (tid_1 ...) (free_tids (osp ...) t))
+   (where (tid_2 ...) (free_tids_theta (osp ...)))
    
-   (where (cid_1 ...) (free_clids (osp_2 ...) t_2))
-   (where (cid_2 ...) (free_clids_theta (osp_2 ...)))
+   (where (cid_1 ...) (free_clids (osp ...) t))
+   (where (cid_2 ...) (free_clids_theta (osp ...)))
    
    ; add dummy tables and closures to bound tids and cids
-   (where θ_1 (osp_2 ...
+   (where θ_1 (osp ...
                (tid_1 ((\{ \}) nil ⊥)) ...
                (tid_2 ((\{ \}) nil ⊥)) ...
                
                (cid_1 (function x () \; end)) ...
                (cid_2 (function x () \; end)) ...))
    
-   ; enforce well-formedness of dom(θ_1) and img
-   (where (θ_2 ((objid_1 objid_2) ...)) (fix_theta_dom_img θ_1))
-   ; apply the expected substitutions in t
-   (where t_3 (subst t_2 ((objid_1 objid_2) ...)))
+   ; enforce well-formedness of img(θ_1)
+   (where θ_2 (fix_theta_img θ_1))
    ]
   )
 
-; redex-check tends to generate stores with repeated references
-; (typically (objr 0)); fix_theta_dom implements a simple fix to that;
-; it also enforces well-formedness of the img
-(define-metafunction ext-lang
-  fix_theta_dom_img : θ -> (θ ((objid objid) ...))
+; enforces well-formedness of the img
 
-  [(fix_theta_dom_img ())
-   (() ())]
-
-  [(fix_theta_dom_img (((any natural) object) osp ...))
-   (θ_2 ((objid_1 objid_2) ...))
-
-   (where (θ_1 ((objid_1 objid_2) ...))
-          (fix_theta_dom_img_aux (((any natural) object) osp ...) natural ()))
-   ; apply substitution in img of θ_1
-   (where θ_2 (substTheta θ_1 ((objid_1 objid_2) ...)))]
-   
-  )
-
-; enforces a well-formed dom(θ) by replacing each reference with a
-; reference that is unique; it also enforces well-formedness of the img
+; enforces well-formedness of the img
 ; PRE : {θ_1 ++ θ_2 = θ}
 (define-metafunction ext-lang
-  fix_theta_dom_img_aux : θ natural ((objid objid) ...) -> (θ ((objid objid) ...))
+  fix_theta_img : θ -> θ
 
-  [(fix_theta_dom_img_aux () natural ((objid_1 objid_2) ...))
-   (() ((objid_1 objid_2) ...))]
+  [(fix_theta_img ())
+   ()]
 
-  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
-                           osp_1 ...)
-                          natural_2
-                          ((objid_1 objid_2) ...))
-   ((((objr natural_2)
+  [(fix_theta_img ((tid (tableconstructor_1 any pos)) osp_1 ...))
+   ((tid
       ; in order to bound free ids in tableconstructor_1,
       ; close_term_meta returned a functiondef; we put it into a new
       ; table
       ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
      osp_3 ...)
-
-   ((objid_1 objid_2) ...
-     ((objr natural_1) (objr natural_2))
-     (objid_3 objid_4) ...))
 
    ; table constructor must be well formed: deleted nil, nan or repeated keys;
    ; bound free variables
@@ -358,23 +287,10 @@
    ; the following holds when tableconstructor_2 has free variables id
    (where functiondef (close_term_meta tableconstructor_2))
 
-    ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))
+   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
 
-   (where ((osp_3 ...) ((objid_3 objid_4) ...))
-          (fix_theta_dom_img_aux (osp_1 ...)
-                                 natural_3
-                                 ()))]
-
-  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
-                           osp_1 ...)
-                          natural_2
-                          ((objid_1 objid_2) ...))
-   ((((objr natural_2) (tableconstructor_2 any pos)) osp_3 ...)
-
-   ((objid_1 objid_2) ...
-     ((objr natural_1) (objr natural_2))
-     (objid_3 objid_4) ...))
+  [(fix_theta_img ((tid (tableconstructor_1 any pos)) osp_1 ...))
+   ((tid (tableconstructor_2 any pos)) osp_3 ...)
 
    ; table constructor must be well formed: deleted nil, nan or repeated keys;
    ; bound free variables
@@ -382,35 +298,16 @@
    ; the following holds when tableconstructor does not have free vars
    (where tableconstructor_2 (close_term_meta tableconstructor_2))
 
-    ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))
-
-   (where ((osp_3 ...) ((objid_3 objid_4) ...))
-          (fix_theta_dom_img_aux (osp_1 ...)
-                                 natural_3
-                                 ()))]
+   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
 
   
-  [(fix_theta_dom_img_aux (((cl natural_1) functiondef_1)
-                           osp_1 ...)
-                          natural_2
-                          ((objid_1 objid_2) ...))
-   ((((cl natural_2) functiondef_2) osp_3 ...)
-
-   ((objid_1 objid_2) ...
-     ((cl natural_1) (cl natural_2))
-     (objid_3 objid_4) ...))
+  [(fix_theta_img ((cid functiondef_1) osp_1 ...))
+   ((cid functiondef_2) osp_3 ...)
 
    ; functiondef_1 must be well-formed
    (where functiondef_2 (close_term_meta functiondef_1))
 
-    ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))
-
-   (where ((osp_3 ...) ((objid_3 objid_4) ...))
-          (fix_theta_dom_img_aux (osp_1 ...)
-                                 natural_3
-                                 ()))]
+   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
   )
 
 ; fix repeated keys and nil, nan keys
@@ -420,36 +317,29 @@
   [(fix_tableconstructor (\{ field_1 ... \}))
    (\{ field_2 ... \})
 
-   (where (field_2 ...) (fix_tableconstructor_aux (field_1 ...) ()))]
+   (where (field_2 ...) (fix_tableconstructor_aux (field_1 ...)))]
   )
 
 (define-metafunction ext-lang
-  fix_tableconstructor_aux : (field ...) (field ...) -> (field ...)
+  fix_tableconstructor_aux : (field ...) -> (field ...)
 
-  [(fix_tableconstructor_aux () (field ...))
-   (field ...)]
+  [(fix_tableconstructor_aux ())
+   ()]
 
-  ; discard fields with nil or nan key
-  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...) (field_2 ...))
-   (fix_tableconstructor_aux (field_1 ...) (field_2 ...))
+  ; discard fields with nil or nan key, or nil value
+  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field ...))
+   (fix_tableconstructor_aux (field ...))
 
    (side-condition (or (is_nil? (term v_1))
                        (equal? (term v_1)
-                               +nan.0)))]
+                               +nan.0)
+                       (is_nil? (term v_2))))]
 
-  ; discard fields with repeated key, according to (δ ==)
-  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...)
-                             ((\[ v_3 \] = v_4) ...))
-   (fix_tableconstructor_aux (field_1 ...) ((\[ v_3 \] = v_4) ...))
+  ; default: field does not have a nil or nan key, or nil value
+  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...))
+   ((\[ v_1 \] = v_2) field_2 ...)
 
-   (side-condition (memf (lambda (arg)
-                           (equal? (term (δ == v_1 ,arg))
-                                   (term true)))
-                           (term (v_3 ...))))]
-
-  ; default: field does not have a nil, nan or repeated key
-  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...) (field_2 ...))
-   (fix_tableconstructor_aux (field_1 ...) (field_2 ... (\[ v_1 \] = v_2)))]
+   (where (field_2 ...) (fix_tableconstructor_aux (field_1 ...)))]
   )
 ;                                                                                                                       
 ;                                                                                                                       
@@ -575,24 +465,24 @@
   
   [(close_conf_meta  (σ_1 : θ_1 : e_1))
    ; transform e_2 into a statement, ready for reduction with full-progs-rel
-   (σ_2 : θ_2 : (return e_3))
+   (σ_2 : θ_2 : (return e_2))
 
    ; close var. identifiers
    (where e_2 (close_term_meta e_1))
 
    ; bound free val. refs, tids and cids;
    ; enforce well-formedness of dom(σ_1), dom(θ_1) and images
-   (where (σ_2 θ_2 e_3)  (close_fix_theta_sigma σ_1 θ_1 e_2))]
+   (where (σ_2 θ_2)  (close_fix_theta_sigma σ_1 θ_1 e_2))]
 
   [(close_conf_meta  (σ_1 : θ_1 : s_1))
-   (σ_2 : θ_2 : s_3)
+   (σ_2 : θ_2 : s_2)
 
    ; close var. identifiers
    (where s_2 (close_term_meta s_1))
 
    ; bound free val. refs, tids and cids;
    ; enforce well-formedness of dom(σ_1), dom(θ_1) and images
-   (where (σ_2 θ_2 s_3)  (close_fix_theta_sigma σ_1 θ_1 s_2))]
+   (where (σ_2 θ_2)  (close_fix_theta_sigma σ_1 θ_1 s_2))]
   )
 
 ; to interface with close_conf_meta, from terms of different relations

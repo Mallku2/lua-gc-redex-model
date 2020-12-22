@@ -43,37 +43,17 @@
   [---------------------------------------------------------------------------
    (well_formed_stored_table any σ θ ())]
 
-  [; key must not be nil or nan
+  [; key must not be nil or nan, value must not be nil
    (side-condition ,(not (or (is_nil? (term e_1))
                              (equal? (term e_1)
-                                     +nan.0))))
-   ; value must not be nil
-   (side-condition ,(not (is_nil? (term e_2))))
-   (well_formed_term any σ θ e_1)
-   (well_formed_term any σ θ e_2)
-   ---------------------------------------------------------------------------
-   (well_formed_stored_table any σ θ ((\[ e_1 \] = e_2)))]
-
-  [; key must not be nil or nan
-   (side-condition ,(not (or (is_nil? (term e_1))
-                             (equal? (term e_1)
-                                     +nan.0))))
-   ; key must not be repeated
-   (where ((\[ e_3 \] = e_4) ...) (field_1 field_2 ...))
-   
-   (side-condition ,(not (memf (lambda (arg)
-                                 (equal? (term (δ == e_1 ,arg))
-                                         (term true)))
-                               (term (e_3 ...)))))
-
-   ; value must not be nil
-   (side-condition ,(not (is_nil? (term e_2))))
+                                     +nan.0)
+                             (is_nil? (term e_2)))))
    
    (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
-   (well_formed_stored_table any σ θ (field_1 field_2 ...))
+   (well_formed_stored_table any σ θ (field ...))
    ---------------------------------------------------------------------------
-   (well_formed_stored_table any σ θ ((\[ e_1 \] = e_2) field_1 field_2 ...))]
+   (well_formed_stored_table any σ θ ((\[ e_1 \] = e_2) field ...))]
   )
 
 (define-judgment-form
@@ -615,17 +595,16 @@
 (provide well_formed_term)
 
 (define-metafunction ext-lang
-  well-formed-vsp : vsp σ θ -> any
+  well_formed_vsp : vsp σ θ -> any
 
-  [(well-formed-vsp (r v) σ θ)
+  [(well_formed_vsp (r v) σ θ)
    #t
    
-   ; value must be well formed
-   (side-condition (judgment-holds (well_formed_term hole σ θ v)))
-   ]
+   ; value must be well formed: tid and cid must belong to dom(θ)
+   (side-condition (judgment-holds (well_formed_term hole σ θ v)))]
 
   ; default
-  [(well-formed-vsp any ...)
+  [(well_formed_vsp any ...)
    #f]
   )
 
@@ -635,31 +614,17 @@
   [(well_formed_sigma () σ θ)
    #t]
 
-  [(well_formed_sigma ((r v)) σ θ)
-   #t
-
-   (side-condition (term (well-formed-vsp (r v) σ θ)))]
-
-  [(well_formed_sigma ((refStdout String)) σ θ)
-   #t]
-
   ; stdout file
-  [(well_formed_sigma ((refStdout String) (r_1 v_2) (r_2 v_3) ...) σ θ)
-   (well_formed_sigma ((r_1 v_2) (r_2 v_3) ...) σ θ)
-   ]
+  [(well_formed_sigma ((refStdout String) (r v) ...) σ θ)
+   (well_formed_sigma ((r v) ...) σ θ)]
   
-  ; Stores are functions: for their syntactic representation, we ask for their
-  ; domains to contain as refs natural numbers in strictly increasing order
-  [(well_formed_sigma (((ref natural_1) v_1)
-                       ((ref natural_2) v_2) (r v_3) ...) σ θ)
-   (well_formed_sigma (((ref natural_2) v_2) (r v_3) ...) σ θ)
+  [(well_formed_sigma ((r v) vsp ...) σ θ)
+   (well_formed_sigma (vsp ...) σ θ)
 
-   (side-condition (< (term natural_1)
-                      (term natural_2)))
+   (side-condition (term (well_formed_vsp (r v) σ θ)))]
 
-   (side-condition (term (well-formed-vsp ((ref natural_1) v_1) σ θ)))]
-
-  [(well_formed_sigma any ...)
+  ; default
+  [(well_formed_sigma _ _ _)
    #f])
 
 (define-metafunction ext-lang
@@ -667,9 +632,9 @@
   
   [(well_formed_osp (tid_1 ((\{ field ... \}) tid_2 pos)) σ θ)
    #t
-   
+
    ; meta-table tid_2 must not be removed before tid_1
-   (side-condition (term (refBelongsToTheta? tid_2 θ)))
+   (side-condition (judgment-holds (well_formed_term hole σ θ tid_2)))
 
    ; table constructor must be well formed
    (side-condition (judgment-holds (well_formed_stored_table hole σ θ 
@@ -700,22 +665,12 @@
   [(well_formed_theta () σ θ)
    #t]
 
-  [(well_formed_theta (osp) σ θ)
-   #t
+  [(well_formed_theta (osp_1 osp_2 ...) σ θ)
+   (well_formed_theta (osp_2 ...) σ θ)
 
-   (side-condition (term (well_formed_osp osp σ θ)))]
+   (side-condition (term (well_formed_osp osp_1 σ θ)))]
 
-  ; simple check to enforce θ as functions
-  [(well_formed_theta (((any_1 natural_1) any_2)
-                       ((any_3 natural_2) any_4) osp ...) σ θ)
-   (well_formed_theta (((any_3 natural_2) any_4) osp ...) σ θ)
-
-   (side-condition (< (term natural_1)
-                      (term natural_2)))
-
-   (side-condition (term (well_formed_osp ((any_1 natural_1) any_2) σ θ)))]
-
-  [(well_formed_theta any ...)
+  [(well_formed_theta _ _ _)
    #f])
 
 (define-metafunction ext-lang

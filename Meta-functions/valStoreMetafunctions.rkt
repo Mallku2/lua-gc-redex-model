@@ -12,21 +12,15 @@
   [(freshSigmaRef ())
    (ref 1)]
 
-  [(freshSigmaRef ((refStdout v)))
-   (ref 1)]
+  ; discard stdout
+  [(freshSigmaRef ((refStdout v) vsp ...))
+   (freshSigmaRef (vsp ...))]
+
   
-  ; An store with at least one reference
-  [(freshSigmaRef (vsp ... ((ref Number_1) v)))
+  [(freshSigmaRef (((ref Number_1) v) ...))
    (ref Number_2)
 
-   (where Number_2 ,(+ (term Number_1) 1))]
-
-  [(freshSigmaRef (vsp ... ((ref Number_1) v_1) (refStdout v_2)))
-   (ref Number_2)
-
-   (where Number_2 ,(+ (term Number_1) 1))]
-
-  )
+   (where Number_2 ,(+ (argmax max (term (Number_1 ...))) 1))])
 
 ; To add simplevalues to the store
 (define-metafunction ext-lang
