@@ -179,6 +179,7 @@
 
   [tableconstructor (\{ field ... \})]
   
+  
   [(efield ef) (\[ v \] = v)
                v]
   
@@ -269,10 +270,15 @@
           functiondef]
   
   ; id-object binding: objects store's pairs  
-  [osp (tid intreptable)
-       (cid functiondef)]
+  [osp ((objr natural) intreptable)
+       ((cl natural) functiondef)]
+
+  ; useful to force a functional rep. of stores, and help redex-check to
+  ; generate well-formed stores
+  [ospcont ((objr hole) intreptable)
+           ((cl hole) functiondef)]
   
-  [θ ((objid_!_ object) ...)]
+  [θ ((in-hole ospcont natural_!_) ...)]
 
   ;                                                                          
   ;                                                                          

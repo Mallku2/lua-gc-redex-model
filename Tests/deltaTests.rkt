@@ -130,16 +130,16 @@
                         (((objr 1) ((\{ (\[ 1 \] = 2) \})
                                     nil 1))
                          ((objr 2) ((\{ \}) (objr 3) 2))
-                         ((cl 1) (function x () \; end))
-                         ((objr 3) ((\{ (\[ "__gc" \] = (cl 1)) \}) nil ⊥)))
+                         ((cl 4) (function x () \; end))
+                         ((objr 3) ((\{ (\[ "__gc" \] = (cl 4)) \}) nil ⊥)))
                         ((ref 1) = ((objr 1) ()))))
 
               (term ((((ref 1) 1))
                      (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1))
                       ((objr 2) ((\{ \}) (objr 3) ⊘))
-                      ((cl 1) (function x () \; end))
-                      ((objr 3) ((\{ (\[ "__gc" \] = (cl 1)) \}) nil ⊥)))
-                     ((cl 1) ((objr 2))))))
+                      ((cl 4) (function x () \; end))
+                      ((objr 3) ((\{ (\[ "__gc" \] = (cl 4)) \}) nil ⊥)))
+                     ((cl 4) ((objr 2))))))
   
   ; getmetatable
   (test-equal (term (δ getmetatable 1 (((objr 6)

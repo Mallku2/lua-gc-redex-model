@@ -7,13 +7,13 @@
   ; Function call
   ; E-WrongFunCallWithHandler
   (test-->> meta
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
-                    ((objr 1) ((\{ (\[ "__call" \] = (cl 1)) \}) nil 0))) 
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
+                    ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
                    : ((1 (2))WrongFunCall)))
             
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
-                    ((objr 1) ((\{ (\[ "__call" \] = (cl 1)) \}) nil 0))) 
-                   : ((cl 1) (1 2)))))
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
+                    ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
+                   : ((cl 2) (1 2)))))
 
   ; E-WrongFunCallNoHandler
   (test-->> meta
@@ -32,17 +32,17 @@
   (test-->> meta
             (term ((((objr 1) 
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
-                    ((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+                    ((cl 3) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 2) 
-                     ((\{ (\[ "__index" \] = (cl 1)) \}) nil 0))) 
+                     ((\{ (\[ "__index" \] = (cl 3)) \}) nil 0))) 
                    : (((objr 1) \[ 2 \]) WrongKey)))
             
             (term ((((objr 1) 
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
-                    ((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+                    ((cl 3) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 2) 
-                     ((\{ (\[ "__index" \] = (cl 1)) \}) nil 0))) 
-                   : ((cl 1) ((objr 1) 2)))))
+                     ((\{ (\[ "__index" \] = (cl 3)) \}) nil 0))) 
+                   : ((cl 3) ((objr 1) 2)))))
   
   ; E-WrongKeyWithHandlerRepeat
   (test-->> meta
@@ -100,15 +100,15 @@
   
   ; E-NonTableIndexedWithHandlerNormal
   (test-->> meta
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1)
-                     ((\{ (\[ "__index" \] = (cl 1)) \}) nil 0))) 
+                     ((\{ (\[ "__index" \] = (cl 2)) \}) nil 0))) 
                    : ((1 \[ 2 \])NonTable)))
             
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1)
-                     ((\{ (\[ "__index" \] = (cl 1)) \}) nil 0))) 
-                   : ((cl 1) (1 2)))))
+                     ((\{ (\[ "__index" \] = (cl 2)) \}) nil 0))) 
+                   : ((cl 2) (1 2)))))
   
   ; E-NonTableIndexedWithHandlerRepeat
   (test-->> meta
@@ -386,15 +386,15 @@
 ;                                                                                  
 ; E-FieldAssignWrongKeyNormal
   (test-->> meta
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
-                    ((objr 1) ((\{ (\[ "__newindex" \] = (cl 1)) \}) nil 0))
+            (term ((((cl 3) (function X () ($statFunCall (ref 1) ()) end))
+                    ((objr 1) ((\{ (\[ "__newindex" \] = (cl 3)) \}) nil 0))
                     ((objr 2) ((\{ \}) (objr 1) 0))) 
                    : ((((objr 2) \[ 1 \]) = 2) WrongKey)))
             
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
-                    ((objr 1) ((\{ (\[ "__newindex" \] = (cl 1)) \}) nil 0))
+            (term ((((cl 3) (function X () ($statFunCall (ref 1) ()) end))
+                    ((objr 1) ((\{ (\[ "__newindex" \] = (cl 3)) \}) nil 0))
                     ((objr 2) ((\{ \}) (objr 1) 0))) 
-                   : ($statFunCall (cl 1) ((objr 2) 1 2)))))
+                   : ($statFunCall (cl 3) ((objr 2) 1 2)))))
   
   ; E-FieldAssignWrongKeyRepeat
   (test-->> meta
@@ -447,15 +447,15 @@
   
   ; E-FieldAssignOverNonTableNormal
   (test-->> meta
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) 
-                     ((\{ (\[ "__newindex" \] = (cl 1)) \}) nil 0)))
+                     ((\{ (\[ "__newindex" \] = (cl 2)) \}) nil 0)))
                    : (((1 \[ 2 \]) = 2)NonTable)))
             
-            (term ((((cl 1) (function X () ($statFunCall (ref 1) ()) end))
+            (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) 
-                     ((\{ (\[ "__newindex" \] = (cl 1)) \}) nil 0)))
-                   : ($statFunCall (cl 1) (1 2 2)))))
+                     ((\{ (\[ "__newindex" \] = (cl 2)) \}) nil 0)))
+                   : ($statFunCall (cl 2) (1 2 2)))))
   
     ; E-FieldAssignOverNonTableRepeat
     (test-->> meta
