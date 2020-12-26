@@ -23,15 +23,15 @@
   ; Function call
   [(substExp (e_1 (e_2 ...)) ((id e_3) ...))
    ((substExp e_1 ((id e_3) ...))
-    (substexplist (e_2 ...) ((id e_3) ...)))]
+    ((substExp e_2 ((id e_3) ...)) ...))]
   
   [(substExp (e_1 : Name (e_2 ...)) ((id e_3) ...))
    ((substExp e_1 ((id e_3) ...))
-    : Name (substexplist (e_2 ...) ((id e_3) ...)))]
+    : Name ((substExp e_2 ((id e_3) ...)) ...))]
   
   ; Built-in procedure call
   [(substExp ($builtIn builtinserv (e_1 ...)) ((id e_2) ...))
-   ($builtIn builtinserv (substexplist (e_1 ...) ((id e_2) ...)))]
+   ($builtIn builtinserv ((substExp e_1 ((id e_2) ...)) ...))]
   
   ; Operator '( ')'
   [(substExp (\( e_1 \)) ((id e_2) ...))
@@ -46,45 +46,39 @@
    (< >)]
   ; Non empty tuple
   [(substExp (< e_1 ... >) ((id e_2) ...))
-   ,(append (term (< ))
-            (term (substexplist (e_1 ...) ((id e_2) ...)))
-            (term ( >)))]
+   (< (substExp e_1 ((id e_2) ...)) ... >)]
   
-  ; Function definition
-  ; We are assuming that the identifiers parlist occur in the 
-  ; same order as in namelist.
-  ; When the substitution defines a substitute to a vararg expression, it is
+  ; function definition
+  ; we are assuming that the identifiers parlist occur in the 
+  ; same order as in namelist
+  ; when the substitution defines a substitute to a vararg expression, it is
   ; discarded
-  [(substExp (function Name_1 (id ...) s end) ((Name e_1) ... (<<< e_2)))
-   (substExp (function Name_1 (id ...) s end) ((Name e_1) ...))]
+  [(substExp (function Name parameters s end) ((id_1 e_1) ...
+                                               (<<< e_2)
+                                               (id_2 e_3) ...))
+   (substExp (function Name parameters s end) ((id_1 e_1) ... (id_2 e_3) ...))]
   
-  [(substExp (function Name_1 (id ...) s end) ((Name_2 e_1) ...))
-   (function Name_1 (id ...) 
-             (substBlock s ((Name_3 e_3) ...))
+  [(substExp (function Name parameters s end) ((id_1 e_1) ...))
+   (function Name parameters 
+             (substBlock s ((id_2 e_2) ...))
              end)
-   (where ((Name_3 e_3) ...) ,(remove* (term (id ...)) (term ((Name_2 e_1) ...))
-                                       (λ (identifier pair)
-                                         (equal? identifier
-                                                 (list-ref pair 0)))))]
+   (where ((id_2 e_2) ...) ,(remove* (term parameters) (term ((id_1 e_1) ...))
+                                     (λ (identifier pair)
+                                       (equal? identifier
+                                               (list-ref pair 0)))))]
   
   
-  ; Table constructor
-  ; substfield receives and returns a list of the form (field ...)
-  ; so in this case, to reconstruct the original expression that has the form
-  ; of a list of symbols, we must escape to scheme code an use the append
-  ; function put the result of substfield with the others symbols in one list
+  ; table constructor
   [(substExp (\{ field ... \}) ((id e) ...))
-   ,(append (term (\{))
-            (append (term (substfield (field ...) ((id e) ...)))
-                    (term (\}))))]
+   (\{ (substField field ((id e) ...)) ... \})]
   
-  ; Binary operators
+  ; binary operators
   [(substExp (e_1 binop e_2) ((id e) ...))
    ((substExp e_1 ((id e) ...))
     binop
     (substExp e_2 ((id e) ...)))]
   
-  ; Unary operators
+  ; unary operators
   [(substExp (unop e_1) ((id e_2) ...))
    (unop (substExp e_1 ((id e_2) ...)))]
   
@@ -185,7 +179,8 @@
 
   ; Concatenation of statements
   [(substBlock (s_1 s_2 ...) ((id e) ...))
-   (substslist (s_1 s_2 ...) ((id e) ...))]
+   ((substBlock s_1 ((id e) ...))
+    (substBlock s_2 ((id e) ...)) ...)]
 
   ; Block Do...End
   [(substBlock (do s end) ((id e) ...))
@@ -197,8 +192,7 @@
 
   ; Return statement
   [(substBlock (return e_1 ...) ((id e_2) ...))
-   ,(append (term (return ))
-            (term (substexplist (e_1 ...) ((id e_2) ...))))]
+   (return (substExp e_1 ((id e_2) ...)) ...)]
 
   ; Conditional
   [(substBlock (if e_1 then s_1 else s_2 end) ((id e_2) ...))
@@ -212,19 +206,19 @@
           (substBlock s ((id e_2) ...)) 
           end)]
 
-  ; We can't rule out the possibility of having this construction into the scope
+  ; we can't rule out the possibility of having this construction into the scope
   ; of a local variable def. 
   [(substBlock ($iter e_1 do s end) ((id e_2) ...))
    ($iter (substExp e_1 ((id e_2) ...)) do 
                  (substBlock s ((id e_2) ...)) 
                  end)]
   
-  ; Local statement
+  ; local statement
   [(substBlock (local Name_1 ... = e_1 ... in s end) ((id_1 e_2) ...))
-   ,(append (term (local Name_1 ... = ))
-            (term (substexplist (e_1 ...) ((id_1 e_2) ...)))
-            (term (in (substBlock s ((id_2 e_3) ...)) end)))
-   
+   (local Name_1 ... = (substExp e_1 ((id_1 e_2) ...)) ... in
+                       (substBlock s ((id_2 e_3) ...)) end)
+
+   ; remove substitutes for the variables already bound by this local stat
    (where ((id_2 e_3) ...) ,(remove* (term (Name_1 ...)) (term ((id_1 e_2) ...))
                                      (λ (identifier pair)
                                        (equal? identifier
@@ -232,9 +226,9 @@
    
   ; Variable assignment
   [(substBlock (var ... = e_1 ...) ((id e_2) ...))
-   ,(append (term (substexplist (var ...) ((id e_2) ...)))
-            (term ( = ))
-            (term (substexplist (e_1 ...) ((id e_2) ...))))]
+   ((substExp var ((id e_2) ...)) ...
+    =
+    (substExp e_1 ((id e_2) ...)) ...)]
 
   ;                                                                  
   ;                                             ;                    
@@ -342,63 +336,23 @@
   
   [(applySubst id_1 ((id_1 e_1) (id e) ...))
    e_1]
-  
-  [(applySubst id_1 ((id_2 e_1) (id e) ...))
-   (applySubst id_1 ((id e) ...))
 
-   (side-condition (not (equal? (term id_1)
-                                (term id_2))))]
+  ; {id_1 ≠ id_2}
+  [(applySubst id_1 ((id_2 e_1) (id e) ...))
+   (applySubst id_1 ((id e) ...))]
   )
 
-; Auxiliar meta-function to perform a substitution over list
-; of exp constructions.
+; auxiliar meta-function to perform a substitution over a table field
 (define-metafunction ext-lang
-  substexplist : (e ...) ((id e) ...) -> (e ...)
+  substField : field ((id e) ...) -> field
   
-  [(substexplist () ((id e) ...))
-   ()]
-  
-  [(substexplist (e_1) ((id e) ...))
-   ((substExp e_1 ((id e) ...)))]
-  
-  [(substexplist (e_1 e ...) ((id e_2) ...))
-   ,(append (term ((substExp e_1 ((id e_2) ...)))) 
-            (term (substexplist (e ...) ((id e_2) ...))))])
-
-; Auxiliar meta-function to perform a substitution over list
-; of exp constructions.
-(define-metafunction ext-lang
-  substslist : (s ...) ((id e) ...) -> (s ...)
-  
-  [(substslist () ((id e) ...))
-   ()]
-  
-  [(substslist (s_1) ((id e) ...))
-   ((substBlock s_1 ((id e) ...)))]
-  
-  [(substslist (s_1 s ...) ((id e_2) ...))
-   ,(append (term ((substBlock s_1 ((id e_2) ...)))) 
-            (term (substslist (s ...) ((id e_2) ...))))])
-
-; Auxiliar meta-function to perform a substitution over list
-; of table fields.
-(define-metafunction ext-lang
-  substfield : (field ...) ((id e) ...) -> (field ...)
-  
-  [(substfield () ((id e_2) ...))
-   ()]
-  
-  [(substfield ((\[ e_1 \] = e_2)) ((id e_3) ...))
-   ((\[ (substExp e_1 ((id e_3) ...)) \]
+  [(substField (\[ e_1 \] = e_2) ((id e_3) ...))
+   (\[ (substExp e_1 ((id e_3) ...)) \]
         =
-        (substExp e_2 ((id e_3) ...))))]
+        (substExp e_2 ((id e_3) ...)))]
   
-  [(substfield (e_1) ((id e_2) ...))
-   ((substExp e_1 ((id e_2) ...)))]
-  
-  [(substfield (field_1 field ...) ((id e) ...))
-   ,(append (term (substfield (field_1) ((id e) ...))) 
-            (term (substfield (field ...) ((id e) ...))))])
+  [(substField e_1 ((id e_2) ...))
+   (substExp e_1 ((id e_2) ...))])
 
 ;                  
 ;                  
