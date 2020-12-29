@@ -114,6 +114,10 @@
   [(side-condition ,(or (redex-match ext-lang
                                      (in-hole C_2 (while e do C_3 end))
                                      (term any))
+
+                        (redex-match ext-lang
+                                     (in-hole C_2 ($iter e do C_3 end))
+                                     (term any))
                         
                         (redex-match ext-lang
                                      (in-hole C_2 (Elf Break))

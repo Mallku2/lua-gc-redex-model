@@ -44,7 +44,7 @@
 
 ; free val refs in t
 (define-metafunction ext-lang
-  free_val_refs : σ t -> (r ...)
+  free_val_refs : (vsp ...) t -> (r ...)
 
   ; discard refStdout
   [(free_val_refs ((refStdout String) (r v) ...) t)
@@ -62,24 +62,25 @@
 
 ; free val refs in θ (from the environment of closures)
 (define-metafunction ext-lang
-  free_val_refs_theta : σ θ -> (r ...)
+  ; it cannot be σ and θ since the domains may not be well-formed
+  free_val_refs_theta : (vsp ...) (osp ...) -> (r ...)
 
   ; discard refStdout
-  [(free_val_refs_theta σ ())
+  [(free_val_refs_theta (vsp ...) ())
    ()]
   
-  [(free_val_refs_theta σ ((_ functiondef) osp ...))
+  [(free_val_refs_theta (vsp ...) ((_ functiondef) osp ...))
    (r_3 ...)
 
-   (where (r_1 ...) (free_val_refs σ functiondef))
-   (where (r_2 ...) (free_val_refs_theta σ (osp ...)))
+   (where (r_1 ...) (free_val_refs (vsp ...) functiondef))
+   (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp ...)))
    (where (r_3 ...) ,(remove-duplicates (term (r_1 ... r_2 ...))))]
 
-  [(free_val_refs_theta σ ((_ (tableconstructor _ _)) osp ...))
+  [(free_val_refs_theta (vsp ...) ((_ (tableconstructor _ _)) osp ...))
    (r_3 ...)
 
-   (where (r_1 ...) (free_val_refs σ tableconstructor))
-   (where (r_2 ...) (free_val_refs_theta σ (osp ...)))
+   (where (r_1 ...) (free_val_refs (vsp ...) tableconstructor))
+   (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp ...)))
    (where (r_3 ...) ,(remove-duplicates (term (r_1 ... r_2 ...))))]
   )
 
@@ -120,7 +121,7 @@
 
 ; PRE : {any ∈ s ∪ e}
 (define-metafunction ext-lang
-  free_tids : θ t -> (tid ...)
+  free_tids : (osp ...) t -> (tid ...)
 
   [(free_tids ((any object) ...) t)
    (tid_2 ...)
@@ -134,35 +135,35 @@
 
 ; free tids in θ
 (define-metafunction ext-lang
-  free_tids_theta : θ -> (tid ...)
+  free_tids_theta : (osp ...) -> (tid ...)
 
-  [(free_tids_theta θ)
-   (free_tids_theta_aux θ θ)]
+  [(free_tids_theta (osp ...))
+   (free_tids_theta_aux (osp ...) (osp ...))]
   )
 
 (define-metafunction ext-lang
-  free_tids_theta_aux : θ θ -> (tid ...)
+  free_tids_theta_aux : (osp ...) (osp ...) -> (tid ...)
 
-  [(free_tids_theta_aux θ ())
+  [(free_tids_theta_aux (osp ...) ())
    ()]
 
   ; a functiondef shouldn't have a tid, but redex-check (and the grammar) allow
   ; them
-  [(free_tids_theta_aux θ ((_ functiondef) osp ...))
+  [(free_tids_theta_aux (osp_1 ...) ((_ functiondef) osp_2 ...))
    (tid_3 ...)
 
-   (where (tid_1 ...) (free_tids θ functiondef))
-   (where (tid_2 ...) (free_tids_theta_aux θ (osp ...)))
+   (where (tid_1 ...) (free_tids (osp_1 ...) functiondef))
+   (where (tid_2 ...) (free_tids_theta_aux (osp_1 ...) (osp_2 ...)))
    (where (tid_3 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ...))))]
 
   ; table with meta-table set
-  [(free_tids_theta_aux θ ((_ (tableconstructor any _)) osp ...))
+  [(free_tids_theta_aux (osp_1 ...) ((_ (tableconstructor any _)) osp_2 ...))
    (tid_4 ...)
 
-   (where (tid_1 ...) (free_tids θ tableconstructor))
-   ; check if the metatable is actually in θ or not
-   (where (tid_2 ...) (free_tids θ any))
-   (where (tid_3 ...) (free_tids_theta_aux θ (osp ...)))
+   (where (tid_1 ...) (free_tids (osp_1 ...) tableconstructor))
+   ; check if the metatable is actually in (osp_1 ...) or not
+   (where (tid_2 ...) (free_tids (osp_1 ...) any))
+   (where (tid_3 ...) (free_tids_theta_aux (osp_1 ...) (osp_2 ...)))
    (where (tid_4 ...) ,(remove-duplicates (term (tid_1 ...
                                                  tid_2 ...
                                                  tid_3 ...))))]
@@ -186,7 +187,7 @@
 (provide free_clids)
 ; closures ids not bound in θ
 (define-metafunction ext-lang
-  free_clids : θ t -> (cid ...)
+  free_clids : (osp ...) t -> (cid ...)
 
   [(free_clids ((any object) ...) t)
    (cid_2 ...)
@@ -198,40 +199,40 @@
 
 ; free cids in θ
 (define-metafunction ext-lang
-  free_clids_theta : θ -> (cid ...)
+  free_clids_theta : (osp ...) -> (cid ...)
 
-  [(free_clids_theta θ)
-   (free_clids_theta_aux θ θ)]
+  [(free_clids_theta (osp ...))
+   (free_clids_theta_aux (osp ...) (osp ...))]
   )
 
 (define-metafunction ext-lang
-  free_clids_theta_aux : θ θ -> (cid ...)
+  free_clids_theta_aux : (osp ...) (osp ...) -> (cid ...)
 
-  [(free_clids_theta_aux θ ())
+  [(free_clids_theta_aux (osp ...) ())
    ()]
 
   ; a functiondef shouldn't have a cid, but redex-check (and the grammar) allow
   ; them
-  [(free_clids_theta_aux θ ((_ functiondef) osp ...))
+  [(free_clids_theta_aux (osp_1 ...) ((_ functiondef) osp_2 ...))
    (cid_3 ...)
 
-   (where (cid_1 ...) (free_clids θ functiondef))
-   (where (cid_2 ...) (free_clids_theta_aux θ (osp ...)))
+   (where (cid_1 ...) (free_clids (osp_1 ...) functiondef))
+   (where (cid_2 ...) (free_clids_theta_aux (osp_1 ...) (osp_2 ...)))
    (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))]
 
   ; table without meta-table set
-  [(free_clids_theta_aux θ ((_ (tableconstructor _ _)) osp ...))
+  [(free_clids_theta_aux (osp_1 ...) ((_ (tableconstructor _ _)) osp_2 ...))
    (cid_3 ...)
 
-   (where (cid_1 ...) (free_clids θ tableconstructor))
-   (where (cid_2 ...) (free_clids_theta_aux θ (osp ...)))
+   (where (cid_1 ...) (free_clids (osp_1 ...) tableconstructor))
+   (where (cid_2 ...) (free_clids_theta_aux (osp_1 ...) (osp_2 ...)))
    (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))]
   )
 
 ; bound free tids, cids from a given conf; enforces well-formedness of the domain
 ; and img of given stores
 (define-metafunction ext-lang
-  close_fix_theta_sigma : σ θ t -> (σ θ t)
+  close_fix_theta_sigma : (vsp ...) (osp ...) t -> (σ θ t)
 
   [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
    (σ_1 θ t_2)
@@ -484,11 +485,13 @@
 (provide close_term)
 
 
-; bound free variables and references; enforce well-formedness of domains and
+; bound free variables and references; enforces well-formedness of domains and
 ; img of σ and θ; construct a valid configuration (σ : θ : s), ready for
 ; reduction with full-progs-rel
 (define-metafunction ext-lang
-  close_conf_meta  : (σ : θ : t) -> (σ : θ : s)
+  ; must receive (vsp ...) and (osp ...), and not σ and θ, since their domains
+  ; could not be well-formed
+  close_conf_meta  : ((vsp ...) : (osp ...) : t) -> (σ : θ : s)
 
   ; guarantee the presence of the global environment: load and loadstring assume
   ; its presence at the first position in σ
@@ -520,26 +523,26 @@
                                       (vsp_1 ... ((ref 1) tid) vsp_2 ...)
                                       (term ((r v) ...)))))]
   
-  [(close_conf_meta  (σ_1 : θ_1 : e_1))
+  [(close_conf_meta  ((vsp ...) : (osp ...) : e_1))
    ; transform e_2 into a statement, ready for reduction with full-progs-rel
-   (σ_2 : θ_2 : (return e_3))
+   (σ : θ : (return e_3))
 
    ; close var. identifiers
    (where e_2 (close_term_meta e_1))
 
    ; bound free val. refs, tids and cids;
-   ; enforce well-formedness of dom(σ_1), dom(θ_1) and images
-   (where (σ_2 θ_2 e_3)  (close_fix_theta_sigma σ_1 θ_1 e_2))]
+   ; enforce well-formedness of dom((vsp ...)), dom((osp ...)) and images
+   (where (σ θ e_3)  (close_fix_theta_sigma (vsp ...) (osp ...) e_2))]
 
-  [(close_conf_meta  (σ_1 : θ_1 : s_1))
-   (σ_2 : θ_2 : s_3)
+  [(close_conf_meta  ((vsp ...) : (osp ...) : s_1))
+   (σ : θ : s_3)
 
    ; close var. identifiers
    (where s_2 (close_term_meta s_1))
 
    ; bound free val. refs, tids and cids;
-   ; enforce well-formedness of dom(σ_1), dom(θ_1) and images
-   (where (σ_2 θ_2 s_3)  (close_fix_theta_sigma σ_1 θ_1 s_2))]
+   ; enforce well-formedness of dom((vsp ...)), dom((osp ...)) and images
+   (where (σ θ s_3)  (close_fix_theta_sigma (vsp ...) (osp ...) s_2))]
   )
 
 ; to interface with close_conf_meta, from terms of different relations
