@@ -148,7 +148,7 @@
              ((λ ()
                 (file->string (term String_1))))))]
   
-  ; something went wrong when trying to open file String
+  ; something went wrong when trying to open file String_1
   [(δ require v_1 v_2 ... θ)
    (δbasic error "module not found")]
 )

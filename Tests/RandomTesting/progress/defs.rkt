@@ -10,10 +10,8 @@
          "../../../Relations/meta.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
-         "../../../Meta-functions/valStoreMetafunctions.rkt"
          "../../../Meta-functions/objStoreMetafunctions.rkt"
-         "./prepare.rkt"
-         )
+         "./prepare.rkt")
 
 ;                                                                                          
 ;                                                                                          
@@ -118,7 +116,7 @@
                                      (term any))
                         
                         (redex-match ext-lang
-                                     (in-hole C_2 (C_3 Break))
+                                     (in-hole C_2 (Elf Break))
                                      (term any))))
    ---------------------------------------------------------------
    (well_formed_term any σ θ break)]

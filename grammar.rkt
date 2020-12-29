@@ -16,21 +16,20 @@
          ($iter e do s end)
          (local Name_1 Name_2 ... = e ... in s end) 
         
-        ; extensions
-        (s Break)
-        ; To help with the definition of well-formed programs, we exclude as
-        ; many ill-formed programs as possible,  using the grammar
-        (((tid \[ v \]) = v) WrongKey)
-        (((v \[ v \]) = v) NonTable)
-        (($statFunCall v (v ...)) WrongFunCall)
-        ; renv is not an expression nor a value.
-        (s (renv ...) LocalBody)
-        ; To allow intermediate states of execution of a funtioncall
-        (s (renv ...) RetStat)
+         ; extensions
+         (s Break)
+         ; to help with the definition of well-formed programs, we exclude as
+         ; many ill-formed programs as possible,  using the grammar
+         (((tid \[ v \]) = v) WrongKey)
+         (((v \[ v \]) = v) NonTable)
+         (($statFunCall v (v ...)) WrongFunCall)
+         ; renv is not an expression nor a value.
+         (s (renv ...) LocalBody)
+         ; To allow intermediate states of execution of a funtioncall
+         (s (renv ...) RetStat)
 
-        ; Error objects
-        ($err v)
-        ]
+         ; Error objects
+         ($err v)]
 
   ; Lua's block of code: it helps to avoid an ambiguity in the grammar, between
   ; funcalls and concat. of stats
@@ -48,7 +47,7 @@
   
   [String string]
 
-   ; Difference between statements and expressions is present also at a semantics
+  ; Difference between statements and expressions is present also at a semantics
   ; level: eg., tuples' semantics is defined taking into account if they appear
   ; as an expression or as a statement, and the same with funcall
   [e v
@@ -333,11 +332,11 @@
   
   ; Labelled-block, no protected mode
   [Enp Elf
-      ; To avoid repeating every production of Elf
-      (in-hole Elf (Enp Break))
-      (in-hole Elf (Enp (renv ...) RetStat))
-      (in-hole Elf (Enp (renv ...) RetExp))
-      ]
+       ; To avoid repeating every production of Elf
+       (in-hole Elf (Enp Break))
+       (in-hole Elf (Enp (renv ...) RetStat))
+       (in-hole Elf (Enp (renv ...) RetExp))
+       ]
 
 
   ; All possible evaluation contexts
@@ -616,7 +615,7 @@
 
 (define is_theta?
   (redex-match? ext-lang
-                    θ))
+                θ))
 
 (define is_conf?
   (redex-match? ext-lang

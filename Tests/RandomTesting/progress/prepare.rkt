@@ -370,53 +370,6 @@
                                  ()))]
   )
 
-;; enforces well-formedness of the img
-;
-;; enforces well-formedness of the img
-;; PRE : {θ_1 ++ θ_2 = θ}
-;(define-metafunction ext-lang
-;  fix_theta_img : θ -> θ
-;
-;  [(fix_theta_img ())
-;   ()]
-;
-;  [(fix_theta_img ((tid (tableconstructor_1 any pos)) osp_1 ...))
-;   ((tid
-;      ; in order to bound free ids in tableconstructor_1,
-;      ; close_term_meta returned a functiondef; we put it into a new
-;      ; table
-;      ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
-;     osp_3 ...)
-;
-;   ; table constructor must be well formed: deleted nil, nan or repeated keys;
-;   ; bound free variables
-;   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
-;   ; the following holds when tableconstructor_2 has free variables id
-;   (where functiondef (close_term_meta tableconstructor_2))
-;
-;   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
-;
-;  [(fix_theta_img ((tid (tableconstructor_1 any pos)) osp_1 ...))
-;   ((tid (tableconstructor_2 any pos)) osp_3 ...)
-;
-;   ; table constructor must be well formed: deleted nil, nan or repeated keys;
-;   ; bound free variables
-;   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
-;   ; the following holds when tableconstructor does not have free vars
-;   (where tableconstructor_2 (close_term_meta tableconstructor_2))
-;
-;   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
-;
-;  
-;  [(fix_theta_img ((cid functiondef_1) osp_1 ...))
-;   ((cid functiondef_2) osp_3 ...)
-;
-;   ; functiondef_1 must be well-formed
-;   (where functiondef_2 (close_term_meta functiondef_1))
-;
-;   (where (osp_3 ...) (fix_theta_img (osp_1 ...)))]
-;  )
-
 ; fix repeated keys and nil, nan keys
 (define-metafunction ext-lang
   fix_tableconstructor : tableconstructor -> tableconstructor

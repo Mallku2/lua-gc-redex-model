@@ -322,7 +322,7 @@
   ;        ;                                                                                         
   ;    ;   ;                                                                                         
   ;     ;;;                                                                                          
-  ; Table value has a meta-table, which has a "__metatable" key.
+  ; table value has a meta-table, which has a "__metatable" key.
   [(δbasic getmetatable objref_1 (osp_1 ...
                               (objref_1 (tableconstructor objref_3 any_1))
                               osp_2 ...))
@@ -340,14 +340,14 @@
    (side-condition (not (is_nil? (term v))))
    ]
 
-  ; Table value doesn't have a protected meta-table
+  ; table value doesn't have a protected meta-table
   [(δbasic getmetatable objref (osp_1 ...
                             (objref (tableconstructor v any))
                             osp_2 ...))
    v]
 
   
-  ; The value isn't a table. It has a meta-table, which has
+  ; the value isn't a table. It has a meta-table, which has
   ; a "__metatable" key,
   [(δbasic getmetatable any_1 (osp_1 ...
                            (objref_2 ((\{ field ...
@@ -360,8 +360,8 @@
    (where objref_2 (getMetaTableRef any_1))
    ]
   
-  ; The value isn't a table. It has a meta-table,
-  ; which has not a "__metatable" key
+  ; the value isn't a table. It has a meta-table, which has not a "__metatable"
+  ; key
   [(δbasic getmetatable any_1 (osp_1 ...
                            (objref_2 any_2)
                            osp_2 ...))
@@ -370,7 +370,7 @@
    (where objref_2 (getMetaTableRef any_1))
    ]
   
-  ; The value isn't a table. Its type has not a meta-table set.
+  ; the value isn't a table. Its type has not a meta-table set.
   [(δbasic getmetatable any θ)
    nil]
   
@@ -391,7 +391,7 @@
   ;           ;                                      
   ;           ;
   
-  ; Custom iterator, provided by the metatable
+  ; custom iterator, provided by the metatable
   [(δbasic ipairs objref θ)
    ((function $IpairsCustomIter ()
               (local v1 v2 v3 = (any (objref))
@@ -405,7 +405,7 @@
    (side-condition (not (equal? (term any)
                                 (term nil))))]
 
-  ; Default iterator
+  ; default iterator
   [(δbasic ipairs objref θ)
    (< (function $iPairsDefaultIter (t var)
                 (local result ttype = nil ($builtIn type (t))
@@ -670,9 +670,9 @@
   
   ; {the first argument is a pointer to a table}
 
-  ; From the ref. manual: "The order in which the indices are enumerated is not
-  ; specified, even for numeric indices".
-  ; We use the order of occurrence of the fields in the int. rep. of the table 
+  ; from the ref. manual: "The order in which the indices are enumerated is not
+  ; specified, even for numeric indices"
+  ; we use the order of occurrence of the fields in the int. rep. of the table 
 
   ; nil index, non empty table
   [(δbasic next objref nil (osp_1 ...
@@ -684,7 +684,7 @@
   [(δbasic next objref nil θ)
    (< nil >)]
   
-  ; Not the last index
+  ; not the last index
   [(δbasic next objref v_1 (osp_1 ...
                         (objref
                          ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)

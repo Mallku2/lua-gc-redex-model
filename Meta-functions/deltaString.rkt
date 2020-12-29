@@ -110,11 +110,19 @@
 
    (where String_2 (δbasic tostring Number_2 ()))]
 
-  ; negative number of reps.: returns empty string
+   ; negative number of reps.: returns empty string
   [(δstring string.rep String Number any)
    ""
 
    (side-condition (<= (term Number) 0))]
+
+  ; {Number_1 > 0}
+  ; Number_1 is not natural: the official interpreter takes floor(Number_2)
+  [(δstring string.rep String Number_1 any)
+   (δstring string.rep String Number_2 any)
+
+   (where Number_2 ,(floor (term Number_1)))
+   (side-condition (not (= (term Number_1) (term Number_2))))]
   
   [(δstring string.rep String 1 any)
    String]
