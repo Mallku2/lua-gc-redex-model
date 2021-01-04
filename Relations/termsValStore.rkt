@@ -54,8 +54,8 @@
         E-RefMapChange]
    
    ; local variables
-   ; equal quantity of l-values and r-values (forced by using ..._1 on both
-   ; sides)
+   ; equal quantity of l-values and r-values (forced by naming ..._1 both
+   ; ellipses)
    [-->σ (σ_1 : (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 in s_1 end))
         (σ_2 : ((substBlock s_1 ((Name_1 r_1) (Name_2 r_2) ...))
                 ((rEnv r_1) (rEnv r_2) ...) LocalBody))

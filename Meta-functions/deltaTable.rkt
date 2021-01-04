@@ -217,25 +217,22 @@
                               (list number)
                               (term (\] = ))
                               (list value)))
-                    ; Build the list of keys
+                    ; build the list of keys
                     (build-list (term Number) (λ (nmbr) (+ nmbr 1)))
                     ; and pass the values
                     (term (v ...))))
    
-   ; Filter nil-valued fields
-   (where any_2 ,(filter (λ (field)
-                           (not (redex-match? ext-lang
-                                              (\[ v \] = nil)
-                                              field)))
-                         (term any)))
+   ; filter nil-valued fields
+   (where ((\[ v_1 \] = v_2) ...) ,(filter (λ (field)
+                                             (not (redex-match? ext-lang
+                                                                (\[ v \] = nil)
+                                                                field)))
+                                           (term any)))
    
-   ; Add the parenthesis and the field "n"
+   ; add the parenthesis and the field "n"
    ; NOTE: it seems that the implementation counts even the nil-valued
    ; fields.
-   (where any_3 ,(append (term (\{ ))
-                         (term any_2)
-                         (term ((\[ "n" \] = Number)))
-                         (term ( \}))))]
+   (where any_3 (\{ (\[ v_1 \] = v_2) ... (\[ "n" \] = Number) \}))]
   
   
   ;                                                  
