@@ -1043,45 +1043,53 @@
   ;                                                  
   ;                                                  
   ;                                                  
-  ; Index out of range
-  [(δbasic select Number v ...)
+  ; index out of range
+  [(δbasic select Number_1 v ...)
    (δbasic error "bad argument #1 to 'select' (index out of range)")
    
    (where Number_2 ,(* -1 (length (term (v ...)))))
+
+   (where Number_3 ,(exact-floor (term Number_1)))
    
-   (side-condition (or (< (term Number) (term Number_2))
-                       (= (term Number) 0)))]
+   (side-condition (or (< (term Number_3) (term Number_2))
+                       (= (term Number_3) 0)))]
   
-  ; Positive index, in the range [1;(length (sv ...))] 
-  [(δbasic select Number v ...)
-   ,(append (term (< ))
-            (list-tail (term (v ...)) (term Number_2))
-            (term ( >)))
+  ; positive index in the range [1;(length (v ...))] 
+  [(δbasic select Number_1 v ...)
+   (< v_2 ... >)
    
-   (side-condition (and (<= (term Number) (length (term (v ...))))
-                        (<= 1 (term Number))))
+   (where Number_2 ,(exact-floor (term Number_1)))
    
-   (where Number_2 ,(- (exact-floor (term Number)) 1))]
+   (side-condition (and (<= 1 (term Number_2))
+                        (<= (term Number_2) (length (term (v ...))))))
+
+   (where (v_2 ...) ,(list-tail (term (v ...)) (- (term Number_2) 1)))]
   
-  ; Positive index > (length (sv ...))
-  [(δbasic select Number v ...)
+  ; positive NUmber_1 > (length (sv ...))
+  [(δbasic select Number_1 v ...)
    (< >)
+
    
-   (side-condition (> (term Number) (length (term (v ...)))))]
+   (where Number_2 ,(exact-floor (term Number_1)))
+   
+   (side-condition (> (term Number_2) (length (term (v ...)))))]
   
   ; Negative index
-  [(δbasic select Number v ...)
-   ,(append (term (< ))
-            (list-tail (term (v ...)) (term Number_3))
-            (term ( >)))
+  [(δbasic select Number_1 v_1 ...)
+   (< v_2 ... >)
+
+   (where Number_2 ,(length (term (v_1 ...))))
+   (where Number_3 ,(* -1 (term Number_2)))
+   (where Number_4 ,(exact-floor (term Number_1)))
    
-   (where Number_2 ,(* -1 (length (term (v ...)))))
+   (side-condition (and (<= (term Number_3) (term Number_4))
+                        (<= (term Number_4) -1)))
    
-   (side-condition (and (<= (term Number_2) (term Number))
-                        (<= (term Number) -1)))
-   
-   (where Number_3 ,(+ (length (term (v ...)))
-                       (exact-floor (term Number))))]
+   ; substract Number_1 to the length of v_1 ...
+   (where Number_5 ,(+ (term Number_2)
+                       (term Number_4)))
+
+   (where (v_2 ...) ,(list-tail (term (v_1 ...)) (term Number_5)))]
   
   ; Obtain the total number of actual arguments received.
   [(δbasic select "#" v ...)
