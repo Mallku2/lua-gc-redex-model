@@ -20,12 +20,12 @@
    ; operation occurs, as the evaluation contexts never allow reduction on
    ; l-values, if they are not fields of tables.
    [-->σ (σ : r)
-        ((vsp_1 ... (r v) vsp_2 ...) : v)
+         ((vsp_1 ... (r v) vsp_2 ...) : v)
 
-        ; defined in this way, to help redex-check to generate correct stores
-        (where (vsp_1 ... (r v) vsp_2 ...) σ)
+         ; defined in this way, to help redex-check to generate correct stores
+         (where (vsp_1 ... (r v) vsp_2 ...) σ)
         
-        E-RefDeref]
+         E-RefDeref]
    
    ;                                                                                  
    ;                                                                                  
@@ -46,22 +46,22 @@
    
    ; state change
    [-->σ (σ : (r = v_2))
-        ((vsp_1 ... (r v_2) vsp_2 ...) : \;)
+         ((vsp_1 ... (r v_2) vsp_2 ...) : \;)
 
-        ; defined in this way, to help redex-check to generate correct stores
-        (where (vsp_1 ... (r v_1) vsp_2 ...) σ)
+         ; defined in this way, to help redex-check to generate correct stores
+         (where (vsp_1 ... (r v_1) vsp_2 ...) σ)
         
-        E-RefMapChange]
+         E-RefMapChange]
    
    ; local variables
    ; equal quantity of l-values and r-values (forced by naming ..._1 both
    ; ellipses)
    [-->σ (σ_1 : (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 in s_1 end))
-        (σ_2 : ((substBlock s_1 ((Name_1 r_1) (Name_2 r_2) ...))
-                ((rEnv r_1) (rEnv r_2) ...) LocalBody))
-        E-Local
+         (σ_2 : ((substBlock s_1 ((Name_1 r_1) (Name_2 r_2) ...))
+                 ((rEnv r_1) (rEnv r_2) ...) LocalBody))
+         E-Local
 
-        (where (σ_2 (r_1 r_2 ...)) (addSimpVal σ_1 (v_1 v_2 ...)))]
+         (where (σ_2 (r_1 r_2 ...)) (addSimpVal σ_1 (v_1 v_2 ...)))]
    
    ))
 (provide terms-val-store)

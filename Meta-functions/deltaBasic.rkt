@@ -1068,7 +1068,6 @@
   ; positive NUmber_1 > (length (sv ...))
   [(δbasic select Number_1 v ...)
    (< >)
-
    
    (where Number_2 ,(exact-floor (term Number_1)))
    
@@ -1338,23 +1337,23 @@
   ;            ;;     ;              
 
   [(δbasic type Number )
-   ,(term "number")]
+   "number"]
   
   [(δbasic type nil)
-   ,(term "nil")]
+   "nil"]
   
   [(δbasic type Boolean)
-   ,(term "boolean")]
+   "boolean"]
   
   [(δbasic type String)
-   ,(term "string")]
+   "string"]
   
   [(δbasic type cid)
-   ,(term "function")]
+   "function"]
   
   ; Default case
   [(δbasic type objref)
-   ,(term "table")]
+   "table"]
   
   ;                                                  
   ;                                   ;;;     ;;;    
