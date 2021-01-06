@@ -1,15 +1,8 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
          "./grammarMetafunctions.rkt"
-         "./coercion.rkt"
-         "./gc.rkt"
-         "./deltaBasic.rkt"
-         "../Desugar/parser.rkt"
-         "../Desugar/lexer.rkt"
-         "../Desugar/phrases_constructors.rkt")
+         "./deltaBasic.rkt")
 
 (define-metafunction ext-lang
   ;                                                  
@@ -188,27 +181,59 @@
   ;    ;;;;    ;;; ;  ;;;;;  
   ;                          
   ;
-  [(δstring string.sub Number_1 Number_2 Number_3)
-   (δstring string.sub String Number_2 Number_3)
+  ; coercion
+  [(δstring string.sub Number_1 Number_2 ...)
+   (δstring string.sub String Number_2 ...)
 
    (where String (δbasic tostring Number_1 ()))]
-  
+
   ; correction of indices
+  ; ref.manual: "If j is absent, then it is assumed to be equal to -1"
+  [(δstring string.sub String Number)
+   (δstring string.sub String Number -1)]
+  
   ; Number_1 < 0
+  [(δstring string.sub String Number_1 Number_2)
+   (δstring string.sub String Number_3 Number_2)
+
+   (side-condition (< (term Number_1) 0))
+
+   ; Number_1 refers to a position in String, counting backwards from its
+   ; last character
+   (where Number_3 ,(add1 (+ (term (δbasic \# String))
+                             (term Number_1))))]
+
+  ; {Number_1 >= 0}
+  ; if, after the translation of negative indices, i is less than 1, it is
+  ; corrected to 1
   [(δstring string.sub String Number_1 Number_2)
    (δstring string.sub String 1 Number_2)
 
-   (side-condition (< (term Number_1)
-                      0))]
-  
-  ; If Number_2 is greater than the string length, it is corrected to that length
+   (side-condition (< (term Number_1) 1))]
+
+  ; {Number_1 >= 1}
+  ; if Number_2 is greater than # String, then, it is corrected to that length
   [(δstring string.sub String Number_1 Number_2)
    (δstring string.sub String Number_1 (δbasic \# String))
 
    (side-condition (< (term (δbasic \# String))
                       (exact-floor (term Number_2))))]
 
-  ; If, after these corrections, Number_1 is greater than Number_2, the function
+  ; {1 <= Number_1 ∧ Number_2 <= #String}
+  ; Number_2 < 0
+  [(δstring string.sub String Number_1 Number_2)
+   (δstring string.sub String Number_1 Number_4)
+
+   (where Number_3 (δbasic \# String))
+   
+   (side-condition (and (<= (* -1 (term Number_3)) (term Number_2))
+                        (< (term Number_2) 0)))
+
+   (where Number_4 ,(add1 (+ (term Number_3)
+                             (term Number_2))))]
+
+  ; {1 <= Number_1 ∧ 1 <= Number_2 <= #String}
+  ; if, after these corrections, Number_1 is greater than Number_2, the function
   ; returns the empty string. 
   [(δstring string.sub String Number_1 Number_2)
    ""
@@ -216,11 +241,16 @@
    (side-condition (< (term Number_2)
                       (term Number_1)))]
 
-  ; Normal case
+  ; normal case
+  ; {1 <= Number_1 <= Number_2 <= # String}
   [(δstring string.sub String Number_1 Number_2)
    ,(substring (term String)
+               ; non-specified behavior: string.sub takes the floor of
+               ; its numeric parameters
                (- (exact-floor (term Number_1)) 1)
                (exact-floor (term Number_2)))]
+
+  
 
   ; to capture the "no value" error for every builtinserv 
   [(δstring builtinserv v ...)

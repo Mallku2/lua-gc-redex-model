@@ -504,6 +504,13 @@
   (test-equal (term (δ string.dump 1 ()))
               (term ($err "bad argument #1 (function expected, got number)")))
 
+  ; string.len
+  (test-equal (term (δ string.len "a"))
+              1)
+
+  (test-equal (term (δ string.len "ab"))
+              2)
+
   ; string.rep
   (test-equal (term (δ string.rep "ab" 1 nil))
               (term "ab"))
@@ -526,12 +533,53 @@
   (test-equal (term (δ string.rep 12 3 3))
               (term "12312312"))
 
-   ; string.len
-  (test-equal (term (δ string.len "a"))
-              1)
+  ; string.sub
+  ; coercion
+  (test-equal (term (δ string.sub 123 1 3))
+              (term "123"))
+  ; correction j
+  (test-equal (term (δ string.sub "abc" 1))
+              (term "abc"))
 
-  (test-equal (term (δ string.len "ab"))
-              2)
+  (test-equal (term (δ string.sub "abc" 1 -1))
+              (term "abc"))
+
+  (test-equal (term (δ string.sub "abc" 1 -2))
+              (term "ab"))
+
+  (test-equal (term (δ string.sub "abc" 1 -3))
+              (term "a"))
+
+    (test-equal (term (δ string.sub "abc" 2 -1))
+              (term "bc"))
+
+  (test-equal (term (δ string.sub "abc" 2 -2))
+              (term "b"))
+
+  (test-equal (term (δ string.sub "abc" 2 -3))
+              (term ""))
+
+  (test-equal (term (δ string.sub "abc" 1 -4))
+              (term ""))
+
+  ; correction i
+  (test-equal (term (δ string.sub "abc" -1 3))
+              (term "c"))
+
+  (test-equal (term (δ string.sub "abc" -2 3))
+              (term "bc"))
+
+  (test-equal (term (δ string.sub "abc" -3 3))
+              (term "abc"))
+
+  (test-equal (term (δ string.sub "abc" 0 1))
+              (term "a"))
+
+  (test-equal (term (δ string.sub "abc" 0 2))
+              (term "ab"))
+
+  (test-equal (term (δ string.sub "abc" 0 3))
+              (term "abc"))
                                     
   ;                           ;      
   ;                           ;      
