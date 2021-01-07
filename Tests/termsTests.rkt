@@ -559,32 +559,29 @@
   ; cos
   (test-->> terms-rel
             (term ($builtIn math.cos (0)))
-            
-            (term 1))
+            (term 1.0))
 
   ; cosh
   (test-->> terms-rel
             (term ($builtIn math.cosh (0)))
-            
             (term 1.0))
 
   ; deg
   (test-->> terms-rel
             (term ($builtIn math.deg (0)))
-            
             (term 0))
 
   ; exp
   (test-->> terms-rel
             (term ($builtIn math.exp (0)))
             
-            (term 1))
+            (term 1.0))
 
   ; fmod
   (test-->> terms-rel
             (term ($builtIn math.fmod (10 3)))
             
-            (term 1))
+            (term 1.0))
 
   ; log
   (test-->> terms-rel
@@ -602,7 +599,7 @@
   (test-->> terms-rel
             (term ($builtIn math.sin (0)))
             
-            (term 0))
+            (term 0.0))
 
   ; sinh
   (test-->> terms-rel
@@ -614,13 +611,13 @@
   (test-->> terms-rel
             (term ($builtIn math.sqrt (9)))
             
-            (term 3))
+            (term 3.0))
 
   ; tan
   (test-->> terms-rel
             (term ($builtIn math.tan (0)))
             
-            (term 0))
+            (term 0.0))
 
   ; tanh
   (test-->> terms-rel

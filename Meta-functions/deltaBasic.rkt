@@ -1,13 +1,12 @@
 #lang racket
 (require redex
+         math/flonum ; operations over flonums
          "../grammar.rkt"
          "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
          "./grammarMetafunctions.rkt"
          "./coercion.rkt"
          "./gc.rkt"
          "../Desugar/parser.rkt"
-         "../Desugar/lexer.rkt"
          "../Desugar/phrases_constructors.rkt")
 
 
@@ -37,25 +36,25 @@
   ; we reuse racket's implementation of double-precision IEEE floating-point
   ; numbers, flonums 
   [(δbasic + Number_1 Number_2)
-   ,(+ (term Number_3) (term Number_4))
+   ,(fl+ (term Number_3) (term Number_4))
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
   [(δbasic - Number_1 Number_2)
-   ,(- (term Number_3) (term Number_4))
+   ,(fl- (term Number_3) (term Number_4))
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
   [(δbasic * Number_1 Number_2)
-   ,(* (term Number_3) (term Number_4))
+   ,(fl* (term Number_3) (term Number_4))
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
  
   [(δbasic / Number_1 Number_2)
-   ,(/ (term Number_3) (term Number_4))
+   ,(fl/ (term Number_3) (term Number_4))
 
    ; to guarantee ieee 754 behavior, we apply a step of conversion to flonums;
    ; hence, for example, a division (/ 1 0) results in +inf.0, as in Lua,
@@ -64,13 +63,14 @@
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
   [(δbasic ^ Number_1 Number_2)
-   ,(expt (term Number_3) (term Number_4))
+   ,(flexpt (term Number_3) (term Number_4))
    
    (where Number_3 ,(real->double-flonum (term Number_1)))
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
   [(δbasic % Number_1 Number_2)
-   ;a - math.floor(a/b)*b
+   ;from ref. manual: "it is the remainder of a division that rounds the
+   ; quotient towards minus infinity": a - math.floor(a/b)*b
    (δbasic - Number_3
            (δbasic *
                    ; NOTE: this should be δmath math.floor, but we cannot include
@@ -87,10 +87,10 @@
    
    (where Number (δbasic tonumber String nil))]
 
-  [(δbasic - Number)
-   ,(- (term Number))
+  [(δbasic - Number_1)
+   ,(fl- (term Number_2))
    
-   (where Number_2 ,(real->double-flonum (term Number)))]
+   (where Number_2 ,(real->double-flonum (term Number_1)))]
   
   ; Number comparison
   [(δbasic < Number_1 Number_2)

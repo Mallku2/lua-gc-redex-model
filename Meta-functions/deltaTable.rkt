@@ -2,14 +2,7 @@
 (require redex
          "../grammar.rkt"
          "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
-         "./grammarMetafunctions.rkt"
-         "./coercion.rkt"
-         "./gc.rkt"
-         "./deltaBasic.rkt"
-         "../Desugar/parser.rkt"
-         "../Desugar/lexer.rkt"
-         "../Desugar/phrases_constructors.rkt")
+         "./deltaBasic.rkt")
 
 
 ; We define the semantics of the binary and unary operators of our language

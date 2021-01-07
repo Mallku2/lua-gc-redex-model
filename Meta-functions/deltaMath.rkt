@@ -1,15 +1,8 @@
 #lang racket
 (require redex
+         math/flonum ; operations over flonums
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
-         "./grammarMetafunctions.rkt"
-         "./coercion.rkt"
-         "./gc.rkt"
-         "./deltaBasic.rkt"
-         "../Desugar/parser.rkt"
-         "../Desugar/lexer.rkt"
-         "../Desugar/phrases_constructors.rkt")
+         "./deltaBasic.rkt")
 
 
 (define-metafunction ext-lang
@@ -75,12 +68,7 @@
   [(δmath math.acos Number_1)
    Number_2
 
-   ; check that the result is in the set of real numbers
-   (where Number_2 ,(acos (term Number_1)))]
-
-  ; parameter outside of [-1;1]
-  [(δmath math.acos Number)
-   +nan.0]
+   (where Number_2 ,(flacos (real->double-flonum (term Number_1))))]
   
   ;                                  
   ;                     ;            
@@ -105,13 +93,7 @@
   [(δmath math.asin Number_1)
    Number_2
 
-   ; check that the result is in the set of real numbers (for parameter outside
-   ; of [-1;1], the result will be a number with a non-zero complex part
-   (where Number_2 ,(asin (term Number_1)))]
-
-  ; parameter outside of [-1;1]
-  [(δmath math.asin Number)
-   +nan.0]
+   (where Number_2 ,(flasin (real->double-flonum (term Number_1))))]
   
   ;                                  
   ;                                  
@@ -134,7 +116,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.atan Number)
-   ,(atan (term Number))]
+   ,(flatan (real->double-flonum (term Number)))]
 
   
   ;                                  
@@ -158,8 +140,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.ceil Number)
-   ,(ceiling (term Number))]
-  
+   ,(flceiling (real->double-flonum (term Number)))]
   ;                          
   ;                          
   ;                          
@@ -181,7 +162,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.cos Number )
-   ,(cos (term Number))]
+   ,(flcos (real->double-flonum (term Number)))]
 
   
   ;                                  
@@ -252,7 +233,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.exp Number)
-   ,(exp (term Number))]
+   ,(flexp (real->double-flonum (term Number)))]
 
   ;                                          
   ;      ;;   ;;;                            
@@ -274,8 +255,8 @@
    
    (where Number (δbasic tonumber String nil))]
   
-  [(δmath math.floor Number )
-   ,(floor (term Number))]
+  [(δmath math.floor Number)
+   ,(flfloor (real->double-flonum (term Number)))]
   
   ;                                  
   ;      ;;                        ; 
@@ -297,12 +278,20 @@
    
    (where Number_2 (δbasic tonumber String nil))]
   
-  [(δmath math.fmod Number_1 0)
-   -nan.0]
-
-  ; {Number_2 ≠ 0}
+  ; from ref. manual: "returns the remainder of the division of Number_1 by
+  ; Number_2 that rounds the quotient towards zero"
   [(δmath math.fmod Number_1 Number_2)
-   ,(exact-floor (remainder (term Number_1) (term Number_2)))]
+   (δbasic -
+           Number_1
+           (δbasic *
+                   ; rounding towards zero
+                   (δbasic *
+                           ,(sgn (term Number_3))
+                           (δmath math.floor
+                                  (δmath math.abs Number_3)))
+                   Number_2))
+   
+   (where Number_3 (δbasic / Number_1 Number_2))]
   
   ;                          
   ;   ;;;                    
@@ -319,23 +308,21 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;
+  ; coercion
   [(δmath math.log Number_1 ... String v ...)
    (δmath math.log Number_1 ... Number_2 v ...)
    
    (where Number_2 (δbasic tonumber String nil))]
 
+  ; base is optional
   [(δmath math.log Number_1 nil)
-   ,(log (term Number_2))
+   ,(fllog (term Number_2))
 
-   (where Number_2 ,(exact->inexact (term Number_1)))]
+   (where Number_2 ,(real->double-flonum (term Number_1)))]
 
   [(δmath math.log Number_1 Number_2)
-   (δbasic /
-      (δmath math.log Number_3 nil)
-      (δmath math.log Number_4 nil))
-
-   (where Number_3 ,(exact->inexact (term Number_1)))
-   (where Number_4 ,(exact->inexact (term Number_2)))]
+   ,(fllogb (real->double-flonum (term Number_2))
+            (real->double-flonum (term Number_1)))]
 
   ;                          
   ;                          
@@ -381,8 +368,11 @@
    
    (where Number (δbasic tonumber String nil))]
   
-  [(δmath math.modf Number)
-   ,(- (term Number) (exact-truncate (term Number)))]
+  [(δmath math.modf Number_1)
+   (< Number_2  Number_3 >)
+
+   (where Number_2 ,(truncate (term Number_1)))
+   (where Number_3 (δbasic - Number_1 Number_2))]
   ;                          
   ;                        ; 
   ;                        ; 
@@ -427,7 +417,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.sin Number)
-   ,(sin (term Number))]
+   ,(flsin (real->double-flonum (term Number)))]
   
   ;                                  
   ;             ;             ;      
@@ -475,13 +465,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.sqrt Number)
-   ,(sqrt (term Number))
-
-   (side-condition (> (term Number) 0))]
-
-  ; {Number >= 0}
-  [(δmath math.sqrt Number)
-   -nan.0]
+   ,(flsqrt (real->double-flonum (term Number)))]
   
   ;                          
   ;                          
@@ -504,7 +488,7 @@
    (where Number (δbasic tonumber String nil))]
   
   [(δmath math.tan Number)
-   ,(tan (term Number))]
+   ,(fltan (real->double-flonum (term Number)))]
   
   ;                                  
   ;                           ;      
@@ -529,22 +513,13 @@
   [(δmath math.tanh Number)
    ,(tanh (term Number))]
 
-  ; Default case of math functions
+  ; default case of math functions
   [(δmath builtinserv v ...)
    (δbasic error any)
-
-   (side-condition (string-prefix? (symbol->string (term builtinserv))
-                                   "math."))
 
    (where any ,(string-append (symbol->string (term builtinserv))
                               ": bad argument #1 (number expected)"))
    ]
-
-  ; to capture the "no value" error for every builtinserv 
-  [(δmath builtinserv v ...)
-   (δbasic error any)
-
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))])
+  )
 
 (provide δmath)

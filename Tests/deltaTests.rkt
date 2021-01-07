@@ -40,7 +40,8 @@
               (term 3.0))
   
   (test-equal (term (δ - 1))
-              -1)
+              -1
+              #:equiv =)
   
   ; Number comparison
   (test-equal (term (δ < 1 2))
@@ -604,7 +605,8 @@
 
   ; acos
   (test-equal (term (δ math.acos 1))
-              (term 0))
+              (term 0)
+              #:equiv =)
 
   ; check parameters outside of [-1;1]
   (test-equal (term (δ math.asin 3))
@@ -615,7 +617,8 @@
 
   ; asin
   (test-equal (term (δ math.asin 0))
-              (term 0))
+              (term 0)
+              #:equiv =)
 
   ; check parameters outside of [-1;1]
   (test-equal (term (δ math.asin 3))
@@ -626,7 +629,8 @@
 
   ; atan
   (test-equal (term (δ math.atan 0))
-              (term 0))
+              (term 0)
+              #:equiv =)
   
   (test-equal (term (δ math.atan true))
               (term ($err "math.atan: bad argument #1 (number expected)")))
@@ -640,7 +644,8 @@
 
   ; cos
   (test-equal (term (δ math.cos 0))
-              (term 1))
+              (term 1)
+              #:equiv =)
   
   (test-equal (term (δ math.cos true))
               (term ($err "math.cos: bad argument #1 (number expected)")))
@@ -672,7 +677,8 @@
 
   ; fmod
   (test-equal (term (δ math.fmod 10 3))
-              (term 1))
+              (term 1)
+              #:equiv =)
 
   ; log
   (test-equal (term (δ math.log 1 nil))
@@ -694,7 +700,8 @@
 
   ; sin
   (test-equal (term (δ math.sin 0))
-              (term 0))
+              (term 0)
+              #:equiv =)
   
   (test-equal (term (δ math.sin true))
               (term ($err "math.sin: bad argument #1 (number expected)")))
@@ -708,14 +715,16 @@
 
   ; sqrt
   (test-equal (term (δ math.sqrt 9))
-              (term 3))
+              (term 3)
+              #:equiv =)
   
   (test-equal (term (δ math.sqrt true))
               (term ($err "math.sqrt: bad argument #1 (number expected)")))
 
   ; tan
   (test-equal (term (δ math.tan 0))
-              (term 0))
+              (term 0)
+              #:equiv =)
   
   (test-equal (term (δ math.tan true))
               (term ($err "math.tan: bad argument #1 (number expected)")))
