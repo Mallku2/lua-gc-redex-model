@@ -244,11 +244,14 @@
   ; normal case
   ; {1 <= Number_1 <= Number_2 <= # String}
   [(δstring string.sub String Number_1 Number_2)
-   ,(substring (term String)
-               ; non-specified behavior: string.sub takes the floor of
-               ; its numeric parameters
-               (- (exact-floor (term Number_1)) 1)
-               (exact-floor (term Number_2)))]
+   ; Lua's String represents immutable sequences of bytes: we convert a Racket
+   ; string into a byte string, extract the expected sub-sequence of the bytes,
+   ; and then back to string
+   ,(bytes->string/utf-8 (string->bytes/utf-8 (term String)) #f
+                         ; non-specified behavior: string.sub takes the floor of
+                         ; its numeric parameters
+                         (- (exact-floor (term Number_1)) 1)
+                         (exact-floor (term Number_2)))]
 
   
 
