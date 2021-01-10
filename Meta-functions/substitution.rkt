@@ -246,22 +246,24 @@
   ;                                                                  
   ;
   [(substBlock ($err v) ((id e) ...))
-   ($err v)]
+   ($err (substExp v ((id e) ...)))]
   
   [(substBlock (s Break) ((id e) ...))
    ((substBlock s ((id e) ...)) Break)]
 
   [(substBlock (((objref \[ v_1 \]) = v_2) WrongKey) ((id e) ...))
-   (((objref \[ v_1 \]) = v_2) WrongKey)]
+   ((((substExp objref ((id e) ...))
+      \[ (substExp v_1 ((id e) ...)) \]) = (substExp v_2 ((id e) ...))) WrongKey)]
 
   [(substBlock (((v_1 \[ v_2 \]) = v_3) NonTable) ((id e) ...))
-   (((v_1 \[ v_2 \]) = v_3) NonTable)]
+   ((((substExp v_1 ((id e) ...))
+      \[ (substExp v_2 ((id e) ...)) \]) = (substExp v_3 ((id e) ...))) NonTable)]
 
   [(substBlock ((v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
-   ((v_1 (v_2 ...)) WrongFunCall)]
+   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WrongFunCall)]
 
   [(substBlock (($statFunCall v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
-   (($statFunCall v_1 (v_2 ...)) WrongFunCall)]
+   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WrongFunCall)]
 
   ; every variable bound in s has already been replaced by a ref.
   [(substBlock (s (renv ...) LocalBody) ((id e) ...))

@@ -72,7 +72,7 @@
      (e ProtectedMode)
      (e ProtectedMode v)
      
-     ; To help with the definition of well-formed programs, we exclude with the
+     ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
      ((v_1 (v_2 ...)) WrongFunCall)
      ((v \[ v \]) NonTable)
@@ -83,8 +83,7 @@
      ((v <= v) OrdCompWrongOps)
      ((- v) NegWrongOp)
      ((\# v) StrLenWrongOp)
-     ((v == v) EqFail)
-     ]
+     ((v == v) EqFail)]
 
   ; identifiers of variables and refs., to ease the definition of several
   ; substitution functions
@@ -330,16 +329,15 @@
        (v \[ Elf \])]
 
   
-  ; Labelled-block, no protected mode
+  ; labelled-block, no protected mode
   [Enp Elf
-       ; To avoid repeating every production of Elf
+       ; to avoid repeating every production of Elf
        (in-hole Elf (Enp Break))
        (in-hole Elf (Enp (renv ...) RetStat))
-       (in-hole Elf (Enp (renv ...) RetExp))
-       ]
+       (in-hole Elf (Enp (renv ...) RetExp))]
 
 
-  ; All possible evaluation contexts
+  ; all possible evaluation contexts
   [E Elf
      (in-hole Elf (E Break))
      (in-hole Elf (E (renv ...) RetStat))
@@ -442,6 +440,9 @@
      (C ProtectedMode)
      (C ProtectedMode v)
      (e ProtectedMode C)
+     ($err C)
+     ($iter C do s end)
+     ($iter e do C end)
 
      ; Added each production, instead of a single (C statlabel) and
      ; (C explabel), to avoid redundancy errors
@@ -475,10 +476,7 @@
      ((v == C) EqFail)
      
      (< e ... C e ... >)
-     ($err C)
-     ($iter C do s end)
-     ($iter e do C end)
-  
+     
      ; Function call, method call, built-in services
      (C (e ...))
      (e (e ... C e ...))

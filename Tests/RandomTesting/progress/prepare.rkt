@@ -169,6 +169,29 @@
                                                  tid_3 ...))))]
   )
 
+(define-metafunction ext-lang
+  free_tids_sigma : (vsp ...) (osp ...) -> (tid ...)
+
+  [(free_tids_sigma () _)
+   ()]
+
+  [(free_tids_sigma ((r tid_1) vsp ...) (osp_1 ... (tid_1 any) osp_2 ...))
+   (free_tids_sigma (vsp ...) (osp_1 ... (tid_1 any) osp_2 ...))
+   
+   (where (tid_2 ...) (free_tids_sigma (vsp ...)
+                                       (osp_1 ... (tid_1 any) osp_2 ...)))]
+
+  [(free_tids_sigma ((r tid_1) vsp ...) (osp ...))
+   ; {tid ∉ dom(osp ...)}
+   (tid_1 tid_2 ...)
+   
+   (where (tid_2 ...) (free_tids_sigma (vsp ...) (osp ...)))]
+
+  ; {vsp_1 ≠ (r, tid)}
+  [(free_tids_sigma (vsp_1 vsp_2 ...) (osp ...))
+   (free_tids_sigma (vsp_2 ...) (osp ...))])
+
+
 ; extract closures ids from a term t
 (define (get_clids t)
   (map (lambda (match)
@@ -229,10 +252,33 @@
    (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))]
   )
 
+
+(define-metafunction ext-lang
+  free_clids_sigma : (vsp ...) (osp ...) -> (cid ...)
+
+  [(free_clids_sigma () _)
+   ()]
+
+  [(free_clids_sigma ((r cid_1) vsp ...) (osp_1 ... (cid_1 any) osp_2 ...))
+   (free_clids_sigma (vsp ...) (osp_1 ... (cid_1 any) osp_2 ...))
+   
+   (where (cid_2 ...) (free_clids_sigma (vsp ...)
+                                       (osp_1 ... (cid_1 any) osp_2 ...)))]
+
+  [(free_clids_sigma ((r cid_1) vsp ...) (osp ...))
+   ; {cid ∉ dom(osp ...)}
+   (cid_1 cid_2 ...)
+   
+   (where (cid_2 ...) (free_clids_sigma (vsp ...) (osp ...)))]
+
+  ; {vsp_1 ≠ (r, cid)}
+  [(free_clids_sigma (vsp_1 vsp_2 ...) (osp ...))
+   (free_clids_sigma (vsp_2 ...) (osp ...))])
+
 ; bound free tids, cids from a given conf; enforces well-formedness of the domain
 ; and img of given stores
 (define-metafunction ext-lang
-  close_fix_theta_sigma : (vsp ...) (osp ...) t -> (σ θ t)
+  close_fix_theta_sigma : σ (osp ...) t -> (σ θ t)
 
   [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
    (σ_1 θ t_2)
@@ -246,14 +292,16 @@
    ; add dummy vals. and bound free refs
    (where σ_1 (vsp ... (r_3 1) ... ))
    
-   ; get free tids, cids from t and θ
+   ; get free tids, cids from σ, θ and t
    (where (tid_1 ...) (free_tids (osp_1 ...) t_1))
    (where (tid_2 ...) (free_tids_theta (osp_1 ...)))
-   (where (tid_3 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ...))))
+   (where (tid_3 ...) (free_tids_sigma σ_1 (osp_1 ...)))
+   (where (tid_4 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ... tid_3 ...))))
    
    (where (cid_1 ...) (free_clids (osp_1 ...) t_1))
    (where (cid_2 ...) (free_clids_theta (osp_1 ...)))
-   (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))
+   (where (cid_3 ...) (free_clids_sigma σ_1 (osp_1 ...)))
+   (where (cid_4 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ... cid_3 ...))))
    
    ; add dummy tables and closures to bound tids and cids
    (where (osp_2 ...) (osp_1 ...
@@ -443,8 +491,7 @@
 
   ; vararg id plus other var. id.
   [(close_term_meta s)
-   (local any_1 ... any_2 ... = (function dummy (<<<) s end) in
-     \;
+   (local dummyVar = (function dummy (any_1 ... any_2 ... <<<) s end) in \;
      end)
 
    ; {# (any_1 ... any_2 ...) > 0}
@@ -495,33 +542,41 @@
 
   ; guarantee the presence of the global environment: load and loadstring assume
   ; its presence at the first position in σ
-  [(close_conf_meta  (((refStdout String) (r v) ...)
+  ; no occurrence of ref 1
+  [(close_conf_meta  (((refStdout String) ... (r v) ...)
                       : (osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
-   (close_conf_meta  (((refStdout String) ((ref 1) (objr 1)) (r v) ...)
+   (close_conf_meta  (((refStdout String) ...
+                       ((ref 1) (objr 1))
+                       (r v) ...)
                       : (((objr 1) ((\{ \}) nil ⊥)) osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
 
    (side-condition (member (term builtinserv)
                            (term (load loadstring))))
-   ; global environment is not set to ref 1
+
    (side-condition (not (redex-match? ext-lang
-                                      (vsp_1 ... ((ref 1) tid) vsp_2 ...)
+                                      (vsp_1 ... ((ref 1) v) vsp_2 ...)
                                       (term ((r v) ...)))))]
-  
-  [(close_conf_meta  (((r v) ...)
+
+  ; occurrence of ref 1
+  [(close_conf_meta  (((refStdout String) ...
+                       (r_1 v_1) ...
+                       ((ref 1) v_2)
+                       (r_2 v_3) ...)
                       : (osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
-   (close_conf_meta  ((((ref 1) (objr 1)) (r v) ...)
+   (close_conf_meta  (((refStdout String) ...
+                       ((ref 1) (objr 1))
+                       (r_1 v_1) ...
+                       (r_2 v_3) ...)
                       : (((objr 1) ((\{ \}) nil ⊥)) osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
 
    (side-condition (member (term builtinserv)
                            (term (load loadstring))))
-   ; global environment is not set to ref 1
-   (side-condition (not (redex-match? ext-lang
-                                      (vsp_1 ... ((ref 1) tid) vsp_2 ...)
-                                      (term ((r v) ...)))))]
+
+   (side-condition (not (is_tid? (term v_2))))]
   
   [(close_conf_meta  ((vsp ...) : (osp ...) : e_1))
    ; transform e_2 into a statement, ready for reduction with full-progs-rel

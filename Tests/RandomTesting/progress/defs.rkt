@@ -111,17 +111,25 @@
   [-------------------------------
    (well_formed_term any σ θ \;)]
 
-  [(side-condition ,(or (redex-match ext-lang
-                                     (in-hole C_2 (while e do C_3 end))
-                                     (term any))
-
-                        (redex-match ext-lang
-                                     (in-hole C_2 ($iter e do C_3 end))
-                                     (term any))
-                        
-                        (redex-match ext-lang
-                                     (in-hole C_2 (Elf Break))
-                                     (term any))))
+  [(side-condition
+    ,(or (redex-match? ext-lang
+                       (in-hole C_2 (while e do C_3 end))
+                       (term any))
+         ; considers an aprox. def. of Elf in ((in-hole Elf break) Break) and
+         ; breaks outside fun defs
+         (redex-match? ext-lang
+                       (side-condition
+                        (in-hole C_2 (C_3 Break))
+                        (not (or (redex-match? ext-lang
+                                               (C_4 (renv ...) RetStat)
+                                               (term  C_3))
+                                 (redex-match? ext-lang
+                                               (C_4 (renv ...) RetExp)
+                                               (term  C_3))
+                                 (redex-match? ext-lang
+                                               (function Name parameters C_4 end)
+                                               (term  C_3)))))
+                       (term any))))
    ---------------------------------------------------------------
    (well_formed_term any σ θ break)]
 
@@ -224,33 +232,6 @@
   [(well_formed_term ,(plug (term any)
                             (term (hole Break))) σ θ 
                                                  s_1)
-;   ; Is s_1 a statement that represents the execution of a while loop?
-;   (side-condition ,(or (redex-match? ext-lang
-;                                      ($iter e do s_2 end)
-;                                      (term s_1))
-;
-;                        (redex-match? ext-lang
-;                                      (if e_1 then
-;                                          (s_2
-;                                           ($iter e_1 do s_2 end))
-;                                          else \; end)
-;                                      (term s_1))
-;                        ; particular to s-expressions: we need to distinguish
-;                        ; between a single statement or a sequence of 2 or more
-;                        ; stats
-;                        (redex-match? ext-lang
-;                                      (if e_1 then
-;                                          (s_2 s_3 s_4 ...
-;                                           ($iter e_1 do (s_2 s_3 s_4 ...) end))
-;                                          else \; end)
-;                                      (term s_1))
-;
-;                        (redex-match? ext-lang
-;                                      (s_2 ($iter e do s_2 end))
-;                                      (term s_1))
-;
-;                        (is_skip? (term s_1))
-;                        ))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (s_1 Break))]
 
@@ -258,9 +239,9 @@
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
                             (term ($iter e do hole end))) σ θ s)
-   (side-condition ,(redex-match? ext-lang
-                                  (in-hole C_2 (C_3 Break))
-                                  (term any)))
+;   (side-condition ,(redex-match? ext-lang
+;                                  (in-hole C_2 (C_3 Break))
+;                                  (term any)))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ ($iter e do s end))]
 
@@ -358,7 +339,7 @@
 
   ; A Name's occurrence must be bounded
   [(side-condition
-    ,(or (redex-match ext-lang
+    ,(or (redex-match? ext-lang
                       (in-hole C_2
                                (function Name_1
                                          (Name_2 ...
@@ -369,7 +350,7 @@
                                           any_2 ...)
                                          C_3 end))
                       (term any))
-         (redex-match ext-lang
+         (redex-match? ext-lang
                       (in-hole C_2
                                (local Name_1 ...
                                  (side-condition Name_2
@@ -710,21 +691,20 @@
    #t
 
    ; (return v ...) occurs outside of a funcall
-   (side-condition (not (or (redex-match ext-lang
+   (side-condition (not (or (redex-match? ext-lang
                                          (in-hole E_2 ((in-hole Elf hole)
                                                        (renv ...) RetStat))
                                          (term E))
                             
-                            (redex-match ext-lang
+                            (redex-match? ext-lang
                                          (in-hole E_2 ((in-hole Elf hole)
                                                        (renv ...) RetExp))
                                          (term E))
 
-                            (redex-match ext-lang
+                            (redex-match? ext-lang
                                          (in-hole E_2 ((in-hole Elf hole)
                                                        Break))
-                                         (term E)))))
-   ]
+                                         (term E)))))]
 
   [(is_final_stat ($err v))
    #t]
@@ -750,77 +730,92 @@
 
 (provide is_final_conf)
 
-(define (check_one_step debug c result)
-  (if debug
-        (begin
-          (print (term ,c))
-          (println (term (well_formed_conf ,c)))
-          )
-        (or
-         ; it was a final configuration 
-         (and (= (length result) 0)
-              (term (is_final_conf ,c)))
-         ; not a final configuration 
-         (and (= (length result) 1)
-              (term (well_formed_conf ,(first result)))))))
+(define (check_one_step c result)
+  (or
+   ; it was a final configuration 
+   (and (= (length result) 0)
+        (term (is_final_conf ,c)))
+   ; not a final configuration 
+   (and (= (length result) 1)
+        (term (well_formed_conf ,(first result))))))
 
 (define (soundness_wfc_pred c debug)
   (let ([result (if (not (term (well_formed_conf ,c)))
                      ; TODO: naive approach to discard ill formed
                      ; terms
-                     (term ((() : () : \;)))
+                    (if debug
+                        (begin (println (term ,c))
+                               (term ((() : () : \;))))
+                        (term ((() : () : \;))))
                      
                      (apply-reduction-relation full-progs-rel
-                                               (term ,c)))
-                    ])
-    (check_one_step debug c result)
+                                               (term ,c)))])
+    (check_one_step c result)
     )
   )
 
-; generates "attempts" examples taking into account left side of the rules
-; from "rel"
-(define (soundness_wfc rel attempts)
+; generates "attempts" examples taking into account left hand-side of the rules
+; from "rel"; flag "debug" indicates if the non-well-formed terms must be printed 
+(define (soundness_wfc rel attempts debug)
   (redex-check ext-lang any
-               (soundness_wfc_pred (term any) #f)
+               (soundness_wfc_pred (term any) debug)
                #:prepare close_conf
                #:attempts attempts
-               #:source rel
-               ))
+               #:source rel))
 
-; generates "attempts" examples following the pattern (σ : θ : s)
-(define (soundness_wfc_no_rel attempts)
-  (redex-check ext-lang (σ : θ : s)
-               (soundness_wfc_pred (term (σ : θ : s)) #f)
-               #:prepare close_conf
-               #:attempts attempts
-               ))
-
-(define (soundness_wfc_builtIn attempts)
-  (redex-check ext-lang (σ : θ : (return ($builtIn builtinserv (v ...))))
-               (soundness_wfc_pred (term (σ : θ : (return ($builtIn builtinserv (v ...))))) #f)
-               #:prepare close_conf
-               #:attempts attempts
-               ))
-
-(define (soundness_wfc_builtIn_coverage attempts)
-  ; create records to register test coverage related with ↦
-  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
-    (parameterize
-        ; supply data-structures
-        ([relation-coverage (list full-progs-rel-coverage)])
-      (soundness_wfc_builtIn attempts)
-      (values (covered-cases full-progs-rel-coverage)))))
-
-(define (soundness_wfc_coverage rel attempts)
+; test and print relation coverage of soundness_wfc
+(define (soundness_wfc_coverage rel attempts debug)
   ; create records to register test coverage related with ↦
   (let ([rel-coverage (make-coverage rel)]
         [full-progs-rel-coverage (make-coverage full-progs-rel)])
     (parameterize
         ; supply data-structures
         ([relation-coverage (list rel-coverage full-progs-rel-coverage)])
-      (soundness_wfc rel attempts)
+      (soundness_wfc rel attempts debug)
       (values (covered-cases rel-coverage)
-              (covered-cases full-progs-rel-coverage)))))
+              (covered-cases full-progs-rel-coverage))
+      )))
+
+; generates "attempts" examples following the pattern (σ : θ : s)
+; flag "debug" indicates if the non-well-formed terms must be printed
+(define (soundness_wfc_no_rel attempts debug)
+  (redex-check ext-lang (σ : θ : s)
+               (soundness_wfc_pred (term (σ : θ : s)) debug)
+               #:prepare close_conf
+               #:attempts attempts
+               ))
+
+; tests and prints relation coverage of soundness_wfc_no_rel
+(define (soundness_wfc_no_rel_coverage attempts debug)
+  ; create records to register test coverage related with ↦
+  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
+    (parameterize
+        ; supply data-structures
+        ([relation-coverage (list full-progs-rel-coverage)])
+      (soundness_wfc_no_rel attempts debug)
+      (values (covered-cases full-progs-rel-coverage))
+      )))
+
+; generates "attempts" examples following the pattern
+; (σ : θ : (return ($builtIn builtinserv (v ...))))
+; flag "debug" indicates if the non-well-formed terms must be printed
+(define (soundness_wfc_builtIn attempts debug)
+  (redex-check ext-lang (σ : θ : (return ($builtIn builtinserv (v ...))))
+               (soundness_wfc_pred (term (σ : θ : (return ($builtIn builtinserv (v ...))))) debug)
+               #:prepare close_conf
+               #:attempts attempts
+               ))
+
+; test and print relation coverage soundness_wfc_builtIn
+(define (soundness_wfc_builtIn_coverage attempts debug)
+  ; create records to register test coverage related with ↦
+  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
+    (parameterize
+        ; supply data-structures
+        ([relation-coverage (list full-progs-rel-coverage)])
+      (soundness_wfc_builtIn attempts debug)
+      (values (covered-cases full-progs-rel-coverage)))))
+
 
 ; TODO: any way to automate this?
 (define terms-rel-rules 50)
@@ -837,6 +832,9 @@
 ; to the total amount of examples
 (define ratio-prepare (/ 2 3))
 
+; divides tests among every relation, according to ratio-prepare
+; tests soundness_wfc for every relation, except for full-progs-rel
+; invokes soundness_wfc_no_rel for full-progs-rel
 (define (soundness_wfc_full_coverage attempts)
   ; create records to register test coverage related with ↦
   (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
@@ -870,54 +868,3 @@
                                         (- 1 ratio-prepare))))
         
         (values (covered-cases full-progs-rel-coverage))))))
-
-;                  
-;      ;;          
-;     ;            
-;     ;            
-;     ;            
-;   ;;;;;   ;    ; 
-;     ;     ;;  ;; 
-;     ;      ;  ;  
-;     ;      ;  ;  
-;     ;      ;;;;  
-;     ;       ;;   
-;     ;       ;;   
-;                  
-;                  
-;                  
-
-(define-metafunction ext-lang
-  [(free_var? <<< any)
-   ,(and (redex-match? ext-lang
-                       (in-hole C <<<)
-                       (term any))
-         
-         (not (redex-match? ext-lang
-                            (in-hole C_1 (function Name_1 (Name_2 ... <<<)
-                                                   (in-hole C_2 <<<) end))
-                            (term any))))]
-  
-  [(free_var? Name any)
-   ,(and (redex-match? ext-lang
-                       (in-hole C Name)
-                       (term any))
-         
-         (not (redex-match? ext-lang
-                            (in-hole E (local var ... Name var ... = e ... in
-                                         (in-hole C Name) end))
-                            (term any))))]
-  )
-
-(define-metafunction ext-lang
-  [(free_vars? () any)
-   #t]
-  
-  [(free_vars? (id_1 id_2 ...) any)
-   ,(or (term (free_var? id_1 any))
-        (term (free_vars? (id_2 ...) any)))])
-
-(define (fv_correctness attempts)
-  (redex-check ext-lang s
-               (term (free_vars? (fv s) s))
-               #:attempts attempts))
