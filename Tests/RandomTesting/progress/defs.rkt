@@ -721,7 +721,7 @@
 (define-metafunction ext-lang
   is_final_conf : (σ : θ : t) -> any
 
-  ; The concept depends only on the stat
+  ; the concept depends only on the stat
   [(is_final_conf (σ : θ : s))
    (is_final_stat s)]
 
@@ -747,6 +747,7 @@
                     (if debug
                         (begin (println (term ,c))
                                (term ((() : () : \;))))
+                        
                         (term ((() : () : \;))))
                      
                      (apply-reduction-relation full-progs-rel
@@ -783,8 +784,7 @@
   (redex-check ext-lang (σ : θ : s)
                (soundness_wfc_pred (term (σ : θ : s)) debug)
                #:prepare close_conf
-               #:attempts attempts
-               ))
+               #:attempts attempts))
 
 ; tests and prints relation coverage of soundness_wfc_no_rel
 (define (soundness_wfc_no_rel_coverage attempts debug)
@@ -836,36 +836,51 @@
 ; divides tests among every relation, according to ratio-prepare
 ; tests soundness_wfc for every relation, except for full-progs-rel
 ; invokes soundness_wfc_no_rel for full-progs-rel
-(define (soundness_wfc_full_coverage attempts)
+(define (soundness_wfc_full_coverage attempts debug)
   ; create records to register test coverage related with ↦
-  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
+  (let ([terms-rel-coverage (make-coverage terms-rel)]
+        [terms-val-store-coverage (make-coverage terms-val-store)]
+        [terms-obj-store-coverage (make-coverage terms-obj-store)]
+        [terms-val-obj-store-coverage (make-coverage terms-val-obj-store)]
+        [meta-coverage (make-coverage meta)]
+        [full-progs-rel-coverage (make-coverage full-progs-rel)])
     (parameterize
         ; supply data-structures
-        ([relation-coverage (list full-progs-rel-coverage)])
+        ([relation-coverage (list terms-rel-coverage
+                                  terms-val-store-coverage
+                                  terms-obj-store-coverage
+                                  terms-val-obj-store-coverage
+                                  meta-coverage
+                                  full-progs-rel-coverage)])
       (begin
         ; 50 rules in terms-rel
         (soundness_wfc terms-rel (floor (* (* attempts (/ terms-rel-rules
                                                           full-rules))
-                                           ratio-prepare)))
+                                           ratio-prepare)) debug)
         ; 3 rules in terms-val-store
         (soundness_wfc terms-val-store (floor (* (* attempts (/ terms-val-store-rules
                                                                 full-rules))
-                                                 ratio-prepare)))
+                                                 ratio-prepare)) debug)
         ; 11 rules in terms-obj-store
         (soundness_wfc terms-obj-store (floor (* (* attempts (/ terms-obj-store-rules
                                                                 full-rules))
-                                                 ratio-prepare)))
+                                                 ratio-prepare)) debug)
         ; 3 rules in terms-val-obj-store
         (soundness_wfc terms-val-obj-store (floor (* (* attempts (/ terms-val-obj-store-rules
                                                                     full-rules))
-                                                     ratio-prepare)))
+                                                     ratio-prepare)) debug)
         ; 23 rules in meta
         (soundness_wfc meta (floor (* (* attempts (/ meta-rules
                                                      full-rules))
-                                      ratio-prepare)))
+                                      ratio-prepare)) debug)
 
         ; remaining tests taken just from arbitrary terms of the grammar
         (soundness_wfc_no_rel (floor (* attempts
-                                        (- 1 ratio-prepare))))
+                                        (- 1 ratio-prepare))) debug)
         
-        (values (covered-cases full-progs-rel-coverage))))))
+        (values (covered-cases terms-rel-coverage)
+                (covered-cases terms-val-store-coverage)
+                (covered-cases terms-obj-store-coverage)
+                (covered-cases terms-val-obj-store-coverage)
+                (covered-cases meta-coverage)
+                (covered-cases full-progs-rel-coverage))))))
