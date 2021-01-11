@@ -170,26 +170,29 @@
   )
 
 (define-metafunction ext-lang
-  free_tids_sigma : (vsp ...) (osp ...) -> (tid ...)
+  clean_free_objid_sigma : (vsp ...) (osp ...) -> (vsp ...)
 
-  [(free_tids_sigma () _)
+  [(clean_free_objid_sigma () _)
    ()]
 
-  [(free_tids_sigma ((r tid_1) vsp ...) (osp_1 ... (tid_1 any) osp_2 ...))
-   (free_tids_sigma (vsp ...) (osp_1 ... (tid_1 any) osp_2 ...))
+  [(clean_free_objid_sigma ((r objid) vsp_1 ...)
+                           (osp_1 ... (objid any) osp_2 ...))
+   ((r objid) vsp_2 ...)
    
-   (where (tid_2 ...) (free_tids_sigma (vsp ...)
-                                       (osp_1 ... (tid_1 any) osp_2 ...)))]
+   (where (vsp_2 ...) (clean_free_objid_sigma (vsp_1 ...)
+                                              (osp_1 ... (objid any) osp_2 ...)))]
 
-  [(free_tids_sigma ((r tid_1) vsp ...) (osp ...))
-   ; {tid ∉ dom(osp ...)}
-   (tid_1 tid_2 ...)
+  [(clean_free_objid_sigma ((r objid) vsp_1 ...) (osp ...))
+   ; {objid ∉ dom(osp ...)}
+   ((r 1) vsp_2 ...)
    
-   (where (tid_2 ...) (free_tids_sigma (vsp ...) (osp ...)))]
+   (where (vsp_2 ...) (clean_free_objid_sigma (vsp_1 ...) (osp ...)))]
 
   ; {vsp_1 ≠ (r, tid)}
-  [(free_tids_sigma (vsp_1 vsp_2 ...) (osp ...))
-   (free_tids_sigma (vsp_2 ...) (osp ...))])
+  [(clean_free_objid_sigma (vsp_1 vsp_2 ...) (osp ...))
+   (vsp_1 vsp_3 ...)
+
+   (where (vsp_3 ...) (clean_free_objid_sigma (vsp_2 ...) (osp ...)))])
 
 
 ; extract closures ids from a term t
@@ -252,29 +255,6 @@
    (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))]
   )
 
-
-(define-metafunction ext-lang
-  free_clids_sigma : (vsp ...) (osp ...) -> (cid ...)
-
-  [(free_clids_sigma () _)
-   ()]
-
-  [(free_clids_sigma ((r cid_1) vsp ...) (osp_1 ... (cid_1 any) osp_2 ...))
-   (free_clids_sigma (vsp ...) (osp_1 ... (cid_1 any) osp_2 ...))
-   
-   (where (cid_2 ...) (free_clids_sigma (vsp ...)
-                                       (osp_1 ... (cid_1 any) osp_2 ...)))]
-
-  [(free_clids_sigma ((r cid_1) vsp ...) (osp ...))
-   ; {cid ∉ dom(osp ...)}
-   (cid_1 cid_2 ...)
-   
-   (where (cid_2 ...) (free_clids_sigma (vsp ...) (osp ...)))]
-
-  ; {vsp_1 ≠ (r, cid)}
-  [(free_clids_sigma (vsp_1 vsp_2 ...) (osp ...))
-   (free_clids_sigma (vsp_2 ...) (osp ...))])
-
 ; bound free tids, cids from a given conf; enforces well-formedness of the domain
 ; and img of given stores
 (define-metafunction ext-lang
@@ -283,7 +263,7 @@
   [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
    (σ_2 θ t_2)
 
-   ; get free val. refs from t and σ
+   ; get free val. refs from t and θ
    (where (r_1 ...) (free_val_refs (vsp ...) t_1))
    (where (r_2 ...) (free_val_refs_theta (vsp ...) (osp_1 ...)))
    ; remove repeated refs.
@@ -292,27 +272,26 @@
    ; add dummy vals. and bound free refs
    (where σ_1 (vsp ... (r_3 1) ... ))
    
-   ; get free tids, cids from σ, θ and t
+   ; get free tids, cids from θ and t
    (where (tid_1 ...) (free_tids (osp_1 ...) t_1))
    (where (tid_2 ...) (free_tids_theta (osp_1 ...)))
-   (where (tid_3 ...) (free_tids_sigma σ_1 (osp_1 ...)))
-   (where (tid_4 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ... tid_3 ...))))
+   (where (tid_3 ...) ,(remove-duplicates (term (tid_1 ... tid_2 ...))))
    
    (where (cid_1 ...) (free_clids (osp_1 ...) t_1))
    (where (cid_2 ...) (free_clids_theta (osp_1 ...)))
-   (where (cid_3 ...) (free_clids_sigma σ_1 (osp_1 ...)))
-   (where (cid_4 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ... cid_3 ...))))
+   (where (cid_3 ...) ,(remove-duplicates (term (cid_1 ... cid_2 ...))))
    
    ; add dummy tables and closures to bound tids and cids
    (where (osp_2 ...) (osp_1 ...
-                       (tid_4 ((\{ \}) nil ⊥)) ...
-                       (cid_4 (function x () \; end)) ...))
+                       (tid_3 ((\{ \}) nil ⊥)) ...
+                       (cid_3 (function x () \; end)) ...))
    
    ; ensure well-formedness of dom((osp_2 ...)) and img((osp_2 ...)))
    (where (θ ((objid_1 objid_2) ...)) (fix_theta_dom_img (osp_2 ...)))
    ; apply the expected substitutions in t_1 and σ_1
    (where t_2 (subst t_1 ((objid_1 objid_2) ...)))
-   (where σ_2 (substSigma σ_1 ((objid_1 objid_2) ...)))]
+   ; clean free obijds in σ
+   (where σ_2 (clean_free_objid_sigma σ_1 θ))]
   )
 
 ; redex-check could generate terms with refs (objr number_1) and (cl number_1)
@@ -468,20 +447,192 @@
 ;                                                                                                                       
 ;                                                                                                                       
 ;
-; simple fix to the "break outside of while" problem
+; transform a break into a while true do break end, to guarantee the
+; corresponding rules for well-formed terms;
+; unfortunately, other, simpler, solutions seems to have bad performance;
+; this meta-function is defined considering that a big quantity of terms generated
+; by redex-check include breaks
 (define-metafunction ext-lang
-  [(fix_break (in-hole C_1 break))
-   (fix_break (in-hole C_1 (while 1 do break end)))
+  fix_break : any -> any
 
-   (side-condition (not (redex-match? ext-lang
-                                      (in-hole C_2 (while e do C_3 end))
-                                      (term C_1))))]
+  
+  ;                                          
+  ;                                          
+  ;                                          
+  ;                                          
+  ;             ;               ;            
+  ;             ;               ;            
+  ;    ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+  ;   ;    ;    ;      ;   ;    ;     ;    ; 
+  ;   ;         ;          ;    ;     ;      
+  ;    ;;;;     ;      ;;;;;    ;      ;;;;  
+  ;        ;    ;     ;    ;    ;          ; 
+  ;   ;    ;    ;     ;   ;;    ;     ;    ; 
+  ;    ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+  ;                                          
+  ;                                          
+  ;                                          
+  ;                                          
 
-  [(fix_break t)
-   t
+  [(fix_break break)
+   (while true do break end)]
 
-   (side-condition (println "------------------"))])
+  [(fix_break (return e ...))
+   (return (fix_break e) ...)]
 
+  [(fix_break ($statFunCall e_1 (e_2 ...)))
+   ($statFunCall (fix_break e_1)
+                 ((fix_break e_2) ...))]
+
+  [(fix_break ($statFunCall e_1 : Name (e_2 ...)))
+   ($statFunCall (fix_break e_1) : Name
+                 ((fix_break e_2) ...))]
+
+  [(fix_break ($builtIn builtinserv (e ...)))
+   ($builtIn builtinserv ((fix_break e) ...))]
+
+  [(fix_break (var_1 var_2 ... = e ...))
+   ((fix_break var_1) (fix_break var_2) ... = (fix_break e) ...)]
+
+  [(fix_break (do s end))
+   (do (fix_break s) end)]
+
+  [(fix_break (if e then s_1 else s_2 end))
+   (if (fix_break e) then (fix_break s_1) else (fix_break s_2) end)]
+
+  [(fix_break (while e do s end))
+   (while (fix_break e) do (fix_break s) end)]
+
+  [(fix_break (local Name ... = e ... in s end))
+   (local Name ... = (fix_break e) ... in (fix_break s) end)]
+
+  [(fix_break (ssing_1 ssing_2 ssing_3 ...))
+   ((fix_break ssing_1) (fix_break ssing_2) (fix_break ssing_3) ...)]
+
+  [(fix_break ($err v))
+   ($err (fix_break v))]
+
+  [(fix_break ($iter e do s end))
+   ($iter (fix_break e) do (fix_break s) end)]
+  
+  ;                                                                          
+  ;                                                                          
+  ;   ;;;             ;                                                      
+  ;     ;             ;                                                      
+  ;     ;             ;                         ;               ;            
+  ;     ;             ;                         ;               ;            
+  ;     ;       ;;;   ;;;;;            ;;;;   ;;;;;;    ;;;   ;;;;;;   ;;;;  
+  ;     ;      ;   ;  ;;  ;;          ;    ;    ;      ;   ;    ;     ;    ; 
+  ;     ;          ;  ;    ;          ;         ;          ;    ;     ;      
+  ;     ;      ;;;;;  ;    ;           ;;;;     ;      ;;;;;    ;      ;;;;  
+  ;     ;     ;    ;  ;    ;               ;    ;     ;    ;    ;          ; 
+  ;     ;     ;   ;;  ;;  ;;          ;    ;    ;     ;   ;;    ;     ;    ; 
+  ;      ;;;   ;;; ;  ;;;;;            ;;;;      ;;;   ;;; ;     ;;;   ;;;;  
+  ;                                                                          
+  ;                                                                          
+  ;                                                                          
+  ;                                                                          
+
+  [(fix_break (s (renv ...) LocalBody))
+   ((fix_break s) (renv ...) LocalBody)]
+
+  [(fix_break (s (renv ...) RetStat))
+   ((fix_break s) (renv ...) RetStat)]
+
+  ; no problems here
+  [(fix_break (s Break))
+   (s Break)]
+
+  [(fix_break (s statlabel))
+   ((fix_break s) statlabel)]
+  
+  ;                                  
+  ;                                  
+  ;                                  
+  ;                                  
+  ;                                  
+  ;                                  
+  ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+  ;   ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+  ;   ;    ;    ;;    ;    ;  ;      
+  ;   ;;;;;;    ;;    ;    ;   ;;;;  
+  ;   ;         ;;    ;    ;       ; 
+  ;   ;;   ;   ;  ;   ;;  ;;  ;    ; 
+  ;    ;;;;   ;;  ;;  ;;;;;    ;;;;  
+  ;                   ;              
+  ;                   ;              
+  ;                   ;              
+  ;                                  
+
+  [(fix_break (function Name_1 (Name_2 ...) s end))
+   (function Name_1 (Name_2 ...) (fix_break s) end)]
+
+  [(fix_break (function Name_1 (Name_2 ... <<<) s end))
+   (function Name_1 (Name_2 ... <<<) (fix_break s) end)]
+
+  [(fix_break (function Name_1 (Name_2 ... <<<) s end))
+   (function Name_1 (Name_2 ... <<<) (fix_break s) end)]
+
+  [(fix_break (e_1 \[ e_2 \]))
+   ((fix_break e_1) \[ (fix_break e_2) \])]
+
+  [(fix_break (\( e \)))
+   (\( (fix_break e) \))]
+
+  [(fix_break (\{ field ... \}))
+   (\{ (fix_break field) ... \})]
+
+  ; table field with key defined
+  [(fix_break (\[ e_1 \] = e_2))
+   (\[ (fix_break e_1) \] = (fix_break e_2))]
+
+  [(fix_break (e_1 binop e_2))
+   ((fix_break e_1) binop (fix_break e_2))]
+
+  [(fix_break (unop e))
+   (unop (fix_break e))]
+
+  [(fix_break (< e ... >))
+   (< (fix_break e) ... >)]
+
+   [(fix_break (e_1 (e_2 ...)))
+   ((fix_break e_1) ((fix_break e_2) ...))]
+  
+  [(fix_break (e_1 : Name (e_2 ...)))
+   ((fix_break e_1) : Name ((fix_break e_2) ...))]
+
+  
+  ;                                                                  
+  ;                                                                  
+  ;   ;;;             ;                                              
+  ;     ;             ;                                              
+  ;     ;             ;                                              
+  ;     ;             ;                                              
+  ;     ;       ;;;   ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+  ;     ;      ;   ;  ;;  ;;          ;;  ;;   ;  ;   ;;  ;;  ;    ; 
+  ;     ;          ;  ;    ;          ;    ;    ;;    ;    ;  ;      
+  ;     ;      ;;;;;  ;    ;          ;;;;;;    ;;    ;    ;   ;;;;  
+  ;     ;     ;    ;  ;    ;          ;         ;;    ;    ;       ; 
+  ;     ;     ;   ;;  ;;  ;;          ;;   ;   ;  ;   ;;  ;;  ;    ; 
+  ;      ;;;   ;;; ;  ;;;;;            ;;;;   ;;  ;;  ;;;;;    ;;;;  
+  ;                                                   ;              
+  ;                                                   ;              
+  ;                                                   ;              
+  ;                                                                  
+
+  [(fix_break (e ProtectedMode v))
+   ((fix_break e) ProtectedMode v)]
+
+  [(fix_break (e explabel))
+   ((fix_break e) explabel)]
+
+  [(fix_break (s (renv ...) RetExp))
+   ((fix_break s) (renv ...) RetExp)]
+
+  ; default
+  [(fix_break any)
+   any]
+  )
 
 ; bound free variables and references
 (define-metafunction ext-lang
@@ -616,22 +767,22 @@
   
   [(int_close_conf_meta t_1)
    (σ : θ : t_2)
-   
+
    (where (σ : θ : t_2) (close_conf_meta (() : () : t_1)))]
 
   [(int_close_conf_meta (σ_1 : t_1))
    (σ_2 : θ : t_2)
-   
+
    (where (σ_2 : θ : t_2) (close_conf_meta (σ_1 : () : t_1)))]
 
   [(int_close_conf_meta (θ_1 : t_1))
    (σ : θ_2 : t_2)
-   
+
    (where (σ : θ_2 : t_2) (close_conf_meta (() : θ_1 : t_1)))]
 
   [(int_close_conf_meta (σ_1 : θ_1 : t_1))
    (σ_2 : θ_2 : t_2)
-   
+
    (where (σ_2 : θ_2 : t_2) (close_conf_meta (σ_1 : θ_1 : t_1)))]
 
   ; deault case: redex-check generated something that is not in s ∪ e: we

@@ -777,38 +777,6 @@
   ;
 
   ; protected mode
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((\; () RetExp) ProtectedMode)))
-   #t)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((< 1 >) ProtectedMode)))
-   #t)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      (((1 (2)) WrongFunCall) ProtectedMode)))
-   #t)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 (2)) ProtectedMode)))
-   #t)
-
   ; xpcall
   (test-equal
    (judgment-holds
@@ -1464,15 +1432,6 @@
   ;
   
   ; protected mode
-  (test-equal
-   (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtectedMode)))
-   (term ((ref 1))))
-
-  (test-equal
-   (term (free_val_refs (((ref 1) 1))
-                        ((((ref 1) = 1) () RetExp) ProtectedMode)))
-   '())
-  
   ; xpcall
   (test-equal
    (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
@@ -1911,15 +1870,6 @@
   ;
   
   ; protected mode
-  (test-equal
-   (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtectedMode)))
-   (term ((objr 1))))
-
-  (test-equal
-   (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    ((((ref 1) = (objr 1)) () RetExp) ProtectedMode)))
-   '())
-  
   ; xpcall
   (test-equal
    (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtectedMode 1)))
@@ -2359,15 +2309,6 @@
   ;
   
   ; protected mode
-  (test-equal
-   (term (free_clids () ((((ref 1) = (cl 1)) () RetExp) ProtectedMode)))
-   (term ((cl 1))))
-
-  (test-equal
-   (term (free_clids (((cl 1) (function x () \; end)))
-                     ((((ref 1) = (cl 1)) () RetExp) ProtectedMode)))
-   '())
-  
   ; xpcall
   (test-equal
    (term (free_clids () ((((ref 1) = (cl 1)) () RetExp) ProtectedMode 1)))

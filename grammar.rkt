@@ -69,7 +69,7 @@
      ; renv is not an expression nor a value. The previous rules for these
      ; constructions does not describe the renv added
      (s (renv ...) RetExp)
-     (e ProtectedMode)
+     ;(e ProtectedMode)
      (e ProtectedMode v)
      
      ; to help with the definition of well-formed programs, we exclude with the
@@ -342,7 +342,7 @@
      (in-hole Elf (E Break))
      (in-hole Elf (E (renv ...) RetStat))
      (in-hole Elf (E (renv ...) RetExp))
-     (in-hole Elf (E ProtectedMode))
+     ;(in-hole Elf (E ProtectedMode))
      (in-hole Elf (E ProtectedMode v))
      ]
 
@@ -437,7 +437,7 @@
      (C (renv ...) LocalBody)
      (s (renv_1 ... (rEnv C) renv_2 ...) LocalBody)
      (C Break)
-     (C ProtectedMode)
+     ;(C ProtectedMode)
      (C ProtectedMode v)
      (e ProtectedMode C)
      ($err C)

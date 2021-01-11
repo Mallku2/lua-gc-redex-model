@@ -396,13 +396,13 @@
            E-RemoveLocal]
    
    ; Protected mode
-   [-->s/e ((in-hole Enp ($err v)) ProtectedMode)
-           (< false v >)
-        
-           E-ProtectedModeErrorCatched]
+;   [-->s/e ((in-hole Enp ($err v)) ProtectedMode)
+;           (< false v >)
+;        
+;           E-ProtectedModeErrorCatched]
 
    [-->s/e ((in-hole Enp ($err v_1)) ProtectedMode v_2)
-           ((in-hole Enp ($err "error in error handling")) ProtectedMode)
+           (< false "error in error handling" >)
         
            E-XProtectedModeErrorCatchedNoHandler
 
@@ -413,10 +413,10 @@
         
            E-XProtectedModeErrorCatchedHandler]
    
-   [-->s/e ((< v ... >) ProtectedMode)
-           (< true (< v ... >) >)
-        
-           E-ProtectedModeNoErrorWithReturnedValues]
+;   [-->s/e ((< v ... >) ProtectedMode)
+;           (< true (< v ... >) >)
+;        
+;           E-ProtectedModeNoErrorWithReturnedValues]
 
    [-->s/e ((< v_1 ... >) ProtectedMode v_2)
            (< true (< v_1 ... >) >)

@@ -740,15 +740,7 @@
             (term ((return 1 2) Break))
             (term (return 1 2)))
 
-  ; Protected mode
-  (test-->> terms-rel
-            (term ((< 1 >) ProtectedMode))
-            (term (< true 1 >)))
-  
-  (test-->> terms-rel
-            (term (($err 1) ProtectedMode))
-            (term (< false 1 >)))
-
+  ; protected mode
   (test-->> terms-rel
             (term (($err 1) ProtectedMode (cl 6)))
             (term ((cl 6) (1))))

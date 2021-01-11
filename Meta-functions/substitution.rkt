@@ -2,9 +2,11 @@
 (require redex
          "../grammar.rkt")
 
-; substitution function over expressions
+; substitution function over expressions; useful for several mechanism, not just
+; implementation of manipulation of environment for a local var def
 ; PARAMS:
-; exp : the expression to which the substitution is applied
+; e : the expression to which the substitution is applied
+; (id e) ... : mapping that specifies the substitution to be performed
 ; parameters : a list of identifiers to be subtituted
 ; explist : a list of expressions to substitute the identifiers in
 ; parameters. The identifier in the position i of parameters will
@@ -102,43 +104,41 @@
    ((substBlock s ((id e) ...)) (renv ...) RetExp)]
   
   [(substExp ($err v) ((id e) ...))
-   ($err v)]
+   ($err (substExp v ((id e) ...)))]
 
   [(substExp ((v_1 \[ v_2 \])NonTable) ((id e) ...))
-   ((v_1 \[ v_2 \])NonTable)]
+   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])NonTable)]
 
   [(substExp ((objref \[ v \])WrongKey) ((id e) ...))
-   ((objref \[ v \])WrongKey)]
+   (((substExp objref ((id e) ...)) \[ (substExp v ((id e) ...)) \])WrongKey)]
   
   [(substExp ((v_1 arithop v_2) ArithWrongOps) ((id e) ...))
-   ((v_1 arithop v_2) ArithWrongOps)]
+   (((substExp v_1 ((id e) ...)) arithop (substExp v_2 ((id e) ...))) ArithWrongOps)]
 
   [(substExp ((v_1 .. v_2) StrConcatWrongOps) ((id e) ...))
-   ((v_1 .. v_2) StrConcatWrongOps)]
+   (((substExp v_1 ((id e) ...)) .. (substExp v_2 ((id e) ...))) StrConcatWrongOps)]
      
   [(substExp ((v_1 < v_2) OrdCompWrongOps) ((id e) ...))
-   ((v_1 < v_2) OrdCompWrongOps)]
+   (((substExp v_1 ((id e) ...)) < (substExp v_2 ((id e) ...))) OrdCompWrongOps)]
 
   [(substExp ((v_1 <= v_2) OrdCompWrongOps) ((id e) ...))
-   ((v_1 <= v_2) OrdCompWrongOps)]
+   (((substExp v_1 ((id e) ...)) <= (substExp v_2 ((id e) ...))) OrdCompWrongOps)]
 
   [(substExp ((- v)NegWrongOp) ((id e) ...))
-   ((- v)NegWrongOp)]
+   ((- (substExp v ((id e) ...)))NegWrongOp)]
   
   [(substExp ((\# v)StrLenWrongOp) ((id e) ...))
-   ((\# v)StrLenWrongOp)]
+   ((\# (substExp v ((id e) ...)))StrLenWrongOp)]
 
   [(substExp ((v_1 == v_2)EqFail) ((id e) ...))
-   ((v_1 == v_2)EqFail)]
+   (((substExp v_1 ((id e) ...)) == (substExp v_2 ((id e) ...)))EqFail)]
 
   [(substExp ((v_1 relop v_2)OrdCompWrongOps) ((id e) ...))
-   ((v_1 relop v_2)OrdCompWrongOps)]
-
-  [(substExp (e_1 ProtectedMode) ((id e_2) ...))
-   ((substExp e_1 ((id e_2) ...)) ProtectedMode)]
+   (((substExp v_1 ((id e) ...)) relop (substExp v_2 ((id e) ...)))OrdCompWrongOps)]
 
   [(substExp (e_1 ProtectedMode v) ((id e_2) ...))
-   ((substExp e_1 ((id e_2) ...)) ProtectedMode v)]
+   ((substExp (substExp e_1 ((id e_2) ...)) ((id e_2) ...))
+    ProtectedMode (substExp v ((id e_2) ...)))]
   
   ; These case holds for every expression without an structure, different than
   ; a variable or a vararg exp: nil, empty, boolean, number, string, 
@@ -445,12 +445,6 @@
    (where (id_1 ...) (fv any_1))
    (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv (any_1 : Name (any_2 ...)))
-   (id_1 ... id_2 ... ...)
-
-   (where (id_1 ...) (fv any_1))
-   (where ((id_2 ...) ...) ((fv any_2) ...))]
-
   [(fv ($statFunCall any_1 (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
@@ -668,6 +662,12 @@
    (where ((id ...) ...) ((fv any) ...))]
 
    [(fv (any_1 (any_2 ...)))
+   (id_1 ... id_2 ... ...)
+
+   (where (id_1 ...) (fv any_1))
+   (where ((id_2 ...) ...) ((fv any_2) ...))]
+
+  [(fv (any_1 : Name (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
    (where (id_1 ...) (fv any_1))
