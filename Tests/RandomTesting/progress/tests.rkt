@@ -304,11 +304,6 @@
     (well_formed_term hole () () (\; Break)))
    #t)
 
-;  (test-equal
-;   (judgment-holds
-;    (well_formed_term hole () () ((if true then \; else \; end) Break)))
-;   #f)
-
   (test-equal
    (judgment-holds
     (well_formed_term hole () ()
@@ -325,7 +320,7 @@
   (test-equal
    (judgment-holds
     (well_formed_term hole () () ($iter true do \; end)))
-   #f)
+   #t)
 
   (test-equal
    (judgment-holds

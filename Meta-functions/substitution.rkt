@@ -300,6 +300,39 @@
 
 (provide substTheta)
 
+; substitution function for img(σ), useful for preparation of terms in
+; redex-check
+(define-metafunction ext-lang
+  substSigma : σ ((id e) ...) -> σ
+
+  [(substSigma () _)
+   ()]
+
+  [(substSigma ((refStdout String) vsp_1 ...) ((id e) ...))
+   ((refStdout String) vsp_2 ...)
+
+   (where (vsp_2 ...) (substSigma (vsp_1 ...) ((id e) ...)))]
+
+  [(substSigma ((r tid_1) vsp_1 ...) ((id e) ...))
+   ((r tid_2) vsp_2 ...)
+
+   (where (vsp_2 ...) (substSigma (vsp_1 ...) ((id e) ...)))
+   (where tid_2 (substExp tid_1 ((id e) ...)))]
+
+  [(substSigma ((r cid_1) vsp_1 ...) ((id e) ...))
+   ((r cid_2) vsp_2 ...)
+
+   (where (vsp_2 ...) (substSigma (vsp_1 ...) ((id e) ...)))
+   (where cid_2 (substExp cid_1 ((id e) ...)))]
+
+  [(substSigma ((r v) vsp_1 ...) ((id e) ...))
+   ((r v) vsp_2 ...)
+
+   (where (vsp_2 ...) (substSigma (vsp_1 ...) ((id e) ...)))]
+  )
+
+(provide substSigma)
+
 ; to ease the use of substBlock and substExp
 (define-metafunction ext-lang
   subst : t ((id e) ...) -> t
@@ -610,7 +643,7 @@
 
    (where ((id ...) ...) ((fv field) ...))]
 
-  ; Table field with key defined
+  ; table field with key defined
   [(fv (\[ any_1 \] = any_2))
    (id_1 ... id_2 ...)
 

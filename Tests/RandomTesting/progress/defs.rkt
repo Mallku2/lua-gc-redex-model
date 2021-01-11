@@ -169,7 +169,8 @@
    (well_formed_term any σ θ (if e then s_1 else s_2 end))]
 
   [(well_formed_term any σ θ e)
-   (well_formed_term any σ θ s)
+   (well_formed_term ,(plug (term any)
+                            (term (while e do hole end))) σ θ s)
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (while e do s end))]
 

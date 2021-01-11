@@ -281,7 +281,7 @@
   close_fix_theta_sigma : σ (osp ...) t -> (σ θ t)
 
   [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
-   (σ_1 θ t_2)
+   (σ_2 θ t_2)
 
    ; get free val. refs from t and σ
    (where (r_1 ...) (free_val_refs (vsp ...) t_1))
@@ -305,14 +305,14 @@
    
    ; add dummy tables and closures to bound tids and cids
    (where (osp_2 ...) (osp_1 ...
-                       (tid_3 ((\{ \}) nil ⊥)) ...
-                       (cid_3 (function x () \; end)) ...))
+                       (tid_4 ((\{ \}) nil ⊥)) ...
+                       (cid_4 (function x () \; end)) ...))
    
    ; ensure well-formedness of dom((osp_2 ...)) and img((osp_2 ...)))
    (where (θ ((objid_1 objid_2) ...)) (fix_theta_dom_img (osp_2 ...)))
-   ; apply the expected substitutions in t_1
+   ; apply the expected substitutions in t_1 and σ_1
    (where t_2 (subst t_1 ((objid_1 objid_2) ...)))
-   ]
+   (where σ_2 (substSigma σ_1 ((objid_1 objid_2) ...)))]
   )
 
 ; redex-check could generate terms with refs (objr number_1) and (cl number_1)
@@ -467,7 +467,21 @@
 ;                                                                           ;                                           
 ;                                                                                                                       
 ;                                                                                                                       
-;                                                                                                                       
+;
+; simple fix to the "break outside of while" problem
+(define-metafunction ext-lang
+  [(fix_break (in-hole C_1 break))
+   (fix_break (in-hole C_1 (while 1 do break end)))
+
+   (side-condition (not (redex-match? ext-lang
+                                      (in-hole C_2 (while e do C_3 end))
+                                      (term C_1))))]
+
+  [(fix_break t)
+   t
+
+   (side-condition (println "------------------"))])
+
 
 ; bound free variables and references
 (define-metafunction ext-lang
@@ -475,51 +489,47 @@
   
   ; no vararg id
   [(close_term_meta s)
-   (local Name_1 Name_2 ... = nil in s end)
+   (fix_break (local Name_1 Name_2 ... = nil in s end))
 
    ; close local variables
-   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))
-   ]
+   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))]
 
   ; there is a vararg id
   [(close_term_meta s)
-   (local dummyVar = (function dummyF (<<<) s end) in \; end)
+   (fix_break (local dummyVar = (function dummyF (<<<) s end) in \; end))
 
    ; only a vararg
-   (where (<<<) ,(remove-duplicates (term (fv s))))
-   ]
+   (where (<<<) ,(remove-duplicates (term (fv s))))]
 
   ; vararg id plus other var. id.
   [(close_term_meta s)
-   (local dummyVar = (function dummy (any_1 ... any_2 ... <<<) s end) in \;
-     end)
+   (fix_break
+    (local dummyVar = (function dummy (any_1 ... any_2 ... <<<) s end) in \;
+      end))
 
    ; {# (any_1 ... any_2 ...) > 0}
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))
-   ]
+   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))]
 
   ; no free identifiers
   [(close_term_meta s)
-   s]
+   (fix_break s)]
 
   ; no vararg id
   [(close_term_meta e)
-   (function $dummy (Name_1 Name_2 ...) (local x = e in \; end) end)
+   (fix_break (function $dummy (Name_1 Name_2 ...) (local x = e in \; end) end))
 
-   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv e))))
-   ]
+   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv e))))]
 
   ; there is a vararg id
   [(close_term_meta e)
-   (function $dummy (any_1 ... any_2 ... <<<)
-             (local x = e in \; end) end)
+   (fix_break (function $dummy (any_1 ... any_2 ... <<<)
+                        (local x = e in \; end) end))
 
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv e))))
-   ]
+   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv e))))]
 
   ; no free identifiers
   [(close_term_meta e)
-   e]
+   (fix_break e)]
 
   ; redex-check may have generated an ill-formed term
   [(close_term_meta any)
