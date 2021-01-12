@@ -59,7 +59,11 @@
   #:mode (well_formed_conf_table_field I I I I)
   #:contract (well_formed_conf_table_field C σ θ (field ...))
 
-  [(well_formed_term any σ θ e_1)
+  [; valid intermediate state of computation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
    ---------------------------------------------------------------------------
    (well_formed_conf_table_field any σ θ ((\[ e_1 \] = e_2)))]
@@ -68,7 +72,11 @@
    ---------------------------------------------------------------------------
    (well_formed_conf_table_field any σ θ (e))]
 
-  [(well_formed_term any σ θ e_1)
+  [; valid intermediate state of computation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
    (well_formed_conf_table_field any σ θ (field_1 field_2 ...))
    ---------------------------------------------------------------------------
@@ -146,26 +154,52 @@
   [-----------------------------------------------------------------
    (well_formed_term any σ θ (return))]
 
-  [(well_formed_term any σ θ e) ...
+  [; e_1 e_2 ... must be a legitimate intermediate state of computation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2) ...
    -----------------------------------------------------------------
-   (well_formed_term any σ θ (return e ...))]
+   (well_formed_term any σ θ (return e_1 e_2 ...))]
 
   ; fun call
-  [(well_formed_term any σ θ e_1)
+  [; e_1 (e_2 ...) must be a legitimate intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2) ...
    ----------------------------------------------------------------------
    (well_formed_term any σ θ ($statFunCall e_1 (e_2 ...)))]
 
-  [(well_formed_term any σ θ e_1)
+  [; e_1 (e_2 ...) must be a legitimate intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  ; after the evaluation of e_1, the method call
+                                  ; is rewritten into a function call over some
+                                  ; table value; the list of parameters is
+                                  ; evaluated only after this transformation
+                                  (ecore ...)
+                                  (term (e_2 ...))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2) ...
    --------------------------------------------------------------------
    (well_formed_term any σ θ ($statFunCall e_1 : Name (e_2 ...)))]
   
   ; var assignment
-  [(well_formed_term any σ θ var) ...
-   (well_formed_term any σ θ e) ...
+  [; var ... = e ... must be a legitimate intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  ; it should match with at least one of the
+                                  ; following patterns
+                                  ((evar_1 ... var_2 ... ecore_1 ...) ...
+                                   (evar_2 ... v ... e_2 ecore_2 ...) ...)
+                                  (term ((var_1 ... e_1 ...)))))
+   ; the following checks if a var of the form e \[ e \] is also a valid
+   ; intermediate state of computation
+   (well_formed_term any σ θ var_1) ...
+   (well_formed_term any σ θ e_1) ...
    ----------------------------------------------------------------------
-   (well_formed_term any σ θ (var ... = e ...))]
+   (well_formed_term any σ θ (var_1 ... = e_1 ...))]
 
   ; do-end
   [(well_formed_term any σ θ s)
@@ -173,30 +207,34 @@
    (well_formed_term any σ θ (do s end))]
 
   [(well_formed_term any σ θ e)
-   (well_formed_term any σ θ s_1)
-   (well_formed_term any σ θ s_2)
+   (well_formed_term any σ θ scoreblock_1)
+   (well_formed_term any σ θ scoreblock_2)
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (if e then s_1 else s_2 end))]
+   (well_formed_term any σ θ (if e then scoreblock_1 else scoreblock_2 end))]
 
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
-                            (term (while e do hole end))) σ θ s)
+                            (term (while e do hole end))) σ θ scoreblock)
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (while e do s end))]
+   (well_formed_term any σ θ (while e do scoreblock end))]
 
   ; local var
-  [(well_formed_term any σ θ e)
-   (well_formed_term ,(plug (term any)
-                            (term (local Name ... = e in hole end))) σ θ s)
+  [(well_formed_term ,(plug (term any)
+                            (term (local Name ... = in hole end))) σ θ s)
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (local Name ... = e in s end))]
-
-  [(well_formed_term any σ θ e) ...
+   (well_formed_term any σ θ (local Name ... = in s end))]
+  
+  [; checks if e ... is a valid intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2) ...
    (well_formed_term ,(plug (term any)
-                            (term (local Name ... = e ... in
-                                    hole end))) σ θ s)
+                            (term (local Name ... = e_1 e_2 ... in
+                                    hole end))) σ θ scoreblock)
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (local Name ... = e ... in s end))]
+   (well_formed_term any σ θ (local Name ... = e_1 e_2 ... in scoreblock end))]
 
   [(well_formed_term any σ θ r) ...
    (well_formed_term ,(plug (term any)
@@ -207,12 +245,11 @@
                      (s ((rEnv r) ...) LocalBody))]
 
   ; conc stats
-  [(well_formed_term any σ θ s_1)
-   (well_formed_term any σ θ s_2)
-   (well_formed_term any σ θ s_3)
-   ...
+  [(well_formed_term any σ θ ssing)
+   (well_formed_term any σ θ scoresing_1)
+   (well_formed_term any σ θ scoresing_2) ...
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (s_1 s_2 s_3 ...))]
+   (well_formed_term any σ θ (ssing scoresing_1 scoresing_2 ...))]
 
   ; error object
   [(well_formed_term any σ θ v)
@@ -249,12 +286,12 @@
   ; $iter
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
-                            (term ($iter e do hole end))) σ θ s)
-;   (side-condition ,(redex-match? ext-lang
-;                                  (in-hole C_2 (C_3 Break))
-;                                  (term any)))
+                            (term ($iter e do hole end))) σ θ scoreblock)
+   ;   (side-condition ,(redex-match? ext-lang
+   ;                                  (in-hole C_2 (C_3 Break))
+   ;                                  (term any)))
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ ($iter e do s end))]
+   (well_formed_term any σ θ ($iter e do scoreblock end))]
 
   ; table assignment, wrong key
   [(well_formed_term any σ θ objref) ; checks for membership of objref to θ
@@ -330,16 +367,16 @@
   [(well_formed_term ,(plug (term any)
                             (term (function Name_1 (Name_2 ...)
                                             hole
-                                            end))) σ θ s)
+                                            end))) σ θ scoreblock)
    ----------------------------------------------
-   (well_formed_term any σ θ (function Name_1 (Name_2 ...) s end))]
+   (well_formed_term any σ θ (function Name_1 (Name_2 ...) scoreblock end))]
 
   [(well_formed_term ,(plug (term any)
                             (term (function Name_1 (Name_2 ... <<<)
                                             hole
-                                            end))) σ θ s)
+                                            end))) σ θ scoreblock)
    ----------------------------------------------
-   (well_formed_term any σ θ (function Name_1 (Name_2 ... <<<) s end))]
+   (well_formed_term any σ θ (function Name_1 (Name_2 ... <<<) scoreblock end))]
 
   ; vararg mark
   [; <<< is being captured, according to the scoping rules codified in fv
@@ -351,47 +388,48 @@
   ; A Name's occurrence must be bounded
   [(side-condition
     ,(or (redex-match? ext-lang
-                      (in-hole C_2
-                               (function Name_1
-                                         (Name_2 ...
-                                          (side-condition
-                                           Name_3
-                                           (equal? (term Name_3)
-                                                   (term Name_4)))
-                                          any_2 ...)
-                                         C_3 end))
-                      (term any))
+                       (in-hole C_2
+                                (function Name_1
+                                          (Name_2 ...
+                                           (side-condition
+                                            Name_3
+                                            (equal? (term Name_3)
+                                                    (term Name_4)))
+                                           any_2 ...)
+                                          C_3 end))
+                       (term any))
          (redex-match? ext-lang
-                      (in-hole C_2
-                               (local Name_1 ...
-                                 (side-condition Name_2
-                                                 (equal? (term Name_2)
-                                                         (term Name_4)))
-                                 Name_3 ... = e ... in C_3 end))
-                      (term any))))
+                       (in-hole C_2
+                                (local Name_1 ...
+                                  (side-condition Name_2
+                                                  (equal? (term Name_2)
+                                                          (term Name_4)))
+                                  Name_3 ... = e ... in C_3 end))
+                       (term any))))
    ---------------------------------------------------------------------------
    (well_formed_term any σ θ Name_4)]
 
-  [(well_formed_term any σ θ e_1)
+  [; (e_1 \[ e_2 \]) must represent a valid intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
    ---------------------------------------------------------------------------
    (well_formed_term any σ θ (e_1 \[ e_2 \]))]
 
   ; built-in service
-  
-  [---------------------------------------------------------------------------
-   (well_formed_term any σ θ ($builtIn builtinserv ()))]
-  
-  [(well_formed_term any σ θ e)
-   ---------------------------------------------------------------------------
-   (well_formed_term any σ θ ($builtIn builtinserv (e)))]
+    [---------------------------------------------------------------------------
+     (well_formed_term any σ θ ($builtIn builtinserv ()))]
 
-  [(well_formed_term any σ θ e_1)
-   (well_formed_term any σ θ e_2)
-   (well_formed_term any σ θ e_3)
-   ...
+  [; e_1 ... must represent a valid intermediate state of evaluation
+   (side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2) ...
    ---------------------------------------------------------------------------
-   (well_formed_term any σ θ ($builtIn builtinserv (e_1 e_2 e_3 ...)))]
+   (well_formed_term any σ θ ($builtIn builtinserv (e_1 e_2 ...)))]
 
   ; parenthesized expression
   [(well_formed_term any σ θ e)
@@ -408,7 +446,10 @@
 
 
   ; binop
-  [(well_formed_term any σ θ e_1)
+  [(side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2)
    ---------------------------------------------------------------------------
    (well_formed_term any σ θ (e_1 binop e_2))]
@@ -430,20 +471,30 @@
   [--------------------------------------------------
    (well_formed_term any σ θ (< >))]
   
-  [(well_formed_term any σ θ e) ...
+  [(side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
+   (well_formed_term any σ θ e_2) ...
    --------------------------------------------------
-   (well_formed_term any σ θ (< e ... >))]
+   (well_formed_term any σ θ (< e_1 e_2 ... >))]
   ; fun call
-  [(well_formed_term any σ θ e)
-   ----------------------------------------------------------------------
-   (well_formed_term any σ θ (e ()))]
-  
-  [(well_formed_term any σ θ e_1)
+  [(side-condition ,(redex-match? ext-lang
+                                  (v ... e_3 ecore ...)
+                                  (term (e_1 e_2 ...))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2) ...
    ----------------------------------------------------------------------
    (well_formed_term any σ θ (e_1 (e_2 ...)))]
 
-  [(well_formed_term any σ θ e_1)
+  [(side-condition ,(redex-match? ext-lang
+                                  ; after the evaluation of e_1, the method call
+                                  ; is rewritten into a function call over some
+                                  ; table value; the list of parameters is
+                                  ; evaluated only after this transformation
+                                  (ecore ...)
+                                  (term (e_2 ...))))
+   (well_formed_term any σ θ e_1)
    (well_formed_term any σ θ e_2) ...
    --------------------------------------------------------------------
    (well_formed_term any σ θ (e_1 : Name (e_2 ...)))]
@@ -466,29 +517,29 @@
   ;                                                   ;              
   ;                                                                  
 
-  [(well_formed_term any σ θ e)
-   ; e should be a function call or any intermediate state of a function call
-   (side-condition ,(or (redex-match? ext-lang
-                                      (s (renv ...) RetExp)
-                                      (term e))
-                        
-                        (redex-match? ext-lang
-                                      (< v ... >)
-                                      (term e))
-
-                        (redex-match? ext-lang
-                                      (v_1 (v_2 ...))
-                                      (term e))
-
-                        (redex-match? ext-lang
-                                      ($err v)
-                                      (term e))
-
-                        (redex-match? ext-lang
-                                      ((v_1 (v_2 ...)) WrongFunCall)
-                                      (term e))))
-   ------------------------------------------------------------
-   (well_formed_term any σ θ (e ProtectedMode))]
+;  [(well_formed_term any σ θ e)
+;   ; e should be a function call or any intermediate state of a function call
+;   (side-condition ,(or (redex-match? ext-lang
+;                                      (s (renv ...) RetExp)
+;                                      (term e))
+;                        
+;                        (redex-match? ext-lang
+;                                      (< v ... >)
+;                                      (term e))
+;
+;                        (redex-match? ext-lang
+;                                      (v_1 (v_2 ...))
+;                                      (term e))
+;
+;                        (redex-match? ext-lang
+;                                      ($err v)
+;                                      (term e))
+;
+;                        (redex-match? ext-lang
+;                                      ((v_1 (v_2 ...)) WrongFunCall)
+;                                      (term e))))
+;   ------------------------------------------------------------
+;   (well_formed_term any σ θ (e ProtectedMode))]
 
   [(well_formed_term any σ θ e)
    (well_formed_term any σ θ v)
@@ -703,19 +754,19 @@
 
    ; (return v ...) occurs outside of a funcall
    (side-condition (not (or (redex-match? ext-lang
-                                         (in-hole E_2 ((in-hole Elf hole)
-                                                       (renv ...) RetStat))
-                                         (term E))
+                                          (in-hole E_2 ((in-hole Elf hole)
+                                                        (renv ...) RetStat))
+                                          (term E))
                             
                             (redex-match? ext-lang
-                                         (in-hole E_2 ((in-hole Elf hole)
-                                                       (renv ...) RetExp))
-                                         (term E))
+                                          (in-hole E_2 ((in-hole Elf hole)
+                                                        (renv ...) RetExp))
+                                          (term E))
 
                             (redex-match? ext-lang
-                                         (in-hole E_2 ((in-hole Elf hole)
-                                                       Break))
-                                         (term E)))))]
+                                          (in-hole E_2 ((in-hole Elf hole)
+                                                        Break))
+                                          (term E)))))]
 
   [(is_final_stat ($err v))
    #t]
@@ -752,16 +803,16 @@
 
 (define (soundness_wfc_pred c debug)
   (let ([result (if (not (term (well_formed_conf ,c)))
-                     ; TODO: naive approach to discard ill formed
-                     ; terms
+                    ; TODO: naive approach to discard ill formed
+                    ; terms
                     (if debug
                         (begin (println (term ,c))
                                (term ((() : () : \;))))
                         
                         (term ((() : () : \;))))
                      
-                     (apply-reduction-relation full-progs-rel
-                                               (term ,c)))])
+                    (apply-reduction-relation full-progs-rel
+                                              (term ,c)))])
     (check_one_step c result)
     )
   )

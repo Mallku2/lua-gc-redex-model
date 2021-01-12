@@ -3,20 +3,28 @@
 (require redex)
 
 (define-language ext-lang
+  ; terms as compiled from Lua code: needed to enforce well-formedness of
+  ; programs
+  ; it rules out programs like ((s_1 statlabel) ((s_2 statlabel)), which could
+  ; get stuck
+  [scoresing \;
+             break
+             (return e ...)
+             ($statFunCall e (e ...))
+             ($statFunCall e : Name (e ...))
+             (var_1 var_2 ... = e ...)
+             (do scoreblock end)
+             (if e then scoreblock else scoreblock end)
+             (while e do scoreblock end)
+             ($iter e do scoreblock end)
+             (local Name_1 Name_2 ... = e ... in scoreblock end)]
 
-  [ssing \;
-         break
-         (return e ...)
-         ($statFunCall e (e ...))
-         ($statFunCall e : Name (e ...))
-         (var_1 var_2 ... = e ...)
-         (do s end)
-         (if e then s else s end)
-         (while e do s end)
-         ($iter e do s end)
-         (local Name_1 Name_2 ... = e ... in s end) 
-        
+  [scoreblock scoresing
+              (scoresing_1 scoresing_2 scoresing_3 ...)]
+
+  [ssing scoresing
          ; extensions
+         (do s end)
          (s Break)
          ; to help with the definition of well-formed programs, we exclude as
          ; many ill-formed programs as possible,  using the grammar
@@ -25,16 +33,16 @@
          (($statFunCall v (v ...)) WrongFunCall)
          ; renv is not an expression nor a value.
          (s (renv ...) LocalBody)
-         ; To allow intermediate states of execution of a funtioncall
+         ; to allow intermediate states of execution of a funtioncall
          (s (renv ...) RetStat)
 
-         ; Error objects
+         ; error objects
          ($err v)]
 
   ; Lua's block of code: it helps to avoid an ambiguity in the grammar, between
   ; funcalls and concat. of stats
   [s ssing
-     (ssing_1 ssing_2 ssing_3 ...)]
+     (ssing scoresing_1 scoresing_2 ...)]
 
   [v nil Boolean Number String
      tid
@@ -47,23 +55,26 @@
   
   [String string]
 
-  ; Difference between statements and expressions is present also at a semantics
+  ; difference between statements and expressions is present also at a semantics
   ; level: eg., tuples' semantics is defined taking into account if they appear
   ; as an expression or as a statement, and the same with funcall
-  [e v
-     <<<
-     var
-     (\( e \))
-     ($builtIn builtinserv (e ...))
-     tableconstructor
-     (e binop e)
-     (unop e)
-     functiondef
-     (e (e ...))
-     (e : Name (e ...))
-     
-     ; Run-time expressions
-     r
+  [ecore v
+         <<<
+         var
+         (\( e \))
+         ($builtIn builtinserv (e ...))
+         tableconstructor
+         (e binop e)
+         (unop e)
+         functiondef
+         (e (e ...))
+         (e : Name (e ...))
+         ; run-time expressions (need to be added since environment is
+         ; manipulated through substitution)
+         r]
+  
+  [e ecore
+     ; run-time expressions
      (< e ... >)
      ($err v)
      ; renv is not an expression nor a value. The previous rules for these
@@ -97,7 +108,7 @@
               (Name ... <<<)]
 
   ; This syntactic category is added to ease meta-functions' definitions. 
-  [functiondef (function Name parameters s end)]
+  [functiondef (function Name parameters scoreblock end)]
 
   ; Built-in services' names, for use by the random generator of terms
   [builtinserv assert
@@ -298,8 +309,8 @@
   [Elf hole
        ; Statements
        (do Elf end)
-       (if Elf then s else s end)
-       (local Name_1 Name_2 ... = v ... Elf e ... in s end)
+       (if Elf then scoreblock else scoreblock end)
+       (local Name_1 Name_2 ... = v ... Elf e ... in scoreblock end)
        (Elf (renv ...) LocalBody)
        (evar ... (Elf \[ e \]) var ... = e ...)
        (evar ... (v \[ Elf \]) var ... = e ...)
@@ -351,8 +362,8 @@
   [Etel (v ... hole e_1 e_2 ...)]
   
   ; immediate evaluation contexts where a tuple is truncated
-  [Et (if hole then s else s end)
-      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in s end)
+  [Et (if hole then scoreblock else scoreblock end)
+      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in scoreblock end)
       (evar ... (hole \[ e \]) var ... = e ...)
       (evar ... (v \[ hole \]) var ... = e ...)
       (evar_1 evar_2 ... = v ... hole e_1 e_2 ...)
@@ -380,7 +391,7 @@
   ; list of expressions where a tuple is unwrapped
   [Euel (v ... hole)]
   ; immediate evaluation contexts where a tuple is unwrapped
-  [Eu (local Name_1 Name_2 ... = v ... hole in s end)
+  [Eu (local Name_1 Name_2 ... = v ... hole in scoreblock end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)
       (v (v ... hole))
@@ -410,15 +421,15 @@
   [C hole
      ; Statements
      (do C end)
-     (if C then s else s end)
-     (if e then C else s end)
-     (if e then s else C end)
-     (local Name ... = e ... C e ... in s end)
+     (if C then scoreblock else scoreblock end)
+     (if e then C else scoreblock end)
+     (if e then scoreblock else C end)
+     (local Name ... = e ... C e ... in scoreblock end)
      (local Name ... = e ... in C end)
      (e ... C e ... = e ...)
      (e ... = e ... C e ...)
      (return e ... C e ...)
-     (while C do s end)
+     (while C do scoreblock end)
      (while e do C end)
      ; Function call, method call, built-in services
      ($statFunCall C (e ...))
@@ -441,7 +452,7 @@
      (C ProtectedMode v)
      (e ProtectedMode C)
      ($err C)
-     ($iter C do s end)
+     ($iter C do scoreblock end)
      ($iter e do C end)
 
      ; Added each production, instead of a single (C statlabel) and

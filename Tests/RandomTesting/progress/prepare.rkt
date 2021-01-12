@@ -449,7 +449,7 @@
 ;
 ; transform a break into a while true do break end, to guarantee the
 ; corresponding rules for well-formed terms;
-; unfortunately, other, simpler, solutions seems to have bad performance;
+; unfortunately, other, simpler solutions seems to have bad performance;
 ; this meta-function is defined considering that a big quantity of terms generated
 ; by redex-check include breaks
 (define-metafunction ext-lang
@@ -639,44 +639,26 @@
   close_term_meta : any -> t
   
   ; no vararg id
-  [(close_term_meta s)
-   (fix_break (local Name_1 Name_2 ... = nil in s end))
+  [(close_term_meta s_1)
+   (fix_break s_2)
 
-   ; close local variables
-   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv s))))]
-
-  ; there is a vararg id
-  [(close_term_meta s)
-   (fix_break (local dummyVar = (function dummyF (<<<) s end) in \; end))
-
-   ; only a vararg
-   (where (<<<) ,(remove-duplicates (term (fv s))))]
-
-  ; vararg id plus other var. id.
-  [(close_term_meta s)
-   (fix_break
-    (local dummyVar = (function dummy (any_1 ... any_2 ... <<<) s end) in \;
-      end))
-
-   ; {# (any_1 ... any_2 ...) > 0}
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv s))))]
+   ; get free refs
+   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv s_1))))
+   ; replace local variables identifiers by refs (later steps will bound this
+   ; refs)
+   (where s_2 (subst s_1 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
 
   ; no free identifiers
   [(close_term_meta s)
    (fix_break s)]
 
-  ; no vararg id
-  [(close_term_meta e)
-   (fix_break (function $dummy (Name_1 Name_2 ...) (local x = e in \; end) end))
+  [(close_term_meta e_1)
+   (fix_break e_2)
 
-   (where (Name_1 Name_2 ...) ,(remove-duplicates (term (fv e))))]
-
-  ; there is a vararg id
-  [(close_term_meta e)
-   (fix_break (function $dummy (any_1 ... any_2 ... <<<)
-                        (local x = e in \; end) end))
-
-   (where (any_1 ... <<< any_2 ...) ,(remove-duplicates (term (fv e))))]
+   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv e_1))))
+   ; replace local variables identifiers by refs (later steps will bound this
+   ; refs)
+   (where e_2 (subst e_1 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
 
   ; no free identifiers
   [(close_term_meta e)

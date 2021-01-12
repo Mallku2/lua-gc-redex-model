@@ -270,31 +270,31 @@
 
 
    ; If statement
-   [-->s/e (if v then s_1 else s_2 end)
-           s_1
+   [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
+           scoreblock_1
            IfTrue
       
            (side-condition (not (is_false_cond? (term v))))]
    
-   [-->s/e (if v then s_1 else s_2 end)
-           s_2
+   [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
+           scoreblock_2
            IfFalse
       
            (side-condition (is_false_cond? (term v)))]
 
    ; While statement
-   [-->s/e (while e do s end)
-           (($iter e do s end) Break)
+   [-->s/e (while e do scoreblock end)
+           (($iter e do scoreblock end) Break)
            SignpostWhile]
    
-   [-->s/e ($iter e do ssing end)
-           (if e then (ssing ($iter e do ssing end)) else \; end)
+   [-->s/e ($iter e do scoresing end)
+           (if e then (scoresing ($iter e do scoresing end)) else \; end)
            While_single_stat]
 
-   [-->s/e ($iter e do (ssing_1 ssing_2 ssing_3 ...) end)
+   [-->s/e ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...) end)
            (if e then
-               (ssing_1 ssing_2 ssing_3 ...
-                        ($iter e do (ssing_1 ssing_2 ssing_3 ...) end))
+               (scoresing_1 scoresing_2 scoresing_3 ...
+                        ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...) end))
                else \; end)
            While_conc_stats]
 
@@ -302,12 +302,12 @@
    ; concatenation of statements
    ; this added rule has to do with the concrete grammar used
    ; in this mechanization.
-   [-->s/e (\; ssing)
-           ssing
+   [-->s/e (\; scoresing)
+           scoresing
            ConcatBehavior]
 
-   [-->s/e (\; ssing_1 ssing_2 ssing_3 ...)
-           (ssing_1 ssing_2 ssing_3 ...)
+   [-->s/e (\; scoresing_1 scoresing_2 scoresing_3 ...)
+           (scoresing_1 scoresing_2 scoresing_3 ...)
            ConcatBehavior2]
 
    ; Do ... End block
@@ -333,14 +333,14 @@
            ((evar_3 = v_3) (evar_1 evar_2 ... = v_1 v_2 ...))
            AssignSplit]
 
-   [-->s/e (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ... in s end)
-           (local Name_1 Name_2 ... = v_1 v_2 ... in s end)
+   [-->s/e (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ... in scoreblock end)
+           (local Name_1 Name_2 ... = v_1 v_2 ... in scoreblock end)
            
            LocalDiscardRvalues]
 
    
-   [-->s/e (local Name_1 ..._1 Name_2 Name_3 ..._2 = v_1 ..._1 in s end)
-           (local Name_1 ... Name_2 Name_3 ... = v_1 ... nil nil ..._2 in s end)
+   [-->s/e (local Name_1 ..._1 Name_2 Name_3 ..._2 = v_1 ..._1 in scoreblock end)
+           (local Name_1 ... Name_2 Name_3 ... = v_1 ... nil nil ..._2 in scoreblock end)
         
            LocalCompleteRvalues]
 
@@ -396,11 +396,6 @@
            E-RemoveLocal]
    
    ; Protected mode
-;   [-->s/e ((in-hole Enp ($err v)) ProtectedMode)
-;           (< false v >)
-;        
-;           E-ProtectedModeErrorCatched]
-
    [-->s/e ((in-hole Enp ($err v_1)) ProtectedMode v_2)
            (< false "error in error handling" >)
         
@@ -412,11 +407,6 @@
            (cid (v))
         
            E-XProtectedModeErrorCatchedHandler]
-   
-;   [-->s/e ((< v ... >) ProtectedMode)
-;           (< true (< v ... >) >)
-;        
-;           E-ProtectedModeNoErrorWithReturnedValues]
 
    [-->s/e ((< v_1 ... >) ProtectedMode v_2)
            (< true (< v_1 ... >) >)

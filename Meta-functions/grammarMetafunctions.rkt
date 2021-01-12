@@ -175,8 +175,9 @@
 (define-metafunction ext-lang
   concat-stats : E any -> s
 
-  [(concat-stats (in-hole E (hole s_1 s_2 ...)) (s_3 s_4 s_5 ...))
-   (in-hole E (s_3 s_4 s_5 ... s_1 s_2 ...))]
+  [(concat-stats (in-hole E (hole scoresing_1 scoresing_2 ...))
+                 (ssing scoresing_4 scoresing_5 ...))
+   (in-hole E (ssing scoresing_4 scoresing_5 ... scoresing_1 scoresing_2 ...))]
 
   [(concat-stats E any)
    (in-hole E any)]
