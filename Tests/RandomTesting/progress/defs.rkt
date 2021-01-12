@@ -113,7 +113,17 @@
 
   [(side-condition
     ,(or (redex-match? ext-lang
-                       (in-hole C_2 (while e do C_3 end))
+                       (side-condition
+                        (in-hole C_2 (while e do C_3 end))
+                        (not (or (redex-match? ext-lang
+                                               (in-hole C_4 (C_5 (renv ...) RetStat))
+                                               (term  C_3))
+                                 (redex-match? ext-lang
+                                               (in-hole C_4 (C_5 (renv ...) RetExp))
+                                               (term  C_3))
+                                 (redex-match? ext-lang
+                                               (in-hole C_4 (function Name parameters C_5 end))
+                                               (term  C_3)))))
                        (term any))
          ; considers an aprox. def. of Elf in ((in-hole Elf break) Break) and
          ; breaks outside fun defs
@@ -121,13 +131,13 @@
                        (side-condition
                         (in-hole C_2 (C_3 Break))
                         (not (or (redex-match? ext-lang
-                                               (C_4 (renv ...) RetStat)
+                                               (in-hole C_4 (C_5 (renv ...) RetStat))
                                                (term  C_3))
                                  (redex-match? ext-lang
-                                               (C_4 (renv ...) RetExp)
+                                               (in-hole C_4 (C_5 (renv ...) RetExp))
                                                (term  C_3))
                                  (redex-match? ext-lang
-                                               (function Name parameters C_4 end)
+                                               (in-hole C_4 (function Name parameters C_5 end))
                                                (term  C_3)))))
                        (term any))))
    ---------------------------------------------------------------
