@@ -89,8 +89,9 @@
 ; test for proper well-formed final configuration and unique result
 (define (ok? red)
   (and (eq? (length red) 1)
-
-       (term (is-final-conf ,(first red)))
+       (redex-match? ext-lang
+                     (σ : θ : \;)
+                     (term ,(first red)))
        ))
 
 (provide ok?)

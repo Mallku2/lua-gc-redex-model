@@ -119,17 +119,11 @@
   
   [(δstring string.rep String 1 any)
    String]
-  
+
+  ; ref. manual: "The default value for sep is the empty string (that is, no
+  ; separator). "
   [(δstring string.rep String Number nil)
-   any
-   
-   (where any ,(foldr (λ (str accum) (term (δbasic .. ,str ,accum)))
-                      (term String)
-                      (build-list
-                       (- ; build-list contract: exact-nonnegative-integer?
-                        (inexact->exact (term Number)) 1)
-                       (λ (nmbr) (term String)))))
-   ]
+   (δstring string.rep String Number "")]
 
   ; {v_2 != nil}
   [(δstring string.rep String_1 Number String_2)
@@ -224,7 +218,7 @@
    ; be extracted but, rather, to how much we should substract to the total
    ; length of the original string: #String + j + 1 (j < 0)
    (where Number_4 ,(add1 (+ (term Number_3)
-                             (term Number_2))))]
+                             (ceiling (term Number_2)))))]
 
   ; {0 <= Number_1 ∧ Number_2 <= #String}
   ; ref. man: "if, after the translation of negative indices, i is less than 1,
