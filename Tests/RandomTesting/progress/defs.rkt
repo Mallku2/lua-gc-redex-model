@@ -419,8 +419,8 @@
    (well_formed_term any σ θ (e_1 \[ e_2 \]))]
 
   ; built-in service
-    [---------------------------------------------------------------------------
-     (well_formed_term any σ θ ($builtIn builtinserv ()))]
+  [---------------------------------------------------------------------------
+   (well_formed_term any σ θ ($builtIn builtinserv ()))]
 
   [; e_1 ... must represent a valid intermediate state of evaluation
    (side-condition ,(redex-match? ext-lang
@@ -516,31 +516,6 @@
   ;                                                   ;              
   ;                                                   ;              
   ;                                                                  
-
-;  [(well_formed_term any σ θ e)
-;   ; e should be a function call or any intermediate state of a function call
-;   (side-condition ,(or (redex-match? ext-lang
-;                                      (s (renv ...) RetExp)
-;                                      (term e))
-;                        
-;                        (redex-match? ext-lang
-;                                      (< v ... >)
-;                                      (term e))
-;
-;                        (redex-match? ext-lang
-;                                      (v_1 (v_2 ...))
-;                                      (term e))
-;
-;                        (redex-match? ext-lang
-;                                      ($err v)
-;                                      (term e))
-;
-;                        (redex-match? ext-lang
-;                                      ((v_1 (v_2 ...)) WrongFunCall)
-;                                      (term e))))
-;   ------------------------------------------------------------
-;   (well_formed_term any σ θ (e ProtectedMode))]
-
   [(well_formed_term any σ θ e)
    (well_formed_term any σ θ v)
    (side-condition ,(or (redex-match? ext-lang
@@ -944,4 +919,5 @@
                 (covered-cases terms-obj-store-coverage)
                 (covered-cases terms-val-obj-store-coverage)
                 (covered-cases meta-coverage)
-                (covered-cases full-progs-rel-coverage))))))
+                (covered-cases full-progs-rel-coverage))
+        ))))

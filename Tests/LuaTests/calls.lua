@@ -295,7 +295,7 @@ assert(a() == 1 and _G.x == 1)
 assert(load("return _ENV", nil, nil, 123)() == 123)
 
 
-load when _ENV is not first upvalue
+-- load when _ENV is not first upvalue
 local x; XX = 123
 local function h ()
   local y=x   -- use 'x', so that it becomes 1st upvalue

@@ -22,7 +22,7 @@
     
     (if (equal? terms '())
 
-        (if (not (redex-match core-lang
+        (if (not (redex-match ext-lang
                               (σ : θ : \;)
                               new_term))
 
@@ -76,17 +76,17 @@
     
         (if (equal? new_part_res '())
     
-            "Finalizado"
+            "Finalized"
     
             (begin
               (delete-file module_name)
               (set_new_partial_test (list-ref new_part_res 0)
                                     module_name)
     
-              "No finalizado")))
+              "Not finalized")))
     ))
 
-; Test for proper well-formed final configuration and unique result
+; test for proper well-formed final configuration and unique result
 (define (ok? red)
   (and (eq? (length red) 1)
 
