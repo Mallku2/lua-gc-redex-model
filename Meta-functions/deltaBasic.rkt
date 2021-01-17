@@ -2,8 +2,8 @@
 (require redex
          math/flonum ; operations over flonums
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
-         "./grammarMetafunctions.rkt"
+         "./objStoreMetaFunctions.rkt"
+         "./grammarMetaFunctions.rkt"
          "./coercion.rkt"
          "./gc.rkt"
          "../Desugar/parser.rkt"

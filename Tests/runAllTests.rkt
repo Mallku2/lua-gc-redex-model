@@ -2,7 +2,7 @@
 (require redex
          ; Meta-functions test suites
          "./deltaTests.rkt"
-         "./objStoreMetafunctionsTests.rkt"
+         "./objStoreMetaFunctionsTests.rkt"
          "./substitutionTests.rkt"
          "./gcTests.rkt"
          ; Notions of reduction test suites

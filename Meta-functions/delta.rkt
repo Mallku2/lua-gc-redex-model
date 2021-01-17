@@ -1,15 +1,6 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
-         "./grammarMetafunctions.rkt"
-         "./coercion.rkt"
-         "./gc.rkt"
-         "../Desugar/parser.rkt"
-         "../Desugar/lexer.rkt"
-         "../Desugar/phrases_constructors.rkt"
-
          "./deltaBasic.rkt"
          "./deltaMath.rkt"
          "./deltaString.rkt"
@@ -317,7 +308,7 @@
                    (term String)
                    " value.")]
   
-  [(errmessage WrongFunCall String)
+  [(errmessage WFunCall String)
    ,(string-append "attempt to call a "
                    (term String)
                    " value.")]
@@ -370,3 +361,17 @@
    "__unm"])
 
 (provide unopeventkey)
+
+(define-metafunction ext-lang
+  
+  [(eventkey (($statFunCall ... v_1 (v_2 ...)) WFunCall))
+   "__call"]
+
+  [(eventkey ((v_1 \[ v_2 \]) explabel))
+   "__index"]
+
+  [(eventkey (((v_1 \[ v_2 \]) = v_3) statlabel))
+   "__newindex"]
+)
+(provide eventkey)
+

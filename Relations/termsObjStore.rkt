@@ -1,10 +1,10 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Meta-functions/objStoreMetafunctions.rkt"
+         "../Meta-functions/objStoreMetaFunctions.rkt"
          "../Meta-functions/delta.rkt"
          ;"../Meta-functions/misc.scm"
-         "../Meta-functions/tablesMetafunctions.rkt")
+         "../Meta-functions/tablesMetaFunctions.rkt")
 
 ; Expressions that interact with the objects' store
 (define terms-obj-store
@@ -30,17 +30,16 @@
    ;                   ;                                                                      
 
    
-   ; Table creation
+   ; table creation
    [-->θ ((osp ...) : evaluatedtable)
-        ; New table, not set for finalization
+        ; new table, not set for finalization
         ((osp ... (objref ((addKeys evaluatedtable) nil ⊥))) : objref)
 
         E-CreateTable
 
-        (where objref (freshObjRef (osp ...)))
-        ]
+        (where objref (freshObjRef (osp ...)))]
    
-   ; Table indexing
+   ; table indexing
    [-->θ (θ : (objref \[ v_1 \]))
         (θ : v_2)
 
@@ -51,7 +50,7 @@
         (side-condition (not (equal? (term v_2)
                                      (term nil))))]
    
-   ; Abnormal situations
+   ; abnormal situations
    [-->θ (θ : (objref \[ v \]))
         (θ : ((objref \[ v \])WrongKey))
         

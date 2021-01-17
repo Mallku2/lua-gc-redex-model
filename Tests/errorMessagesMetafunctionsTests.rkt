@@ -31,7 +31,7 @@
               "attempt to get length of a boolean value.")
 
   ; Wrong function call
-  (test-equal (term (\#errmessage WrongFunCall "boolean"))
+  (test-equal (term (\#errmessage WFunCall "boolean"))
               "attempt to call a boolean value.")
 
   ; Table related errors

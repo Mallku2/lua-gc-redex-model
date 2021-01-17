@@ -4,8 +4,8 @@
 
 (require redex
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
-         "./valStoreMetafunctions.rkt"
+         "./objStoreMetaFunctions.rkt"
+         "./valStoreMetaFunctions.rkt"
          )
 ;                                                                                   
 ;                                                                                   

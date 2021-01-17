@@ -59,11 +59,19 @@
 (provide refBelongsToTheta?)
 
 
-; First location in the object store where values can be stored
-; (because the locations since 1 to objStoreFirstLocation-1 are
-; reserved to meta-tables of types different than table)
-(define objStoreFirstLocation 6)
+; position in θ used to store a table used to store information useful to help
+; in the definition of the meta-table mechanism
+(define metaTablesStack (term (objr 1)))
+(provide metaTablesStack)
+
+; first location in the object store where values can be stored:
+; locations from 2 to objStoreFirstLocation-1 are
+; reserved to meta-tables of types different than table
+(define objStoreFirstLocation 7)
 (provide objStoreFirstLocation)
+
+
+
 
 ; meta-function that generates a fresh tid
 (define-metafunction ext-lang
@@ -95,3 +103,22 @@
   )
 
 (provide freshClosId)
+
+(define-metafunction ext-lang
+  [(loopMetaEvent θ v_1 String_1)
+   #t
+   
+   (where (osp_1 ...
+           (metaTablesStack (tableconstructor any ...))
+           osp_2 ...) θ)
+   
+   (where (v_2 String_2 (\{ efield_1 ...
+                            (\[ v_2 \] = String_2)
+                            efield_2 ... \}))
+          (v_1 String_1 tableconstructor))]
+
+  [(loopMetaEvent θ v_1 String_1)
+   #f]
+  )
+
+(provide loopMetaEvent)

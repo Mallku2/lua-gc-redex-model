@@ -1,7 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "./grammarMetafunctions.rkt"
+         "./grammarMetaFunctions.rkt"
          "./deltaBasic.rkt")
 
 (define-metafunction ext-lang

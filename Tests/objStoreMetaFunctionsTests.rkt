@@ -1,6 +1,6 @@
 #lang racket
 (require redex
-         "../Meta-functions/objStoreMetafunctions.rkt")
+         "../Meta-functions/objStoreMetaFunctions.rkt")
 
 ; "black-box testing"
 

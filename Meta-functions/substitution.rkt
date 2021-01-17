@@ -259,11 +259,11 @@
    ((((substExp v_1 ((id e) ...))
       \[ (substExp v_2 ((id e) ...)) \]) = (substExp v_3 ((id e) ...))) NonTable)]
 
-  [(substBlock ((v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WrongFunCall)]
+  [(substBlock ((v_1 (v_2 ...)) WFunCall) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WFunCall)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) WrongFunCall) ((id e) ...))
-   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WrongFunCall)]
+  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall) ((id e) ...))
+   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WFunCall)]
 
   ; every variable bound in s has already been replaced by a ref.
   [(substBlock (s (renv ...) LocalBody) ((id e) ...))

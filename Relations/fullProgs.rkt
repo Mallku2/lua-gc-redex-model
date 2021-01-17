@@ -1,7 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Meta-functions/grammarMetafunctions.rkt"
+         "../Meta-functions/grammarMetaFunctions.rkt"
          "../Meta-functions/delta.rkt"
          "./terms.rkt"
          "./termsValStore.rkt"

@@ -4,7 +4,7 @@
 (require redex
          "../grammar.rkt"
          "../Meta-functions/substitution.rkt"
-         "../Meta-functions/valStoreMetafunctions.rkt"
+         "../Meta-functions/valStoreMetaFunctions.rkt"
          )
 
 

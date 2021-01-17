@@ -3,9 +3,8 @@
 
 (require redex
          "../grammar.rkt"
-         "../Meta-functions/grammarMetafunctions.rkt"
+         "../Meta-functions/grammarMetaFunctions.rkt"
          "../Meta-functions/delta.rkt"
-         racket/format ; String conversion
          )
 
 (define terms-rel
@@ -355,7 +354,7 @@
 
    ; call over a non-function value (both, function call as stat and exp)
    [-->s/e ($statFunCall ..._1 v (v_1 ...))
-           (($statFunCall ..._1 v (v_1 ...))WrongFunCall)
+           (($statFunCall ..._1 v (v_1 ...)) WFunCall)
 
            E-AlertWrongStatFunCall
            ; Determine that v_1 is not a reference to a function

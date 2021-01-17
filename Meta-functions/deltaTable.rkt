@@ -1,7 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "./objStoreMetafunctions.rkt"
+         "./objStoreMetaFunctions.rkt"
          "./deltaBasic.rkt")
 
 
@@ -299,7 +299,7 @@
                                    (term String_1)
                                    ")"))]
   
-  ; Default case
+  ; default case
   [(δtable table.unpack v_1 v_2 v_3 v_4 ... θ)
    (δbasic error String_2)
    
@@ -316,7 +316,7 @@
    (where any ,(string-append (symbol->string (term builtinserv))
                               " got no value"))]
 
-  ; Services that don't modify theta
+  ; services that don't modify theta
   [(δtable builtinserv v ... θ)
    (δbasic error any)
 
@@ -329,7 +329,7 @@
                               " got no value"))
    ]
 
-  ; Services that modify theta
+  ; services that modify theta
   [(δtable builtinserv v ... θ)
    (θ (δbasic error any))
    
