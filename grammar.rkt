@@ -30,7 +30,7 @@
          ; many ill-formed programs as possible,  using the grammar
          (((tid \[ v \]) = v) WrongKey)
          (((v \[ v \]) = v) NonTable)
-         (($statFunCall v (v ...)) WrongFunCall)
+         (($statFunCall v (v ...)) WFunCall)
          ; renv is not an expression nor a value.
          (s (renv ...) LocalBody)
          ; to allow intermediate states of execution of a funtioncall
@@ -85,7 +85,7 @@
      
      ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
-     ((v_1 (v_2 ...)) WrongFunCall)
+     ((v_1 (v_2 ...)) WFunCall)
      ((v \[ v \]) NonTable)
      ((tid \[ v \]) WrongKey)
      ((v arithop v) ArithWrongOps)
@@ -166,10 +166,13 @@
                table.insert
                table.pack
                table.unpack]
+
+  [label statlabel
+         explabel]
   
   [statlabel WrongKey ;metamethods
              NonTable
-             WrongFunCall]
+             WFunCall]
 
   [explabel WrongKey
             NonTable
@@ -179,7 +182,7 @@
             OrdCompWrongOps
             NegWrongOp
             StrLenWrongOp
-            WrongFunCall]
+            WFunCall]
 
   ; tables
   [field (\[ e \] = e)
@@ -463,10 +466,10 @@
      (((C \[ v \]) = v) NonTable)
      (((v \[ C \]) = v) NonTable)
      (((v \[ v \]) = C) NonTable)
-     (($statFunCall C (v ...)) WrongFunCall)
-     (($statFunCall v (v ... C v ...)) WrongFunCall)
-     ((C (v ...)) WrongFunCall)
-     ((v (v ... C v ...)) WrongFunCall)
+     (($statFunCall C (v ...)) WFunCall)
+     (($statFunCall v (v ... C v ...)) WFunCall)
+     ((C (v ...)) WFunCall)
+     ((v (v ... C v ...)) WFunCall)
 
      ; (C explabel)
      ((C \[ v \]) NonTable)

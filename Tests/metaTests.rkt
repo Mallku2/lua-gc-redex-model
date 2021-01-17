@@ -5,26 +5,26 @@
 
 (define (meta-test-suite)
   ; Function call
-  ; E-WrongFunCallWithHandler
+  ; E-WFunCallWithHandler
   (test-->> meta
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
-                   : ((1 (2))WrongFunCall)))
+                   : ((1 (2))WFunCall)))
             
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
                    : ((cl 2) (1 2)))))
 
-  ; E-WrongFunCallNoHandler
+  ; E-WFunCallNoHandler
   (test-->> meta
             (term ((((objr 1) ((\{ \}) nil 0))) 
-                   : ((1 (2))WrongFunCall)))
+                   : ((1 (2))WFunCall)))
             
             (term ((((objr 1) ((\{ \}) nil 0))) 
                    : ($err "attempt to call a number value."))))
   
   (test-->> meta
-            (term (() : ((1 (2))WrongFunCall)))
+            (term (() : ((1 (2))WFunCall)))
             
             (term (() : ($err "attempt to call a number value."))))
   
@@ -257,14 +257,14 @@
   ; E-StringLengthWrongOperandWithHandler
   (test-->> meta
             (term ((((objr 1) ((\{ (\[ "__len" \] = 1) \}) nil 0))) 
-                   : ((\# 1)StrLenWrongOp)))
+                   : ((\# 1) StrLenWrongOp)))
             (term ((((objr 1) ((\{ (\[ "__len" \] = 1) \}) nil 0))) 
                    : (1 (1)))))
   
   ; E-StringLengthWrongOperandTableLength
   (test-->> meta
             (term ((((objr 1) ((\{ \}) nil 0))) 
-                   : ((\# (objr 1))StrLenWrongOp)))
+                   : ((\# (objr 1)) StrLenWrongOp)))
             (term ((((objr 1) ((\{ \}) nil 0))) 
                    : 0)))
   
@@ -272,7 +272,7 @@
             (term ((((objr 1) ((\{ (\[ 1 \] = 1)
                                    (\[ "a" \] = 1)
                                    (\[ 2 \] = 1) \}) nil 0))) 
-                   : ((\# (objr 1))StrLenWrongOp)))
+                   : ((\# (objr 1)) StrLenWrongOp)))
             
             (term ((((objr 1) ((\{ (\[ 1 \] = 1)
                                    (\[ "a" \] = 1)
@@ -282,7 +282,7 @@
   ; E-StringLengthWrongOperandNoHandler
   (test-->> meta
             (term (() 
-                   : ((\# 1)StrLenWrongOp)))
+                   : ((\# 1) StrLenWrongOp)))
             (term
              (() 
               :

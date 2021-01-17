@@ -7,19 +7,19 @@
   ; Table creation
   (test-->> terms-obj-store
             (term (() : (\{ \})))
-            (term ((((objr 6) ((\{ \}) nil ⊥))) : (objr 6))))
+            (term ((((objr 7) ((\{ \}) nil ⊥))) : (objr 7))))
   
   (test-->> terms-obj-store
             (term (() : (\{ 1 (\[ 1 \] = 2) 2 (\[ 2 \] = 3) nil 4 \})))
-            (term ((((objr 6) ((\{ (\[ 1 \] = 1) 
+            (term ((((objr 7) ((\{ (\[ 1 \] = 1) 
                                    (\[ 2 \] = 2) 
                                    (\[ 4 \] = 4) \}) nil ⊥))) 
-                   : (objr 6))))
+                   : (objr 7))))
 
   (test-->> terms-obj-store
             (term (() : (\{ (\[ 1 \] = 2) (\[ 1 \] = 3) \})))
-            (term ((((objr 6) ((\{ (\[ 1 \] = 3) \}) nil ⊥))) 
-                   : (objr 6))))
+            (term ((((objr 7) ((\{ (\[ 1 \] = 3) \}) nil ⊥))) 
+                   : (objr 7))))
   
   ; Table indexing
   (test-->> terms-obj-store
@@ -59,8 +59,8 @@
   ; Function creation
   (test-->> terms-obj-store
             (term (() : (function X () ($statFunCall Y ()) end)))
-            (term ((((cl 6) (function X () ($statFunCall Y ()) end)))
-                   : (cl 6))))
+            (term ((((cl 7) (function X () ($statFunCall Y ()) end)))
+                   : (cl 7))))
 
   (test-->> terms-obj-store
             (term ((((cl 1) (function X () ($statFunCall Y ()) end)))

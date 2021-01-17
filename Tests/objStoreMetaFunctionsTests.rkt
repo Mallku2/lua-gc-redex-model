@@ -52,7 +52,7 @@
 
 (define (freshObjRef-test-suite)
   (test-equal (term (freshObjRef ()))
-              (term (objr 6)))
+              (term (objr 7)))
               
   (test-equal (term (freshObjRef (((objr 6) ((\{ \}) nil 1)))))
               (term (objr 7)))

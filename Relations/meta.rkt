@@ -1,271 +1,112 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Meta-functions/objStoreMetafunctions.rkt"
+         "../Meta-functions/objStoreMetaFunctions.rkt"
+         "../Meta-functions/metaTablesMetaFunctions.rkt"
          "../Meta-functions/delta.rkt"
          ; indexMetaTable
-         "../Meta-functions/deltaBasic.rkt"
-         "../Meta-functions/tablesMetafunctions.rkt")
+         "../Meta-functions/deltaBasic.rkt")
 
-; Expressions handled by the meta-table mechanism.
+; expressions handled by the meta-table mechanism.
 
 (define meta
   (reduction-relation
    ext-lang
    #:arrow -->meta
    ;#:domain (θ : t)
-   
-   ; Call over a non-function value
-   [-->meta (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WrongFunCall))
-        (θ : ($statFunCall ..._1 any (v_1 v_2 ...)))
-        
-        E-WrongStatFunCallWithHandler
-        ; Determine if sv has a meta-table
-        (where any (indexMetaTable v_1 
-                                   "__call" 
-                                   θ))
 
-        (side-condition (not (is_false_cond? (term any))))]
-   
-   [-->meta (θ : (($statFunCall ... v_1 (v_2 ...)) WrongFunCall))
-        (θ : ($err String))
+   ; WFunCall
+   [-->meta (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall))
+            (θ_2 : t)
         
-        E-WrongStatFunCallNoHandler
-        ; Determine if v_1 has a meta-table
-        (where v_3 (indexMetaTable v_1 
-                                   "__call" 
-                                   θ))
+            E-WFunCall
+            
+            (where (θ_2 : t)
+                   (w_fun_call (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall))))]
 
-        (side-condition (is_false_cond? (term v_3)))
+   ; NonTable exp.
+   [-->meta (θ_1 : ((v_1 \[ v_2 \]) NonTable))
+            (θ_2 : e)
         
-        (where String (errmessage WrongFunCall (δ type v_1)))]
+            E-NonTableExp
+            
+            (where (θ_2 : e)
+                   (non_table_e (θ_1 : ((v_1 \[ v_2 \]) NonTable))))]
 
-   [-->meta (θ : ((v_1 \[ v_2 \]) explabel))
-        (θ : (cid (v_1 v_2)))
+   ; WrongKey exp.
+   [-->meta (θ_1 : ((v_1 \[ v_2 \]) WrongKey))
+            (θ_2 : e)
         
-        E-KeyNotFoundWithHandlerNormal
-        ; determine if v_1 has a meta-table
-        (where cid (indexMetaTable v_1 "__index" θ))]
-   
-   [-->meta (θ : ((v_1 \[ v_2 \]) explabel))
-        (θ : (v_3 \[ v_2 \]))
-        
-        E-KeyNotFoundWithHandlerRepeat
-        ; determine if v_1 has a meta-table
-        (where v_3 (indexMetaTable v_1 "__index" θ))
-        
-        (side-condition (not (or (is_nil? (term v_3))
-                                 (eq? (term (δ type v_3))
-                                       "function"))))]
-   
-   [-->meta (θ : ((tid \[ v \]) WrongKey))
-        (θ : nil)
-        
-        E-KeyNotFoundNoHandler
-        ; Determine if the table doesn't have a meta-table or
-        ; its meta-table doesn't have a field with key "__index"
-        (where nil (indexMetaTable tid
-                                   "__index"
-                                   θ))]
-   
-   [-->meta (θ : ((v_1 \[ v_2 \]) NonTable))
-        (θ : ($builtIn error (String)))
-        
-        E-NonTableIndexedNoHandler
-        ; Determine if simplevalue efectively has a meta-table
-        (where nil (indexMetaTable v_1 
-                                   "__index" 
-                                   θ))
-        
-        (where String (errmessage NonTable
-                                  (δ type v_1)))]
+            E-WrongKeyExp
+            
+            (where (θ_2 : e)
+                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) WrongKey))))]
 
-   [-->meta (θ : ((v_1 binop v_2) explabel))
-        (θ : (v_3 (v_1 v_2)))
+   ; ArithWrongOps
+   [-->meta (θ_1 : ((v_1 binop v_2) ArithWrongOps))
+            (θ_2 : e)
         
-        E-ArithOpWrongOperandsWithHandler
-        
-        (side-condition (or (is_arithop? (term binop))
-                            (is_strconcat? (term binop))))
-        
-        ; Determine if simplevalue efectively has a meta-table
-        (where v_3 (getBinHandler v_1
-                                  v_2
-                                  (binopeventkey binop)
-                                  θ))
-        
-        (side-condition (not (is_false_cond? (term v_3))))]
-   
-   [-->meta (θ : ((v_1 binop v_2) explabel))
-        (θ : ($builtIn error (String)))
-        
-        E-ArithWrongOperandsNoHandler
+            E-ArithWrongOps
+            
+            (where (θ_2 : e)
+                   (arith_wrong_ops (θ_1 : ((v_1 binop v_2) ArithWrongOps))))]
 
-        (side-condition (or (is_arithop? (term binop))
-                            (is_strconcat? (term binop))))
+   ; StrConcatWrongOps
+   [-->meta (θ_1 : ((v_1 .. v_2) StrConcatWrongOps))
+            (θ_2 : e)
         
-        ; Determine if sv_1 or sv_2 efectively has a meta-table
-        (where v_3 (getBinHandler v_1 v_2 (binopeventkey binop) θ))
+            E-StrConcatWrongOps
+            
+            (where (θ_2 : e)
+                   (str_concat_wrong_ops (θ_1 : ((v_1 .. v_2) StrConcatWrongOps))))] 
 
-        (side-condition (is_false_cond? (term v_3)))
+   ; NegWrongOp
+   [-->meta (θ_1 : ((- v) NegWrongOp))
+            (θ_2 : e)
         
-        (where String (errmessage explabel 
-                                  (δ type v_1)
-                                  (δ type v_2)))]
-   
-   [-->meta (θ : ((- v_1 )NegWrongOp))
-        (θ : (v_2 (v_1)))
-        
-        E-NegationWrongOperandWithHandler
-        ; Determine if v_1 efectively has a meta-table
-        (where v_2 (getUnaryHandler v_1 
-                                    (unopeventkey -) 
-                                    θ))
-        
-        (side-condition (not (is_false_cond? (term v_2))))]
-   
-   [-->meta (θ : ((- v_1) NegWrongOp))
-        (θ : ($builtIn error (String)))
-        
-        E-NegationWrongOperandNoHandler
-        ; Determine if simplevalue efectively has a meta-table
-        (where v_2 (getUnaryHandler v_1
-                                    (unopeventkey -)
-                                    θ))
+            E-NegWrongOp
+            
+            (where (θ_2 : e)
+                   (neg_wrong_op (θ_1 : ((- v) NegWrongOp))))]
 
-        (side-condition (is_false_cond? (term v_2)))
+   ; StrLenWrongOp
+   [-->meta (θ_1 : ((\# v) StrLenWrongOp))
+            (θ_2 : e)
         
-        (where String (errmessage NegWrongOp (δ type v_1)))]
+            E-StrLenWrongOp
+            
+            (where (θ_2 : e)
+                   (str_len_wrong_op (θ_1 : ((\# v) StrLenWrongOp))))]
    
-    
-   [-->meta (θ : ((\# v_1) StrLenWrongOp))
-        (θ : (v_2 (v_1)))
-        
-        LenWrongOpHandler
-        ; Determine if we have a handler for the operation
-        (where v_2 (getUnaryHandler v_1 
-                                    (unopeventkey \#) 
-                                    θ))
-        
-        (side-condition (not (is_nil? (term v_2))))]
    
-   [-->meta (θ : ((\# objref) StrLenWrongOp))
-        (θ : (δ \# evaluatedtable))
+   ; abnormal expressions with relational operators
+   ; EqFail
+   [-->meta (θ_1 : ((v_1 == v_2) EqFail))
+            (θ_2 : e)
         
-        LenWrongOpTable
-        ; Determine if we have a handler for the operation
-        (where nil (getUnaryHandler objref
-                                    (unopeventkey \#)
-                                    θ))
-        
-        (where (osp_1 ... (objref (evaluatedtable any ...)) osp_2 ...)
-               θ)]
-   
-   [-->meta (θ : ((\# v) StrLenWrongOp))
-        (θ : ($builtIn error (String_2)))
-        
-        E-LenWrongOpNoHandler
-        ; Determine if we have a handler for the operation
-        (where nil (getUnaryHandler v 
-                                    (unopeventkey \#)
-                                    θ))
-        
-        (where String_1 (δ type v))
-        
-        (side-condition (not (equal? (term String_1) 
-                                     "table")))
-        
-        (where String_2 (errmessage StrLenWrongOp String_1))]
-   
-   ; Abnormal expressions with relational operators
-   [-->meta (θ : ((v_1 == v_2)EqFail))
-        (θ : (v_3 (v_1 v_2)))
-        
-        E-EqualityFailWithHandler
-        ; Determine the type of sv_1
-        (where v_3 (getEqualHandler v_1 v_2 θ))
-        (side-condition (not (is_false_cond? (term v_3))))]
-   
-   [-->meta (θ : ((v_1 == v_2)EqFail))
-        (θ : false)
-        
-        E-EqualityFailNoHandler
-        ; Determine the type of sv_1
-        (where v_3 (getEqualHandler v_1 v_2 θ))
-        
-        (side-condition (is_false_cond? (term v_3)))]
-   
-   [-->meta (θ : ((v_1 relop v_2)OrdCompWrongOps))
-        (θ : (v_3 (v_1 v_2)))
-        
-        E-OrdCompFailWithHandler
-        ; Obtain a handler for the operation
-        (where v_3 (getBinHandler v_1 
-                                  v_2 
-                                  (binopeventkey relop) 
-                                  θ))
-        
-        (side-condition (not (is_false_cond? (term v_3))))]
-   
-   [-->meta (θ : ((v_1 < v_2)OrdCompWrongOps))
-        (θ : ($builtIn error (String)))
-        
-        E-LessThanFailNoHandler
-        ; Obtain a handler for the operation
-        (where v_3 (getBinHandler v_1 
-                                  v_2 
-                                  (binopeventkey <) 
-                                  θ))
-        
-        (side-condition (is_false_cond? (term v_3)))
-        
-        (where String (errmessage OrdCompWrongOps 
-                                  (δ type v_1)
-                                  (δ type v_2)))]
-   
-   [-->meta (θ : ((v_1 <= v_2)OrdCompWrongOps))
-        (θ : (not (v_4 (v_2 v_1))))
-        
-        E-LessThanOrEqualFailWithAltHandler
-        ; Obtain a handler for the operation
-        (where v_3 (getBinHandler v_1 
-                                  v_2 
-                                  (binopeventkey <=) 
-                                  θ))
-        
-        (side-condition (is_false_cond? (term v_3)))
+            E-EqFail
+            
+            (where (θ_2 : e)
+                   (eq_fail (θ_1 : ((v_1 == v_2) EqFail))))]
 
-        (where v_4 (getBinHandler v_1
-                                  v_2
-                                  (binopeventkey <)
-                                  θ))
+   ; OrdCompWrongOps
+   [-->meta (θ_1 : ((v_1 < v_2) OrdCompWrongOps))
+            (θ_2 : e)
         
-        (side-condition (not (is_false_cond? (term v_4))))]
-   
-   [-->meta (θ : ((v_1 <= v_2)OrdCompWrongOps))
-        (θ : ($builtIn error (String)))
-        
-        E-LessThanOrEqualFailNoHandler
-        ; Determine if simplevalue efectively has a meta-table
-        (where v_3 (getBinHandler v_1 
-                                  v_2 
-                                  (binopeventkey <=) 
-                                  θ))
-        
-        (side-condition (is_false_cond? (term v_3)))
+            E-OrdCompWrongOpsLt
+            
+            (where (θ_2 : e)
+                   (ord_comp_wrong_ops_lt (θ_1 : ((v_1 < v_2) OrdCompWrongOps))))]
 
-        (where v_4 (getBinHandler v_1
-                                  v_2
-                                  (binopeventkey <)
-                                  θ))
+   [-->meta (θ_1 : ((v_1 <= v_2) OrdCompWrongOps))
+            (θ_2 : e)
         
-        (side-condition (is_false_cond? (term v_4)))
-        
-        (where String (errmessage OrdCompWrongOps
-                                  (δ type v_1)
-                                  (δ type v_2)))]
+            E-OrdCompWrongOpsLe
+            
+            (where (θ_2 : e)
+                   (ord_comp_wrong_ops_le (θ_1 : ((v_1 <= v_2) OrdCompWrongOps))))] 
 
-   
+
    ;                                                                                  
    ;                                                                                  
    ;                                                                                  
@@ -281,58 +122,22 @@
    ;                                                                                  
    ;                                                                                  
    ;
-   
-   ; abnormal statements involving table field assignment
-   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
-        (θ : ($statFunCall cid (v_1 v_2 v_3)))
+   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable))
+            (θ_2 : s)
         
-        E-FieldAssignWrongKeyNormal
-        ; determine if v_1 has a meta-table with a handler
-        (where cid (indexMetaTable v_1 "__newindex" θ))]
-   
-   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) statlabel))
-        (θ : ((v_4 \[ v_2 \]) = v_3))
+            E-NonTableStat
+            
+            (where (θ_2 : s)
+                   (non_table_s (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable))))]
+
+   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey))
+            (θ_2 : s)
         
-        E-FieldAssignWrongKeyRepeat
-        ; determine if v_1 has a meta-table with a handler
-        (where v_4 (indexMetaTable v_1 "__newindex" θ))
-        ; determine if in that field we don't have a reference to a function...
-        (side-condition (not (or (is_nil? (term v_4))
-                                 (eq? (term (δ type v_4))
-                                       (term "function")))))]
+            E-WrongKeyStat
+            
+            (where (θ_2 : s)
+                   (wrong_key_s (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey))))] 
 
-   ; add new field 
-   [-->meta (θ_1 : (((tid \[ v_1 \]) = v_2) WrongKey))
-        (θ_2 : any_2)
-
-        E-FieldAssignWrongKeyNoHandler
-        ; determine if the table has no meta-table or its meta-table
-        ; doesn't have "__newindex" as a key
-        (where nil (indexMetaTable tid "__newindex" θ_1))
-
-        ; try to create new field [v_1] = v_2
-        (where (θ_2 any_1) (δ rawset tid v_1 v_2 θ_1))
-
-        ; any_2 should be either skip (rawset was successful) or $err v
-        ; in this way we simplify rules
-        (where any_2 ,(if (is_tid? (term any_1))
-                          (term \;) ; success
-                          (term any_1) ; any_1 is an error object: key was
-                                       ; nil,nan
-                          ))]
-   
-   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) NonTable))
-        (θ : (δ error String))
-
-        E-FieldAssignOverNonTableNoHandler
-
-        ; determine if v_1 efectively has a meta-table
-        (where nil (indexMetaTable v_1 "__newindex" θ))
-
-        (where String ,(string-append "attempt to index a "
-                                      (term (δ type v_1))
-                                      " value"))]
-;
    ))
 
 (provide meta)

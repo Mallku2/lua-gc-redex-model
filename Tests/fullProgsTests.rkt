@@ -55,7 +55,7 @@
                           end))))
             ; TODO: first location is hard-coded...
             (term ((((ref 1) 1)) 
-                   : (((cl 6) (function X () (return 1) end)))
+                   : (((cl 7) (function X () (return 1) end)))
                    : \;)))
 
   ; Vararg function definition + function call
@@ -70,7 +70,7 @@
             
             ; TODO: first location is hard-coded...
             (term ((((ref 1) 1)) 
-                   : (((cl 6) (function X (<<<) (return <<<) end)))
+                   : (((cl 7) (function X (<<<) (return <<<) end)))
                    : \;)))
 
   ; From http://www.luafaq.org/: function with a modified _ENV as upvalue
@@ -92,14 +92,14 @@
                                   end)
                                 end)))
 
-            (term ((((ref 1) (objr 6))
-                    ((ref 2) (cl 7))
-                    ((ref 3) (objr 6)))
+            (term ((((ref 1) (objr 7))
+                    ((ref 2) (cl 8))
+                    ((ref 3) (objr 7)))
                    :
-                   (((objr 6) ((|{| (|[| "z" |]| = 30.0)
+                   (((objr 7) ((|{| (|[| "z" |]| = 30.0)
                                     (|[| "x" |]| = 10.0)
                                     (|[| "y" |]| = 20.0) |}|) nil ⊥))
-                    ((cl 7)
+                    ((cl 8)
                      (function $func1
                       ()
                       (return
@@ -121,9 +121,9 @@
                           else ((ref 1) = 2)
                           end))))
 
-            (term ((((ref 1) (cl 6))) 
+            (term ((((ref 1) (cl 7))) 
                    :
-                   (((cl 6) (function X (<<<)
+                   (((cl 7) (function X (<<<)
                                        (return
                                         ($builtIn error ("error message")))
                                        end))) 
@@ -160,13 +160,13 @@
                                   end))))))
             (term ((((ref 1) "error"))
                    :
-                   (((cl 6)
+                   (((cl 7)
                      (function
                       $1
                       ()
                       (return ($builtIn error ("error")))
                       end))
-                    ((cl 7)
+                    ((cl 8)
                      (function
                       $handler
                       (errMsg)
@@ -192,11 +192,11 @@
             (term ((((ref 1) "error")
                     ((ref 2) "error received"))
                    :
-                   (((cl 6)
+                   (((cl 7)
                      (function x ()
                       (return ($builtIn error ("error")))
                       end))
-                    ((cl 7)
+                    ((cl 8)
                      (function $1 (m)
                                (local a = (m .. " received")
                                  in
