@@ -28,9 +28,12 @@
          (s Break)
          ; to help with the definition of well-formed programs, we exclude as
          ; many ill-formed programs as possible,  using the grammar
-         (((tid \[ v \]) = v) objid ... WrongKey objid ...)
-         (((v \[ v \]) = v) objid ... NonTable objid ...)
-         (($statFunCall v (v ...)) objid ... WFunCall objid ...)
+         (($statFunCall v (v ...)) Meta objid ...)
+         (((v \[ v \]) = v) Meta objid ...)
+         
+         (((tid \[ v \]) = v) WrongKey objid ...)
+         (((v \[ v \]) = v) NonTable objid ...)
+         (($statFunCall v (v ...)) WFunCall objid ...)
          ; renv is not an expression nor a value.
          (s (renv ...) LocalBody)
          ; to allow intermediate states of execution of a funtioncall
@@ -80,23 +83,26 @@
      ; renv is not an expression nor a value. The previous rules for these
      ; constructions does not describe the renv added
      (s (renv ...) RetExp)
-     ;(e ProtectedMode)
      (e ProtectedMode v)
      
      ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
-     (e objid ... explabel objid ...)
-;     ((v_1 (v_2 ...)) objid ... WFunCall objid ...)
-;     ((v \[ v \]) objid ... NonTable objid ...)
-;     ((tid \[ v \]) objid ... WrongKey objid ...)
-;     ((v arithop v) objid ... ArithWrongOps objid ...)
-;     ((v .. v) objid ... StrConcatWrongOps objid ...)
-;     ((v < v) objid ... OrdCompWrongOps objid ...)
-;     ((v <= v) objid ... OrdCompWrongOps objid ...)
-;     ((- v) objid ... NegWrongOp objid ...)
-;     ((\# v) objid ... StrLenWrongOp objid ...)
-;     ((v == v) objid ... EqFail objid ...)
-     ]
+     ((v (v ...)) Meta objid ...)
+     ((not (v (v ...))) Meta objid ...)
+     ((not (not (v (v ...)))) Meta objid ...)
+     ((\( (v (v ...)) \)) Meta objid ...)
+     ((v \[ v \]) Meta objid ...)
+
+     ((v_1 (v_2 ...)) WFunCall objid ...)
+     ((v \[ v \]) NonTable objid ...)
+     ((tid \[ v \]) WrongKey objid ...)
+     ((v arithop v) ArithWrongOps objid ...)
+     ((v .. v) StrConcatWrongOps objid ...)
+     ((v < v) OrdCompWrongOps objid ...)
+     ((v <= v) OrdCompWrongOps objid ...)
+     ((- v) NegWrongOp objid ...)
+     ((\# v) StrLenWrongOp objid ...)
+     ((v == v) EqFail objid ...)]
 
   ; identifiers of variables and refs., to ease the definition of several
   ; substitution functions

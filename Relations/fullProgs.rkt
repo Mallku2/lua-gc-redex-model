@@ -59,7 +59,7 @@
       E-valObjStoreTerms]
    
    ; meta
-   [↦ (σ : θ_1 : (in-hole E (t_1 objid ... label)))
+   [↦ (σ : θ_1 : (in-hole E (t_1 label objid ...)))
       (σ : θ_2 : (in-hole E t_2))
         
       (where ((θ_2 : t_2))
@@ -68,11 +68,11 @@
 
       E-meta]
 
-   [↦ (σ_1 : θ_1 : (in-hole E (t_1 label objid_1 objid_2 ...)))
-      (σ_2 : θ_2 : (in-hole E (t_2 objid_1 objid_2 ... label)))
+   [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid_1 objid_2 ...)))
+      (σ_2 : θ_2 : (in-hole E (in-hole E_2 (t_2 label objid_1 objid_2 ... ))))
 
       ; same label
-      (where ((σ_2 : θ_2 : (t_2 label)))
+      (where ((σ_2 : θ_2 : (in-hole E_2 (t_2 label))))
              ,(apply-reduction-relation full-progs-rel
                                         (term (σ_1 : θ_1 : t_1))))
 
@@ -86,7 +86,7 @@
                                         (term (σ_1 : θ_1 : t_1))))
 
       (side-condition (not (redex-match? ext-lang
-                                         (t_4 label_2)
+                                         (in-hole E_2 (t_4 label_2))
                                          (term t_3))))
 
       E-metaEnd]
