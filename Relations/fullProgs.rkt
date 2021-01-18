@@ -9,15 +9,15 @@
          "./termsValObjStore.rkt"
          "./meta.rkt")
 
-; Semantics of complete programs
+; semantics of complete programs
 
 (define full-progs-rel
   (reduction-relation
    ext-lang
-   #:domain (σ : θ : s)
+   ;#:domain (σ : θ : s)
    #:arrow ↦
    
-   ; Terms
+   ; terms
    [↦ (σ : θ : (in-hole E t_1))
       ; to obtain a well-formed concat of stats when E and t_2 are concat
       ; stats (ex.: result of rule AssignSplit)
@@ -27,7 +27,7 @@
 
       E-terms]
    
-   ; Terms that interact with the value store
+   ; terms that interact with the value store
    [↦ (σ_1 : θ : (in-hole E t_1))
       (σ_2 : θ : (in-hole E t_2))
 
@@ -37,7 +37,7 @@
 
       E-valStoreTerms]
    
-   ; Terms that interact with the object store
+   ; terms that interact with the object store
    [↦ (σ : θ_1 : (in-hole E t_1))
       (σ : θ_2 : (in-hole E t_2))
 
@@ -47,7 +47,7 @@
 
       E-objStoreTerms]
 
-   ; Terms that interact with both stores
+   ; terms that interact with both stores
    [↦ (σ_1 : θ_1 : (in-hole E t_1))
       (σ_2 : θ_2 : (in-hole E t_2))
 
@@ -58,15 +58,38 @@
         
       E-valObjStoreTerms]
    
-   ; Meta
-   [↦ (σ : θ_1 : (in-hole E t_1))
+   ; meta
+   [↦ (σ : θ_1 : (in-hole E (t_1 objid ... label)))
       (σ : θ_2 : (in-hole E t_2))
         
       (where ((θ_2 : t_2))
              ,(apply-reduction-relation meta
-                                        (term (θ_1 : t_1))))
+                                        (term (θ_1 : (t_1 objid ... label)))))
 
       E-meta]
+
+   [↦ (σ_1 : θ_1 : (in-hole E (t_1 label objid_1 objid_2 ...)))
+      (σ_2 : θ_2 : (in-hole E (t_2 objid_1 objid_2 ... label)))
+
+      ; same label
+      (where ((σ_2 : θ_2 : (t_2 label)))
+             ,(apply-reduction-relation full-progs-rel
+                                        (term (σ_1 : θ_1 : t_1))))
+
+      E-metaOneStep]
+
+   [↦ (σ_1 : θ_1 : (in-hole E (t_1 label objid_1 objid_2 ...)))
+      (σ_2 : θ_2 : (in-hole E t_3))
+
+      (where ((σ_2 : θ_2 : t_3))
+             ,(apply-reduction-relation full-progs-rel
+                                        (term (σ_1 : θ_1 : t_1))))
+
+      (side-condition (not (redex-match? ext-lang
+                                         (t_4 label_2)
+                                         (term t_3))))
+
+      E-metaEnd]
    
    ; Error propagation
    [↦ (σ : θ : (in-hole Enp ($err v)))

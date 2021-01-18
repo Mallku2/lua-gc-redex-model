@@ -28,9 +28,9 @@
          (s Break)
          ; to help with the definition of well-formed programs, we exclude as
          ; many ill-formed programs as possible,  using the grammar
-         (((tid \[ v \]) = v) WrongKey)
-         (((v \[ v \]) = v) NonTable)
-         (($statFunCall v (v ...)) WFunCall)
+         (((tid \[ v \]) = v) objid ... WrongKey objid ...)
+         (((v \[ v \]) = v) objid ... NonTable objid ...)
+         (($statFunCall v (v ...)) objid ... WFunCall objid ...)
          ; renv is not an expression nor a value.
          (s (renv ...) LocalBody)
          ; to allow intermediate states of execution of a funtioncall
@@ -85,16 +85,18 @@
      
      ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
-     ((v_1 (v_2 ...)) WFunCall)
-     ((v \[ v \]) NonTable)
-     ((tid \[ v \]) WrongKey)
-     ((v arithop v) ArithWrongOps)
-     ((v .. v) StrConcatWrongOps)
-     ((v < v) OrdCompWrongOps)
-     ((v <= v) OrdCompWrongOps)
-     ((- v) NegWrongOp)
-     ((\# v) StrLenWrongOp)
-     ((v == v) EqFail)]
+     (e objid ... explabel objid ...)
+;     ((v_1 (v_2 ...)) objid ... WFunCall objid ...)
+;     ((v \[ v \]) objid ... NonTable objid ...)
+;     ((tid \[ v \]) objid ... WrongKey objid ...)
+;     ((v arithop v) objid ... ArithWrongOps objid ...)
+;     ((v .. v) objid ... StrConcatWrongOps objid ...)
+;     ((v < v) objid ... OrdCompWrongOps objid ...)
+;     ((v <= v) objid ... OrdCompWrongOps objid ...)
+;     ((- v) objid ... NegWrongOp objid ...)
+;     ((\# v) objid ... StrLenWrongOp objid ...)
+;     ((v == v) objid ... EqFail objid ...)
+     ]
 
   ; identifiers of variables and refs., to ease the definition of several
   ; substitution functions

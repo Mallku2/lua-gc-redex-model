@@ -34,13 +34,13 @@
                    (non_table_e (θ_1 : ((v_1 \[ v_2 \]) NonTable))))]
 
    ; WrongKey exp.
-   [-->meta (θ_1 : ((v_1 \[ v_2 \]) WrongKey))
+   [-->meta (θ_1 : ((v_1 \[ v_2 \]) objid ... WrongKey))
             (θ_2 : e)
         
             E-WrongKeyExp
             
             (where (θ_2 : e)
-                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) WrongKey))))]
+                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) objid ... WrongKey))))]
 
    ; ArithWrongOps
    [-->meta (θ_1 : ((v_1 binop v_2) ArithWrongOps))

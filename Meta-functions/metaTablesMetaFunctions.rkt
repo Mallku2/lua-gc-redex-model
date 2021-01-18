@@ -50,16 +50,7 @@
    
    (side-condition (not (or (is_nil? (term v_3))
                             (eq? (term (δ type v_3))
-                                 "function"))))
-   
-   ;   (side-condition (not (term (refBelongsToTheta? metaTablesStack
-   ;                                                  (osp ...)))))
-   ;
-   ;   (where String ,(symbol->string (term explabel)))
-   ;
-   ;   (where θ ((metaTablesStack ((\{ (\[ v_1 \] = String) \}) nil ⊥))
-   ;             osp ...))
-   ]
+                                 "function"))))]
 
   ; no handler
   [(non_table_e (θ : ((v_1 \[ v_2 \]) NonTable)))
@@ -80,25 +71,36 @@
 ; implements the meta-table mechanism for WrongKey
 (define-metafunction ext-lang
 
+  ; break loop
+  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) objid_1 ... objid_2 objid_3 ... WrongKey)))
+   (θ : (δ error "loop in gettable"))
+
+   ; meta-method already invoked 
+   (where objid_2 (indexMetaTable v_1 "__index" θ))]
+
   ; function handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey)))
-   (θ : (cid (v_1 v_2)))
+  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) objid ... WrongKey)))
+   (θ : ((cid (v_1 v_2)) WrongKey objid ... cid))
 
    ; determine if v_1 has a meta-table
    (where cid (indexMetaTable v_1 "__index" θ))]
 
   ; table handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey)))
-   (θ : (v_3 \[ v_2 \]))
+  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) objid ... WrongKey)))
+   (θ : ((tid \[ v_2 \]) WrongKey objid ... tid))
+   
+   (where tid (indexMetaTable v_1 "__index" θ))]
+
+  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) objid ... WrongKey)))
+   (θ : ((v_3 \[ v_2 \]) WrongKey objid ...))
    
    (where v_3 (indexMetaTable v_1 "__index" θ))
-   
-   (side-condition (not (or (is_nil? (term v_3))
-                            (eq? (term (δ type v_3))
-                                 "function"))))]
+
+   ; {v_3 ∉ tid}
+   (side-condition (not (is_nil? (term v_3))))]
 
   ; no handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey)))
+  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) objid ... WrongKey)))
    (θ : nil)
 
    ; determine if simplevalue efectively has a meta-table

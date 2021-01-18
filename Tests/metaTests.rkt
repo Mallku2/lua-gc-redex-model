@@ -42,7 +42,7 @@
                     ((cl 3) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 2) 
                      ((\{ (\[ "__index" \] = (cl 3)) \}) nil 0))) 
-                   : ((cl 3) ((objr 1) 2)))))
+                   : (((cl 3) ((objr 1) 2)) WrongKey (cl 3)))))
   
   ; E-WrongKeyWithHandlerRepeat
   (test-->> meta
@@ -50,13 +50,13 @@
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
                     ((objr 2)
                      ((\{ (\[ "__index" \] = 1) \}) nil 0))) 
-                   : (((objr 1) \[ 2 \])WrongKey)))
+                   : (((objr 1) \[ 2 \]) WrongKey)))
             
             (term ((((objr 1)
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
                     ((objr 2)
                      ((\{ (\[ "__index" \] = 1) \}) nil 0))) 
-                   : (1 \[ 2 \]))))
+                   : nil)))
   
   (test-->> meta
             (term ((((objr 1)
@@ -65,7 +65,7 @@
                      ((\{ (\[ "__index" \] = (objr 3)) \}) nil 0))
                     ((objr 3)
                      ((\{  \}) nil 0))) 
-                   : (((objr 1) \[ 2 \])WrongKey)))
+                   : (((objr 1) \[ 2 \]) WrongKey)))
             
             (term ((((objr 1)
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
@@ -73,13 +73,13 @@
                      ((\{ (\[ "__index" \] = (objr 3)) \}) nil 0))
                     ((objr 3)
                      ((\{  \}) nil 0)))
-                   : ((objr 3) \[ 2 \]))))
+                   : (((objr 3) \[ 2 \]) WrongKey (objr 3)))))
 
   ; E-WrongKeyNoHandler
   (test-->> meta
             (term ((((objr 1)
                      ((\{ (\[ 1 \] = 1) \}) nil 0))) 
-                   : (((objr 1) \[ 2 \])WrongKey)))
+                   : (((objr 1) \[ 2 \]) WrongKey)))
             
             (term ((((objr 1)
                      ((\{ (\[ 1 \] = 1) \}) nil 0)))
@@ -90,7 +90,7 @@
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
                     ((objr 2)
                      ((\{ \}) nil 0))) 
-                   : (((objr 1) \[ 2 \])WrongKey)))
+                   : (((objr 1) \[ 2 \]) WrongKey)))
             
             (term ((((objr 1)
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
@@ -103,7 +103,7 @@
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1)
                      ((\{ (\[ "__index" \] = (cl 2)) \}) nil 0))) 
-                   : ((1 \[ 2 \])NonTable)))
+                   : ((1 \[ 2 \]) NonTable)))
             
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1)
