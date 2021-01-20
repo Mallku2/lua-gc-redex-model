@@ -1,11 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Meta-functions/objStoreMetaFunctions.rkt"
-         "../Meta-functions/metaTablesMetaFunctions.rkt"
-         "../Meta-functions/delta.rkt"
-         ; indexMetaTable
-         "../Meta-functions/deltaBasic.rkt")
+         "../Meta-functions/metaTablesMetaFunctions.rkt")
 
 ; expressions handled by the meta-table mechanism.
 
@@ -16,95 +12,105 @@
    ;#:domain (θ : t)
 
    ; WFunCall
-   [-->meta (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall))
+   [-->meta (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall objid ...))
             (θ_2 : t)
         
             E-WFunCall
             
             (where (θ_2 : t)
-                   (w_fun_call (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall))))]
+                   (w_fun_call (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...))
+                                       WFunCall
+                                       objid ...))))]
 
    ; NonTable exp.
-   [-->meta (θ_1 : ((v_1 \[ v_2 \]) NonTable))
+   [-->meta (θ_1 : ((v_1 \[ v_2 \]) NonTable objid ...))
             (θ_2 : e)
         
             E-NonTableExp
             
             (where (θ_2 : e)
-                   (non_table_e (θ_1 : ((v_1 \[ v_2 \]) NonTable))))]
+                   (non_table_e (θ_1 : ((v_1 \[ v_2 \]) NonTable objid ...))))]
 
    ; WrongKey exp.
-   [-->meta (θ_1 : ((v_1 \[ v_2 \]) objid ... WrongKey))
+   [-->meta (θ_1 : ((v_1 \[ v_2 \]) WrongKey objid ... ))
             (θ_2 : e)
         
             E-WrongKeyExp
             
             (where (θ_2 : e)
-                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) objid ... WrongKey))))]
+                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) WrongKey objid ...))))]
 
    ; ArithWrongOps
-   [-->meta (θ_1 : ((v_1 binop v_2) ArithWrongOps))
+   [-->meta (θ_1 : ((v_1 binop v_2) ArithWrongOps objid ...))
             (θ_2 : e)
         
             E-ArithWrongOps
             
             (where (θ_2 : e)
-                   (arith_wrong_ops (θ_1 : ((v_1 binop v_2) ArithWrongOps))))]
+                   (arith_wrong_ops (θ_1 : ((v_1 binop v_2)
+                                            ArithWrongOps
+                                            objid ...))))]
 
    ; StrConcatWrongOps
-   [-->meta (θ_1 : ((v_1 .. v_2) StrConcatWrongOps))
+   [-->meta (θ_1 : ((v_1 .. v_2) StrConcatWrongOps objid ...))
             (θ_2 : e)
         
             E-StrConcatWrongOps
             
             (where (θ_2 : e)
-                   (str_concat_wrong_ops (θ_1 : ((v_1 .. v_2) StrConcatWrongOps))))] 
+                   (str_concat_wrong_ops (θ_1 : ((v_1 .. v_2)
+                                                 StrConcatWrongOps
+                                                 objid ...))))] 
 
    ; NegWrongOp
-   [-->meta (θ_1 : ((- v) NegWrongOp))
+   [-->meta (θ_1 : ((- v) NegWrongOp objid ...))
             (θ_2 : e)
         
             E-NegWrongOp
             
             (where (θ_2 : e)
-                   (neg_wrong_op (θ_1 : ((- v) NegWrongOp))))]
+                   (neg_wrong_op (θ_1 : ((- v) NegWrongOp objid ...))))]
 
    ; StrLenWrongOp
-   [-->meta (θ_1 : ((\# v) StrLenWrongOp))
+   [-->meta (θ_1 : ((\# v) StrLenWrongOp objid ...))
             (θ_2 : e)
         
             E-StrLenWrongOp
             
             (where (θ_2 : e)
-                   (str_len_wrong_op (θ_1 : ((\# v) StrLenWrongOp))))]
+                   (str_len_wrong_op (θ_1 : ((\# v) StrLenWrongOp objid ...))))]
    
    
    ; abnormal expressions with relational operators
    ; EqFail
-   [-->meta (θ_1 : ((v_1 == v_2) EqFail))
+   [-->meta (θ_1 : ((v_1 == v_2) EqFail objid ...))
             (θ_2 : e)
         
             E-EqFail
             
             (where (θ_2 : e)
-                   (eq_fail (θ_1 : ((v_1 == v_2) EqFail))))]
+                   (eq_fail (θ_1 : ((v_1 == v_2) EqFail objid ...))))]
 
    ; OrdCompWrongOps
-   [-->meta (θ_1 : ((v_1 < v_2) OrdCompWrongOps))
+   [-->meta (θ_1 : ((v_1 < v_2) OrdCompWrongOps objid ...))
             (θ_2 : e)
         
             E-OrdCompWrongOpsLt
             
             (where (θ_2 : e)
-                   (ord_comp_wrong_ops_lt (θ_1 : ((v_1 < v_2) OrdCompWrongOps))))]
+                   (ord_comp_wrong_ops_lt (θ_1 : ((v_1 < v_2)
+                                                  OrdCompWrongOps
+                                                  objid ...))))]
 
-   [-->meta (θ_1 : ((v_1 <= v_2) OrdCompWrongOps))
+   [-->meta (θ_1 : ((v_1 <= v_2) OrdCompWrongOps objid ...))
             (θ_2 : e)
         
             E-OrdCompWrongOpsLe
             
             (where (θ_2 : e)
-                   (ord_comp_wrong_ops_le (θ_1 : ((v_1 <= v_2) OrdCompWrongOps))))] 
+                   (ord_comp_wrong_ops_le (θ_1 : ((v_1 <= v_2)
+                                                  OrdCompWrongOps
+                                                  objid ...))))] 
 
 
    ;                                                                                  
@@ -122,21 +128,25 @@
    ;                                                                                  
    ;                                                                                  
    ;
-   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable))
+   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable objid ...))
             (θ_2 : s)
         
             E-NonTableStat
             
             (where (θ_2 : s)
-                   (non_table_s (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable))))]
+                   (non_table_s (θ_1 : (((v_1 \[ v_2 \]) = v_3)
+                                        NonTable
+                                        objid ...))))]
 
-   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey))
+   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey objid ...))
             (θ_2 : s)
         
             E-WrongKeyStat
             
             (where (θ_2 : s)
-                   (wrong_key_s (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey))))] 
+                   (wrong_key_s (θ_1 : (((v_1 \[ v_2 \]) = v_3)
+                                        WrongKey
+                                        objid ...))))] 
 
    ))
 

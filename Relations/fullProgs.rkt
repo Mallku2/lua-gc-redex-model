@@ -64,12 +64,12 @@
         
       (where ((θ_2 : t_2))
              ,(apply-reduction-relation meta
-                                        (term (θ_1 : (t_1 objid ... label)))))
+                                        (term (θ_1 : (t_1 label objid ...)))))
 
       E-meta]
 
-   [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid_1 objid_2 ...)))
-      (σ_2 : θ_2 : (in-hole E (in-hole E_2 (t_2 label objid_1 objid_2 ... ))))
+   [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid ...)))
+      (σ_2 : θ_2 : (in-hole E (in-hole E_2 (t_2 label objid ...))))
 
       ; same label
       (where ((σ_2 : θ_2 : (in-hole E_2 (t_2 label))))
@@ -78,7 +78,7 @@
 
       E-metaOneStep]
 
-   [↦ (σ_1 : θ_1 : (in-hole E (t_1 label objid_1 objid_2 ...)))
+   [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid ...)))
       (σ_2 : θ_2 : (in-hole E t_3))
 
       (where ((σ_2 : θ_2 : t_3))

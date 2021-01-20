@@ -89,9 +89,28 @@
 ; test for proper well-formed final configuration and unique result
 (define (ok? red)
   (and (eq? (length red) 1)
-       (redex-match? ext-lang
-                     (σ : θ : \;)
-                     (term ,(first red)))
+       (or (redex-match? ext-lang
+                         (σ : θ : \;)
+                         (term ,(first red)))
+
+           (redex-match? ext-lang
+                         (side-condition
+                          (σ : θ : (in-hole E (return v ...)))
+                          (not (or (redex-match? ext-lang
+                                                 (in-hole E_2 ((in-hole Elf hole)
+                                                               (renv ...) RetStat))
+                                                 (term E))
+                                   
+                                   (redex-match? ext-lang
+                                                 (in-hole E_2 ((in-hole Elf hole)
+                                                               (renv ...) RetExp))
+                                                 (term E))
+                                   
+                                   (redex-match? ext-lang
+                                                 (in-hole E_2 ((in-hole Elf hole)
+                                                               Break))
+                                                 (term E)))))
+                         (term ,(first red))))
        ))
 
 (provide ok?)

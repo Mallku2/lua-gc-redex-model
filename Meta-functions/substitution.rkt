@@ -99,48 +99,95 @@
   ;                                                                  
   ;                                                                  
   ;
-  
+  ; the execution of a well-formed term generated from a Lua program should not
+  ; ask for the substitution of an id over a run-time term
+  ; this is only useful for preparation of terms (redex-check)
   [(substExp (s (renv ...) RetExp) ((id e) ...))
    ((substBlock s ((id e) ...)) (renv ...) RetExp)]
   
   [(substExp ($err v) ((id e) ...))
    ($err (substExp v ((id e) ...)))]
 
-  [(substExp ((v_1 \[ v_2 \])NonTable) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])NonTable)]
+  [(substExp ((v_1 \[ v_2 \]) NonTable objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])
+    NonTable
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((objref \[ v \])WrongKey) ((id e) ...))
-   (((substExp objref ((id e) ...)) \[ (substExp v ((id e) ...)) \])WrongKey)]
+  [(substExp ((objref \[ v \]) WrongKey objid ...) ((id e) ...))
+   (((substExp objref ((id e) ...)) \[ (substExp v ((id e) ...)) \])
+    WrongKey
+    (substExp objid ((id e) ...)) ...)]
   
-  [(substExp ((v_1 arithop v_2) ArithWrongOps) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) arithop (substExp v_2 ((id e) ...))) ArithWrongOps)]
+  [(substExp ((v_1 arithop v_2) ArithWrongOps objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) arithop (substExp v_2 ((id e) ...)))
+    ArithWrongOps
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 .. v_2) StrConcatWrongOps) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) .. (substExp v_2 ((id e) ...))) StrConcatWrongOps)]
+  [(substExp ((v_1 .. v_2) StrConcatWrongOps objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) .. (substExp v_2 ((id e) ...)))
+    StrConcatWrongOps
+    (substExp objid ((id e) ...)) ...)]
      
-  [(substExp ((v_1 < v_2) OrdCompWrongOps) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) < (substExp v_2 ((id e) ...))) OrdCompWrongOps)]
+  [(substExp ((v_1 < v_2) OrdCompWrongOps objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) < (substExp v_2 ((id e) ...)))
+    OrdCompWrongOps
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 <= v_2) OrdCompWrongOps) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) <= (substExp v_2 ((id e) ...))) OrdCompWrongOps)]
+  [(substExp ((v_1 <= v_2) OrdCompWrongOps objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) <= (substExp v_2 ((id e) ...)))
+    OrdCompWrongOps
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((- v)NegWrongOp) ((id e) ...))
-   ((- (substExp v ((id e) ...)))NegWrongOp)]
+  [(substExp ((- v)NegWrongOp objid ...) ((id e) ...))
+   ((- (substExp v ((id e) ...)))
+    NegWrongOp
+    (substExp objid ((id e) ...)) ...)]
   
-  [(substExp ((\# v)StrLenWrongOp) ((id e) ...))
-   ((\# (substExp v ((id e) ...)))StrLenWrongOp)]
+  [(substExp ((\# v) StrLenWrongOp objid ...) ((id e) ...))
+   ((\# (substExp v ((id e) ...)))
+    StrLenWrongOp
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 == v_2)EqFail) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) == (substExp v_2 ((id e) ...)))EqFail)]
+  [(substExp ((v_1 == v_2) EqFail objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) == (substExp v_2 ((id e) ...)))
+    EqFail
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 relop v_2)OrdCompWrongOps) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) relop (substExp v_2 ((id e) ...)))OrdCompWrongOps)]
+  [(substExp ((v_1 relop v_2) OrdCompWrongOps objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) relop (substExp v_2 ((id e) ...)))
+    OrdCompWrongOps
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substExp ((v_1 (v_2 ...)) Meta objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substExp ((not (v_1 (v_2 ...))) Meta objid ...) ((id e) ...))
+   ((not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substExp ((not (not (v_1 (v_2 ...)))) Meta objid ...) ((id e) ...))
+   ((not (not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substExp ((\( (v_1 (v_2 ...)) \)) Meta objid ...) ((id e) ...))
+   ((\( ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) \))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substExp (((v_1 \[ v_2 \]) Meta objid ...) Meta objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])
+    Meta
+    (substExp objid ((id e) ...)) ...)]
 
   [(substExp (e_1 ProtectedMode v) ((id e_2) ...))
    ((substExp (substExp e_1 ((id e_2) ...)) ((id e_2) ...))
     ProtectedMode (substExp v ((id e_2) ...)))]
   
-  ; These case holds for every expression without an structure, different than
+  ; these case holds for every expression without an structure, different than
   ; a variable or a vararg exp: nil, empty, boolean, number, string, 
   ; simpvalref, objref
   [(substExp any ((id e_2) ...))
@@ -251,19 +298,38 @@
   [(substBlock (s Break) ((id e) ...))
    ((substBlock s ((id e) ...)) Break)]
 
-  [(substBlock (((objref \[ v_1 \]) = v_2) WrongKey) ((id e) ...))
+  [(substBlock (((objref \[ v_1 \]) = v_2) WrongKey objid ...) ((id e) ...))
    ((((substExp objref ((id e) ...))
-      \[ (substExp v_1 ((id e) ...)) \]) = (substExp v_2 ((id e) ...))) WrongKey)]
+      \[ (substExp v_1 ((id e) ...)) \]) = (substExp v_2 ((id e) ...)))
+    WrongKey
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substBlock (((v_1 \[ v_2 \]) = v_3) NonTable) ((id e) ...))
+  [(substBlock (((v_1 \[ v_2 \]) = v_3) NonTable objid ...) ((id e) ...))
    ((((substExp v_1 ((id e) ...))
-      \[ (substExp v_2 ((id e) ...)) \]) = (substExp v_3 ((id e) ...))) NonTable)]
+      \[ (substExp v_2 ((id e) ...)) \]) = (substExp v_3 ((id e) ...)))
+    NonTable
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substBlock ((v_1 (v_2 ...)) WFunCall) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WFunCall)]
+  [(substBlock ((v_1 (v_2 ...)) WFunCall objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+    WFunCall
+    (substExp objid ((id e) ...)) ...)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall) ((id e) ...))
-   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) WFunCall)]
+  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall objid ...) ((id e) ...))
+   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+    WFunCall
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substBlock (($statFunCall v_1 (v_2 ...)) Meta objid ...) ((id e) ...))
+   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
+
+  [(substBlock (((v_1 \[ v_2 \]) = v_3) Meta objid ...) ((id e) ...))
+   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \]
+                                 = (substExp v_3 ((id e) ...)))
+    Meta
+    (substExp objid ((id e) ...)) ...)]
 
   ; every variable bound in s has already been replaced by a ref.
   [(substBlock (s (renv ...) LocalBody) ((id e) ...))
@@ -541,7 +607,10 @@
   [(fv (any Break))
    (fv any)]
 
-  [(fv (any statlabel))
+  [(fv (any statlabel objid ...))
+   (fv any)]
+
+  [(fv (any Meta objid ...))
    (fv any)]
   
   ;                                  
@@ -701,7 +770,7 @@
    (where (id_1 ...) (fv e))
    (where (id_2 ...) (fv v))]
 
-  [(fv (any explabel))
+  [(fv (any explabel objid ...))
    (fv any)]
 
   [(fv (any (renv ...) RetExp))
