@@ -2,9 +2,29 @@
 (require redex
          racket/serialize
          "../../grammar.rkt"
-         "../../Relations/fullProgs.rkt") 
+         "../../Relations/fullProgs.rkt"
+         "../../executionEnvironment.rkt"
+         "../../Desugar/parser.rkt")
 
 (provide (all-defined-out))
+
+; applies rel to term, through apply-reduction-relation, checking for the
+; presence of non-determinism
+(define steps 0)
+(define (apply-reduction-relation-det rel aterm)
+  (define terms (apply-reduction-relation rel aterm))
+  (if (> (length terms) 1)
+      (begin
+        (println "non-determinism found:")
+        (println aterm)
+        (println "reduces to:")
+        (println terms))
+      (if (= (length terms) 0)
+          (println aterm) ; aterm is a stuck term or last conf
+          (begin
+            (set! steps (add1 steps))
+            (println steps)
+            (apply-reduction-relation-det rel (first terms))))))
 
 (define (apply-reduction-relation-n n rel term)
   (begin
@@ -114,3 +134,21 @@
        ))
 
 (provide ok?)
+
+(define (full_term file tests_services)
+  (plugIntoExecutionEnvironment
+                        services
+                        tests_services
+                        (parse-this (file->string file) #f (void))))
+
+(provide full_term)
+
+(define (test-suite file services)
+  ;(check-redundancy #t)
+  ;(caching-enabled? #t)
+  (test-predicate ok? (apply-reduction-relation*
+                       full-progs-rel
+                       (full_term file services)))
+  (test-results))
+
+(provide test-suite)

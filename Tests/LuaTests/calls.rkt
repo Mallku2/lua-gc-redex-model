@@ -1,60 +1,47 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
          "../../Relations/fullProgs.rkt"
          "../../Desugar/parser.rkt"
-         "./tests_aux.rkt"
-         "../RandomTesting/progress/defs.rkt")
+         "./tests_aux.rkt")
 
-(define (lua-calls-test-suite)
-  (check-redundancy #t)
-  (caching-enabled? #t)
-  (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment
-                        services
-                        ; TODO: let's make the parser fill this list
-                        (list "collectgarbage"
-                              "error"
-                              "print"
-                              "assert"
-                              "type"
-                              "load"
-                              "rawget"
-                              "rawset"
-                              "string"
-                              "pcall"
-                              "string.dump"
-                              "string.sub"
-                              "table"
-                              "table.pack"
-                              "math"
-                              "math.sin")
-                        (parse-this (file->string "calls.lua") #f (void)))))
-  (test-results))
+; testing 'type'
+; testing local-function recursion
+; testing declarations
+(define (calls_1)
+  (test-suite "calls_1.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "load"
+                    "print"
+                    "type")))
 
-(provide lua-calls-test-suite)
+; testing closures
+; testing multiple returns
+; testing calls with 'incorrect' arguments
+(define (calls_2)
+  (test-suite "calls_2.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "math"
+                    "math.sin"
+                    "print"
+                    "rawget"
+                    "rawset"
+                    "table"
+                    "table.pack")))
 
-(define (lua-calls-partial-test n)
-  (check-redundancy #t)
-  (caching-enabled? #t)
-  (partial_test n "calls" (plugIntoExecutionEnvironment services
-                                                        ; TODO: let's make the parser fill this list
-                                                        (list "collectgarbage"
-                                                              "error"
-                                                              "print"
-                                                              "assert"
-                                                              "type"
-                                                              "load"
-                                                              "rawget"
-                                                              "rawset"
-                                                              "string"
-                                                              "pcall"
-                                                              "string.dump"
-                                                              "string.sub"
-                                                              "table"
-                                                              "table.pack"
-                                                              "math"
-                                                              "math.sin")
-                                                        (parse-this (file->string "calls.lua") #f (void)))))
+; test for generic load
+; load when _ENV is not first upvalue
+; test generic load with nested functions
+; test for bug in parameter adjustment
+(define (calls_3)
+  (test-suite "calls_3.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "load"
+                    "print"
+                    "string"
+                    "string.dump"
+                    "string.sub"
+                    "type")))
