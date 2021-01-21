@@ -35,9 +35,13 @@
 ; load when _ENV is not first upvalue
 ; test generic load with nested functions
 ; test for bug in parameter adjustment
+; NOTE: this module ends by returning a variable (deep) defined in
+; another module; hence, the laste configurations ends with
+; return nil
 (define (calls_3)
   (test-suite "calls_3.lua"
-              (list "assert"
+              (list "_G"
+                    "assert"
                     "collectgarbage"
                     "load"
                     "print"

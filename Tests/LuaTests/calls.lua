@@ -224,7 +224,7 @@ assert(a[1] == 1 and a[2] == 3 and a[3] == "a" and a[4] == "b")
 rawget({}, "x", 1)
 rawset({}, "x", 1, 2)
 assert(math.sin(1,2) == math.sin(1))
-table.sort({10,9,8,4,19,23,0,0}, function (a,b) return a<b end, "extra arg")
+--table.sort({10,9,8,4,19,23,0,0}, function (a,b) return a<b end, "extra arg")
 
 
 -- test for generic load
@@ -234,7 +234,7 @@ local x = "-- a comment\0\0\0\n  x = 10 + \n23; \
 function read1 (x)
   local i = 0
   return function ()
-    --collectgarbage()
+    collectgarbage()
     i=i+1
     return string.sub(x, i, i)
   end

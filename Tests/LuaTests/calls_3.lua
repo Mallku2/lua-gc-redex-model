@@ -145,4 +145,6 @@ assert((function () local a; return a end)(4) == nil)
 assert((function (a) return a end)() == nil)
 
 print('OK')
+
+-- TODO: deep is not defined in this module
 return deep
