@@ -237,7 +237,6 @@
    ("function" (token-FUNCTION))
    
    ; identifiers
-   ;(id (token-NAME (string->symbol (string-replace lexeme "_" "~"))))
    (id (token-NAME (string->symbol lexeme)))
    
    ; skip whitespaces
@@ -245,8 +244,8 @@
    
    ((eof) (token-EOF))))
 
-; Another lexer, specific for skipping comments' content
-; Single-line comments
+; another lexer, specific for skipping comments' content
+; single-line comments
 (define lua-sing-line-comment-lexer 
   (lexer
    ["\n" (lua-lexer input-port)]

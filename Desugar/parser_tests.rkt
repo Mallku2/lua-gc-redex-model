@@ -72,11 +72,11 @@
 
   (check-equal? (parse-this "y . component_1 : method_name_1 {2}" #f (void))
                 (term ($statFunCall (($ENV  \[ "y" \]) \[ "component_1" \])
-                       : method_name_1 ((\{ 2.0 \})))))
+                                    : method_name_1 ((\{ 2.0 \})))))
   
   (check-equal? (parse-this "y : method_name_1 {1} : method_name_2 {2}" #f (void))
                 (term ($statFunCall (($ENV  \[ "y" \]) : method_name_1 ((\{ 1.0 \})))
-                       : method_name_2 ((\{ 2.0 \})))))
+                                    : method_name_2 ((\{ 2.0 \})))))
   
   ; local var
   (check-equal? (parse-this "local a" #f (void))
@@ -151,37 +151,74 @@
   ; single repeat
   (check-equal? (parse-this "repeat i = i + 1; u = i .. i until finish" #f
                             (void))
-                (term ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                       |;|
-                       (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
-                                              .. ($ENV |[| "i" |]|)))
-                       (while
-                        (not ($ENV |[| "finish" |]|))
-                        do
-                        ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                         |;|
-                         (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
-                                                .. ($ENV |[| "i" |]|))))
-                        end))))
+                (term (local
+                        $dummyVar
+                        =
+                        0
+                        in
+                        (while
+                         ($dummyVar < 1)
+                         do
+                         (($dummyVar = 1)
+                          (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                          |;|
+                          (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
+                          (while
+                           (not ($ENV |[| "finish" |]|))
+                           do
+                           ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                            |;|
+                            (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|))))
+                           end))
+                         end)
+                        end)))
+
+  ; local vars in guard
+  (check-equal? (parse-this "repeat local i = 1 until i > 2" #f
+                            (void))
+                (term (local
+                        $dummyVar
+                        =
+                        0
+                        in
+                        (while ($dummyVar < 1) do
+                               (($dummyVar = 1)
+                                (local i = 1.0 in
+                                  (|;|
+                                   (while (not (i > 2.0)) do
+                                          (local i = 1.0 in |;| end)
+                                          end))
+                                  end))
+                               end)
+                        end)))
 
   ; concat
   (check-equal? (parse-this "do a = 1 end ;
                              repeat i = i + 1; u = i .. i until finish" #f
-                            (void))
+                                                                        (void))
                 (term ((do (($ENV |[| "a" |]|) = 1.0) end)
                        |;|
-                       (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                       |;|
-                       (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
-                                              .. ($ENV |[| "i" |]|)))
-                       (while
-                        (not ($ENV |[| "finish" |]|))
-                        do
-                        ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                         |;|
-                         (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|)
-                                                .. ($ENV |[| "i" |]|))))
-                        end))))
+                       (local
+                         $dummyVar
+                         =
+                         0
+                         in
+                         (while
+                          ($dummyVar < 1)
+                          do
+                          (($dummyVar = 1)
+                           (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                           |;|
+                           (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
+                           (while
+                            (not ($ENV |[| "finish" |]|))
+                            do
+                            ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                             |;|
+                             (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|))))
+                            end))
+                          end)
+                         end))))
   
   ; numeric for
   (check-equal? (parse-this "for var = 1 , 10 do var = 1 end" #f (void))
@@ -433,7 +470,7 @@
                                                else
                                                (return (n * (fact ((n - 1.0)))))
                                                end)
-                                              end))
+                                           end))
                          ($statFunCall ($ENV |[| "assert" |]|)
                                        (((fact (5.0)) == 120.0))))
                         end)))
