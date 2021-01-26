@@ -278,40 +278,6 @@
            (< false v ... >)
            
            E-XProtMDNoErrorInHandling]
-
-;   ; error in error handling
-;   [-->s/e ((in-hole Enp ($err v)) ProtMD nil)
-;           (< false "error in error handling" >)
-;        
-;           E-XProtMDErrorInHandling]
-
-   
-
-;   [-->s/e ((< v_1 ... >) ProtMD v_2)
-;           (< true v_1 ... >)
-;        
-;           E-XProtMDNoErrorNoHandler
-;
-;           (side-condition (not (or (is_nil? (term v_2))
-;                                    (is_cid? (term v_2)))))]
-   
-;   [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2)
-;           (< false "error in error handling" >)
-;        
-;           E-XProtMDErrorCatchedNoHandler
-;
-;           (side-condition (not (is_cid? (term v_2))))]
-;
-;   [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
-;           ((< false (cid (v)) >) ProtMD nil)
-;        
-;           E-XProtMDErrorCatchedHandler]
-;
-;   [-->s/e ((< v_1 ... >) ProtMD v_2)
-;           (< true (< v_1 ... >) >)
-;        
-;           E-XProtMDNoErrorWithReturnedValues]
-;  
    ;                                                                                  
    ;                                                                                  
    ;                                                                                  
