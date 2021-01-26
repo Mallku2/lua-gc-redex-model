@@ -252,12 +252,13 @@
            E-BuiltInTerm]
 
    ; protected mode
-   ; error thrown: inform with the flag "false"
+   ; error, but with a proper handler
    [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
            ((cid (v)) ProtMD nil)
         
            E-XProtMDErrorWithHandler]
 
+   ; no error
    [-->s/e ((< v_1 ... >) ProtMD v_2)
            (< true v_1 ... >)
         
@@ -265,6 +266,7 @@
 
            (side-condition (not (is_nil? (term v_2))))]
 
+   ; error without a proper handler OR error during error handling
    [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2)
            (< false "error in error handling" >)
         
@@ -272,8 +274,7 @@
 
            (side-condition (not (is_cid? (term v_2))))]
 
-   ; error handling
-   ; no error in error handling
+   ; no error during error handling
    [-->s/e ((< v ... >) ProtMD nil)
            (< false v ... >)
            

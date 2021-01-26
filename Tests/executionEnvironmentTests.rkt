@@ -6,8 +6,57 @@
 
 ; "black-box testing"
 
-
 (define (basic-functions-test-suite)
+  ; calling services with incorrect amount of actual parameters
+  (test-->> full-progs-rel
+            (plugIntoExecutionEnvironment
+             services
+             '("type")
+             (term ($statFunCall ($ENV \[ "type" \]) ())))
+            
+            (term
+             ((((ref 1) (objr 7)) ((ref 2) nil))
+              :
+              (((objr 7)
+                ((|{|
+                  (|[| "_G" |]| = (objr 7))
+                  (|[| "type" |]| = (cl 8))
+                  |}|)
+                 nil
+                 ⊥))
+               ((cl 8)
+                (function
+                 $type
+                 (<<<)
+                 (return ($builtIn type (<<<)))
+                 end)))
+              :
+              ($err "type got no value"))))
+
+  (test-->> full-progs-rel
+            (plugIntoExecutionEnvironment
+             services
+             '("assert")
+             (term ($statFunCall ($ENV \[ "assert" \]) ())))
+            
+            (term
+             ((((ref 1) (objr 7)) ((ref 2) nil))
+              :
+              (((objr 7)
+                ((|{|
+                  (|[| "_G" |]| = (objr 7))
+                  (|[| "assert" |]| = (cl 8))
+                  |}|)
+                 nil
+                 ⊥))
+               ((cl 8)
+                (function
+                 $assert
+                 (<<<)
+                 (return ($builtIn assert (<<<)))
+                 end)))
+              :
+              ($err "assertion failed!"))))
   
   (test-predicate
    (redex-match ext-lang ((σ : θ : \;)))

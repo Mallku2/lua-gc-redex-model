@@ -2,70 +2,75 @@
 (require redex
          "./grammar.rkt"
          "./Relations/fullProgs.rkt")
-; Dictionary as a list of pairs of the form (service's name, code), for easy
+; dictionary as a list of pairs of the form (service's name, code), for easy
 ; construction of a suitable execution environment.
 (define services
   (list
-   ; Basic functions
+   ; basic functions
+   
+   ; the wrappers are just vararg functions, in order to correctly model the
+   ; behavior of a service call without the expected amount of actual parameters:
+   ; only δ specifies the expected actual parameters, resorting to error in case
+   ; of non-compliance with them
    (cons "assert"
-         (term (($ENV \[ "assert" \]) = (function $assert (v message)
-                                                  (return ($builtIn assert (v message)))
+         (term (($ENV \[ "assert" \]) = (function $assert (<<<)
+                                                  (return ($builtIn assert (<<<)))
                                                   end))
                ))
 
    (cons "collectgarbage"
-         (term (($ENV \[ "collectgarbage" \]) = (function $collectgarbage (opt arg)
-                                                          (return ($builtIn collectgarbage (opt arg)))
+         (term (($ENV \[ "collectgarbage" \]) = (function $collectgarbage (<<<)
+                                                          (return ($builtIn collectgarbage (<<<)))
                                                           end))
                ))
 
    (cons "error"
-         (term (($ENV \[ "error" \]) = (function $error (message level)
-                                                 (return ($builtIn error (message level)))
+         (term (($ENV \[ "error" \]) = (function $error (<<<)
+                                                 (return ($builtIn error (<<<)))
                                                  end))
                ))
 
    (cons "getmetatable"
-         (term (($ENV \[ "getmetatable" \]) = (function $getmetatable (object)
+         (term (($ENV \[ "getmetatable" \]) = (function $getmetatable (<<<)
                                                         (return
                                                          ($builtIn getmetatable
-                                                                   (object)))
+                                                                   (<<<)))
                                                         end))
                ))
 
    (cons "load"
-         (term (($ENV \[ "load" \]) = (function $load (ld source mode env)
-                                                (return ($builtIn load (ld source mode env)))
+         (term (($ENV \[ "load" \]) = (function $load (<<<)
+                                                (return ($builtIn load (<<<)))
                                                 end))
                ))
 
    (cons "loadfile"
-         (term (($ENV \[ "loadfile" \]) = (function $loadfile (filename mode env)
-                                                    (return ($builtIn loadfile (filename mode env)))
+         (term (($ENV \[ "loadfile" \]) = (function $loadfile (<<<)
+                                                    (return ($builtIn loadfile (<<<)))
                                                     end))
                ))
 
    (cons "ipairs"
-         (term (($ENV \[ "ipairs" \]) = (function $ipairs (t)
-                                                  (return ($builtIn ipairs (t)))
+         (term (($ENV \[ "ipairs" \]) = (function $ipairs (<<<)
+                                                  (return ($builtIn ipairs (<<<)))
                                                   end))
                ))
 
    (cons "next"
-         (term (($ENV \[ "next" \]) = (function $next (table index)
-                                                (return ($builtIn next (table index)))
+         (term (($ENV \[ "next" \]) = (function $next (<<<)
+                                                (return ($builtIn next (<<<)))
                                                 end))
                ))
 
    (cons "pairs"
-         (term (($ENV \[ "pairs" \]) = (function $pairs (t)
-                                                 (return ($builtIn pairs (t)))
+         (term (($ENV \[ "pairs" \]) = (function $pairs (<<<)
+                                                 (return ($builtIn pairs (<<<)))
                                                  end))
                ))
 
    (cons "pcall"
-         (term (($ENV \[ "pcall" \]) = (function $pcall (f <<<)
-                                                 (return ($builtIn pcall (f <<<)))
+         (term (($ENV \[ "pcall" \]) = (function $pcall (<<<)
+                                                 (return ($builtIn pcall (<<<)))
                                                  end))
                ))
 
@@ -76,30 +81,30 @@
                ))
 
    (cons "rawequal"
-         (term (($ENV \[ "rawequal" \]) = (function $rawequal (v1 v2)
-                                                    (return ($builtIn rawequal (v1 v2)))
+         (term (($ENV \[ "rawequal" \]) = (function $rawequal (<<<)
+                                                    (return ($builtIn rawequal (<<<)))
                                                     end))
                ))
 
    (cons "rawget"
-         (term (($ENV \[ "rawget" \]) = (function $rawget (table index)
+         (term (($ENV \[ "rawget" \]) = (function $rawget (<<<)
                                                   (return
                                                    ($builtIn rawget
-                                                             (table index)))
+                                                             (<<<)))
                                                   end))
                ))
 
    (cons "rawset"
-         (term (($ENV \[ "rawset" \]) = (function $rawset (table index value)
+         (term (($ENV \[ "rawset" \]) = (function $rawset (<<<)
                                                   (return
                                                    ($builtIn rawset
-                                                             (table index value)))
+                                                             (<<<)))
                                                   end))
                ))
 
    (cons "rawlen"
-         (term (($ENV \[ "rawlen" \]) = (function $rawlen (v)
-                                                  (return ($builtIn rawlen (v)))
+         (term (($ENV \[ "rawlen" \]) = (function $rawlen (<<<)
+                                                  (return ($builtIn rawlen (<<<)))
                                                   end))
                ))
 
@@ -110,32 +115,32 @@
                ))
 
    (cons "setmetatable"
-         (term (($ENV \[ "setmetatable" \]) = (function $setmetatable (table metatable)
-                                                        (return ($builtIn setmetatable (table metatable)))
+         (term (($ENV \[ "setmetatable" \]) = (function $setmetatable (<<<)
+                                                        (return ($builtIn setmetatable (<<<)))
                                                         end))
                ))
 
    (cons "tonumber"
-         (term (($ENV \[ "tonumber" \]) = (function $tonumber (e base)
-                                                    (return ($builtIn tonumber (e base)))
+         (term (($ENV \[ "tonumber" \]) = (function $tonumber (<<<)
+                                                    (return ($builtIn tonumber (<<<)))
                                                     end))
                ))
 
    (cons "tostring"
-         (term (($ENV \[ "tostring" \]) = (function $tostring (v)
-                                                    (return ($builtIn tostring (v)))
+         (term (($ENV \[ "tostring" \]) = (function $tostring (<<<)
+                                                    (return ($builtIn tostring (<<<)))
                                                     end))
                ))
 
    (cons "type"
-         (term (($ENV \[ "type" \]) = (function $type (v)
-                                                (return ($builtIn type (v)))
+         (term (($ENV \[ "type" \]) = (function $type (<<<)
+                                                (return ($builtIn type (<<<)))
                                                 end))
                ))
 
    (cons "xpcall"
-         (term (($ENV \[ "xpcall" \]) = (function $xpcall (f msgh <<<)
-                                                  (return ($builtIn xpcall (f msgh <<<)))
+         (term (($ENV \[ "xpcall" \]) = (function $xpcall (<<<)
+                                                  (return ($builtIn xpcall (<<<)))
                                                   end))
                ))
 
@@ -162,68 +167,68 @@
                ))
 
    (cons "math.abs"
-         (term ((($ENV \[ "math" \]) \[ "abs" \]) = (function $math.abs (x)
-                                                    (return ($builtIn math.abs (x)))
+         (term ((($ENV \[ "math" \]) \[ "abs" \]) = (function $math.abs (<<<)
+                                                    (return ($builtIn math.abs (<<<)))
                                                     end))
                ))
    
    (cons "math.acos"
-         (term ((($ENV \[ "math" \]) \[ "acos" \]) = (function $math.acos (x)
-                                                     (return ($builtIn math.acos (x)))
+         (term ((($ENV \[ "math" \]) \[ "acos" \]) = (function $math.acos (<<<)
+                                                     (return ($builtIn math.acos (<<<)))
                                                      end))
                ))
 
    (cons "math.asin"
-         (term ((($ENV \[ "math" \]) \[ "asin" \]) = (function $math.asin (x)
-                                                     (return ($builtIn math.asin (x)))
+         (term ((($ENV \[ "math" \]) \[ "asin" \]) = (function $math.asin (<<<)
+                                                     (return ($builtIn math.asin (<<<)))
                                                      end))
                ))
 
    (cons "math.atan"
-         (term ((($ENV \[ "math" \]) \[ "atan" \]) = (function $math.atan (x)
-                                                     (return ($builtIn math.atan (x)))
+         (term ((($ENV \[ "math" \]) \[ "atan" \]) = (function $math.atan (<<<)
+                                                     (return ($builtIn math.atan (<<<)))
                                                      end))
                ))
 
    (cons "math.ceil"
-         (term ((($ENV \[ "math" \]) \[ "ceil" \]) = (function $math.ceil (x)
-                                                               (return ($builtIn math.ceil (x)))
+         (term ((($ENV \[ "math" \]) \[ "ceil" \]) = (function $math.ceil (<<<)
+                                                               (return ($builtIn math.ceil (<<<)))
                                                                end))
                ))
 
    (cons "math.cos"
-         (term ((($ENV \[ "math" \]) \[ "cos" \]) = (function $math.cos (x)
-                                                              (return ($builtIn math.cos (x)))
+         (term ((($ENV \[ "math" \]) \[ "cos" \]) = (function $math.cos (<<<)
+                                                              (return ($builtIn math.cos (<<<)))
                                                               end))
                ))
 
    (cons "math.cosh"
-         (term ((($ENV \[ "math" \]) \[ "cosh" \]) = (function $math.cosh (x)
-                                                               (return ($builtIn math.cosh (x)))
+         (term ((($ENV \[ "math" \]) \[ "cosh" \]) = (function $math.cosh (<<<)
+                                                               (return ($builtIn math.cosh (<<<)))
                                                                end))
                ))
 
    (cons "math.deg"
-         (term ((($ENV \[ "math" \]) \[ "deg" \]) = (function $math.deg (x)
-                                                              (return ($builtIn math.deg (x)))
+         (term ((($ENV \[ "math" \]) \[ "deg" \]) = (function $math.deg (<<<)
+                                                              (return ($builtIn math.deg (<<<)))
                                                               end))
                ))
 
    (cons "math.exp"
-         (term ((($ENV \[ "math" \]) \[ "exp" \]) = (function $math.exp (x)
-                                                              (return ($builtIn math.exp (x)))
+         (term ((($ENV \[ "math" \]) \[ "exp" \]) = (function $math.exp (<<<)
+                                                              (return ($builtIn math.exp (<<<)))
                                                               end))
                ))
 
    (cons "math.floor"
-         (term ((($ENV \[ "math" \]) \[ "floor" \]) = (function $math.floor (x)
-                                                                (return ($builtIn math.floor (x)))
+         (term ((($ENV \[ "math" \]) \[ "floor" \]) = (function $math.floor (<<<)
+                                                                (return ($builtIn math.floor (<<<)))
                                                                 end))
                ))
    
    (cons "math.fmod"
-         (term ((($ENV \[ "math" \]) \[ "fmod" \]) = (function $math.fmod (x y)
-                                                     (return ($builtIn math.fmod (x y)))
+         (term ((($ENV \[ "math" \]) \[ "fmod" \]) = (function $math.fmod (<<<)
+                                                     (return ($builtIn math.fmod (<<<)))
                                                      end))
                ))
    
@@ -233,8 +238,8 @@
    
    (cons "math.log"
          (term ((($ENV \[ "math" \]) \[ "log" \]) = (function
-                                                     $math.log (x base)
-                                                     (return ($builtIn math.log (x base)))
+                                                     $math.log (<<<)
+                                                     (return ($builtIn math.log (<<<)))
                                                      end))
                ))
    
@@ -247,8 +252,8 @@
    
    (cons "math.modf"
          (term ((($ENV \[ "math" \]) \[ "modf" \]) = (function
-                                                      $math.modf (x)
-                                                      (return ($builtIn math.modf (x)))
+                                                      $math.modf (<<<)
+                                                      (return ($builtIn math.modf (<<<)))
                                                       end))
                ))
    
@@ -258,40 +263,40 @@
    
    (cons "math.rad"
          (term ((($ENV \[ "math" \]) \[ "rad" \]) = (function
-                                                     $math.rad (x)
-                                                     (return ($builtIn math.rad (x)))
+                                                     $math.rad (<<<)
+                                                     (return ($builtIn math.rad (<<<)))
                                                      end))
                ))
    
    (cons "math.sin"
          (term ((($ENV \[ "math" \]) \[ "sin" \]) = (function
-                                                     $math.sin (x)
-                                                     (return ($builtIn math.sin (x)))
+                                                     $math.sin (<<<)
+                                                     (return ($builtIn math.sin (<<<)))
                                                      end))
                ))
    
    (cons "math.sinh"
-         (term ((($ENV \[ "math" \]) \[ "sinh" \]) = (function $math.sinh (x)
-                                                               (return ($builtIn math.sinh (x)))
+         (term ((($ENV \[ "math" \]) \[ "sinh" \]) = (function $math.sinh (<<<)
+                                                               (return ($builtIn math.sinh (<<<)))
                                                                end))
                ))
    
    (cons "math.sqrt"
-         (term ((($ENV \[ "math" \]) \[ "sqrt" \]) = (function $math.sqrt (x)
-                                                               (return ($builtIn math.sqrt (x)))
+         (term ((($ENV \[ "math" \]) \[ "sqrt" \]) = (function $math.sqrt (<<<)
+                                                               (return ($builtIn math.sqrt (<<<)))
                                                                end))
                ))
    
    (cons "math.tan"
-         (term ((($ENV \[ "math" \]) \[ "tan" \]) = (function $math.tan (x)
-                                                              (return ($builtIn math.tan (x)))
+         (term ((($ENV \[ "math" \]) \[ "tan" \]) = (function $math.tan (<<<)
+                                                              (return ($builtIn math.tan (<<<)))
                                                               end))
                ))
    
    (cons "math.tanh"
          (term ((($ENV \[ "math" \]) \[ "tanh" \])
-                = (function $math.tanh (x)
-                            (return ($builtIn math.tanh (x)))
+                = (function $math.tanh (<<<)
+                            (return ($builtIn math.tanh (<<<)))
                             end))
                ))
    ;                         
@@ -314,8 +319,8 @@
    ;
    (cons "require"
          (term (($ENV \[ "require" \])
-                = (function $require (modname)
-                            (return ($builtIn require (modname)))
+                = (function $require (<<<)
+                            (return ($builtIn require (<<<)))
                             end))
                ))
    ;                             ;                    
@@ -339,36 +344,36 @@
    
    (cons "string.dump"
          (term ((($ENV \[ "string" \]) \[ "dump" \])
-                = (function $string.dump (func)
-                            (return ($builtIn string.dump (func)))
+                = (function $string.dump (<<<)
+                            (return ($builtIn string.dump (<<<)))
                             end))
                ))
 
    (cons "string.len"
          (term ((($ENV \[ "string" \]) \[ "len" \])
-                = (function $string.len (string)
-                            (return ($builtIn string.len (string)))
+                = (function $string.len (<<<)
+                            (return ($builtIn string.len (<<<)))
                             end))
                ))
 
    (cons "string.rep"
          (term ((($ENV \[ "string" \]) \[ "rep" \])
-                = (function $string.rep (string n sep)
-                            (return ($builtIn string.rep (string n sep)))
+                = (function $string.rep (<<<)
+                            (return ($builtIn string.rep (<<<)))
                             end))
                ))
 
    (cons "string.reverse"
          (term ((($ENV \[ "string" \]) \[ "reverse" \])
-                = (function $string.reverse (string)
+                = (function $string.reverse (<<<)
                             (return ($builtIn string.reverse (string)))
                             end))
                ))
 
    (cons "string.sub"
          (term ((($ENV \[ "string" \]) \[ "sub" \])
-                = (function $string.sub (string i j)
-                            (return ($builtIn string.sub (string i j)))
+                = (function $string.sub (<<<)
+                            (return ($builtIn string.sub (<<<)))
                             end))
                ))
                          
@@ -394,8 +399,8 @@
 
    (cons "table.concat"
          (term ((($ENV \[ "table" \]) \[ "concat" \])
-                = (function $table.concat (list sep i j)
-                            (return ($builtIn table.concat (list sep i j)))
+                = (function $table.concat (<<<)
+                            (return ($builtIn table.concat (<<<)))
                             end))
                ))
 
@@ -408,8 +413,8 @@
    
    (cons "table.unpack"
          (term ((($ENV \[ "table" \]) \[ "unpack" \])
-                = (function $table.unpack (list i j)
-                            (return ($builtIn table.unpack (list i j)))
+                = (function $table.unpack (<<<)
+                            (return ($builtIn table.unpack (<<<)))
                             end))
                ))
 
