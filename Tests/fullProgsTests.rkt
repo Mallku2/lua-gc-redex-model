@@ -170,7 +170,7 @@
                      (function
                       $handler
                       (errMsg)
-                      (return false errMsg)
+                      (return errMsg)
                       end)))
                    :
                    (return false "error"))))
@@ -185,12 +185,9 @@
                                             ($builtIn error ("error")))
                                            end)
                                  (function $1 (m)
-                                           (local a = (m .. " received") in
-                                             \;
-                                             end)
+                                           (return (m .. " received"))
                                            end))))))
-            (term ((((ref 1) "error")
-                    ((ref 2) "error received"))
+            (term ((((ref 1) "error"))
                    :
                    (((cl 7)
                      (function x ()
@@ -198,35 +195,36 @@
                       end))
                     ((cl 8)
                      (function $1 (m)
-                               (local a = (m .. " received")
-                                 in
-                                 |;|
-                                 end)
+                               (return (m .. " received"))
                                end)))
                    :
-                   (return))))
+                   (return false "error received"))))
  
-;  (test-->> full-progs-rel
-;            (term (() : () : (return ((< 1 >)
-;                                      ProtectedMode
-;                                      (function $1 (m)
-;                                                (local a = (m .. " received")
-;                                                  in |;| end) end)))))
-;            (term (() : () : (return true 1))))
-;  
-;  (test-->> full-progs-rel
-;            (term (()
-;                   : ()
-;                   : (return ($builtIn xpcall
-;                                       ((function x () \; end)
-;                                        (function $1 (m)
-;                                                  (local
-;                                                    a = (m .. " received")
-;                                                    in \; end)
-;                                                  end))))))
-;            (term (()
-;                   : ()
-;                   : (return true))))
+  (test-->> full-progs-rel
+            (term (() : () : (return ((< 1 >)
+                                      ProtMD
+                                      1))))
+            (term (() : () : (return true 1))))
+  
+  (test-->> full-progs-rel
+            (term (()
+                   : ()
+                   : (return ($builtIn xpcall
+                                       ((function x () \; end)
+                                        (function $1 (m)
+                                                  (local
+                                                    a = (m .. " received")
+                                                    in \; end)
+                                                  end))))))
+            (term (()
+                   : (((cl 7) (function x () |;| end))
+                      ((cl 8)
+                       (function
+                        $1
+                        (m)
+                        (local a = (m .. " received") in |;| end)
+                        end)))
+                   : (return true))))
 
   (test-results))
 

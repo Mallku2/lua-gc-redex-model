@@ -183,9 +183,9 @@
     Meta
     (substExp objid ((id e) ...)) ...)]
 
-  [(substExp (e_1 ProtectedMode v) ((id e_2) ...))
+  [(substExp (e_1 ProtMD v) ((id e_2) ...))
    ((substExp (substExp e_1 ((id e_2) ...)) ((id e_2) ...))
-    ProtectedMode (substExp v ((id e_2) ...)))]
+    ProtMD (substExp v ((id e_2) ...)))]
   
   ; these case holds for every expression without an structure, different than
   ; a variable or a vararg exp: nil, empty, boolean, number, string, 
@@ -761,10 +761,7 @@
   ;                                                   ;              
   ;                                                                  
 
-  [(fv (e ProtectedMode))
-   (fv e)]
-
-  [(fv (e ProtectedMode v))
+  [(fv (e ProtMD v))
    (id_1 ... id_2 ...)
 
    (where (id_1 ...) (fv e))

@@ -620,8 +620,8 @@
   ;                                                   ;              
   ;                                                                  
 
-  [(fix_break (e ProtectedMode v))
-   ((fix_break e) ProtectedMode v)]
+  [(fix_break (e ProtMD v))
+   ((fix_break e) ProtMD v)]
 
   [(fix_break (e explabel))
    ((fix_break e) explabel)]

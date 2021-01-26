@@ -250,7 +250,68 @@
                                           table.pack
                                           ))))
            E-BuiltInTerm]
-  
+
+   ; protected mode
+   ; error thrown: inform with the flag "false"
+   [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
+           ((cid (v)) ProtMD nil)
+        
+           E-XProtMDErrorWithHandler]
+
+   [-->s/e ((< v_1 ... >) ProtMD v_2)
+           (< true v_1 ... >)
+        
+           E-XProtMDNoErrorWithHandler
+
+           (side-condition (not (is_nil? (term v_2))))]
+
+   [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2)
+           (< false "error in error handling" >)
+        
+           E-XProtMDErrorCatchedNoHandler
+
+           (side-condition (not (is_cid? (term v_2))))]
+
+   ; error handling
+   ; no error in error handling
+   [-->s/e ((< v ... >) ProtMD nil)
+           (< false v ... >)
+           
+           E-XProtMDNoErrorInHandling]
+
+;   ; error in error handling
+;   [-->s/e ((in-hole Enp ($err v)) ProtMD nil)
+;           (< false "error in error handling" >)
+;        
+;           E-XProtMDErrorInHandling]
+
+   
+
+;   [-->s/e ((< v_1 ... >) ProtMD v_2)
+;           (< true v_1 ... >)
+;        
+;           E-XProtMDNoErrorNoHandler
+;
+;           (side-condition (not (or (is_nil? (term v_2))
+;                                    (is_cid? (term v_2)))))]
+   
+;   [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2)
+;           (< false "error in error handling" >)
+;        
+;           E-XProtMDErrorCatchedNoHandler
+;
+;           (side-condition (not (is_cid? (term v_2))))]
+;
+;   [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
+;           ((< false (cid (v)) >) ProtMD nil)
+;        
+;           E-XProtMDErrorCatchedHandler]
+;
+;   [-->s/e ((< v_1 ... >) ProtMD v_2)
+;           (< true (< v_1 ... >) >)
+;        
+;           E-XProtMDNoErrorWithReturnedValues]
+;  
    ;                                                                                  
    ;                                                                                  
    ;                                                                                  
@@ -393,24 +454,6 @@
    [-->s/e (\; (renv ...) LocalBody)
            \;
            E-RemoveLocal]
-   
-   ; Protected mode
-   [-->s/e ((in-hole Enp ($err v_1)) ProtectedMode v_2)
-           (< false "error in error handling" >)
-        
-           E-XProtectedModeErrorCatchedNoHandler
-
-           (side-condition (not (is_cid? (term v_2))))]
-
-   [-->s/e ((in-hole Enp ($err v)) ProtectedMode cid)
-           (cid (v))
-        
-           E-XProtectedModeErrorCatchedHandler]
-
-   [-->s/e ((< v_1 ... >) ProtectedMode v_2)
-           (< true (< v_1 ... >) >)
-        
-           E-XProtectedModeNoErrorWithReturnedValues]
    ))
 
 (provide terms-rel)

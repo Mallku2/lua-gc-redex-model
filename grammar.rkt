@@ -75,6 +75,9 @@
          ; run-time expressions (need to be added since environment is
          ; manipulated through substitution)
          r]
+
+  [handler nil
+           cid]
   
   [e ecore
      ; run-time expressions
@@ -83,7 +86,7 @@
      ; renv is not an expression nor a value. The previous rules for these
      ; constructions does not describe the renv added
      (s (renv ...) RetExp)
-     (e ProtectedMode v)
+     (e ProtMD v)
      
      ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
@@ -364,8 +367,7 @@
      (in-hole Elf (E Break))
      (in-hole Elf (E (renv ...) RetStat))
      (in-hole Elf (E (renv ...) RetExp))
-     ;(in-hole Elf (E ProtectedMode))
-     (in-hole Elf (E ProtectedMode v))
+     (in-hole Elf (E ProtMD v))
      ]
 
   ; tuples
@@ -459,8 +461,8 @@
      (C (renv ...) LocalBody)
      (s (renv_1 ... (rEnv C) renv_2 ...) LocalBody)
      (C Break)
-     (C ProtectedMode v)
-     (e ProtectedMode C)
+     (C ProtMD v)
+     (e ProtMD C)
      ($err C)
      ($iter C do scoreblock end)
      ($iter e do C end)

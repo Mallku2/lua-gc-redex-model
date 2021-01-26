@@ -423,7 +423,7 @@
               (term ($builtIn
                      xpcall
                      ((objr 1)
-                      (function $handler (errMsg) (return false errMsg) end)
+                      (function $handler (errMsg) (return errMsg) end)
                       1
                       2))))
   

@@ -446,7 +446,7 @@
             (term ($builtIn
                    xpcall
                    ((objr 1)
-                    (function $handler (errMsg) (return false errMsg) end)
+                    (function $handler (errMsg) (return errMsg) end)
                     1
                     2))))
   
@@ -742,11 +742,11 @@
 
   ; protected mode
   (test-->> terms-rel
-            (term (($err 1) ProtectedMode (cl 6)))
-            (term ((cl 6) (1))))
+            (term (($err 1) ProtMD (cl 6)))
+            (term (((cl 6) (1)) ProtMD nil)))
 
   (test-->> terms-rel
-            (term (($err 1) ProtectedMode 1))
+            (term (($err 1) ProtMD 1))
             (term (< false "error in error handling" >)))
 
 

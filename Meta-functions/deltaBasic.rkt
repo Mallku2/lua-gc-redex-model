@@ -247,9 +247,17 @@
   ;                                                  
   ;                                                  
   ;                                                  
+  ; assert: weird behavior
+  [(δbasic assert)
+   (δbasic error "assertion failed!")]
   
-  ; Assert: condition evaluates to false or nil
-  [(δbasic assert v_1 v_2 v_3 ...)
+  ; assert: condition evaluates to false or nil
+  [(δbasic assert v_1)
+   (δbasic error "assertion failed!")
+   
+   (side-condition (is_false_cond? (term v_1)))]
+
+  [(δbasic assert v_1 v_2)
    (δbasic error any)
    
    (side-condition (is_false_cond? (term v_1)))
@@ -259,7 +267,7 @@
                    (term "assertion failed!")
                    (term v_2)))]
   
-  ; Assert: condition evaluates to true
+  ; assert: condition evaluates to true
   [(δbasic assert v ...)
    (< v ... >)]
 
@@ -776,7 +784,8 @@
   [(δbasic pcall v_1 v_2 ...)
    ; pcall is defined in terms of xpcall
    ($builtIn xpcall (v_1
-                     (function $handler (errMsg) (return false errMsg) end)
+                     (function $handler (errMsg)
+                               (return errMsg) end)
                      v_2 ...))]
 
   
@@ -1369,9 +1378,19 @@
   ;   ;;  ;;  ;;;;;     ;;;    ;;; ;     ;;;     ;;; 
   ;           ;                                      
   ;           ;                                      
-  ;           ;                                      
+  ;           ;
+  ; we need to reserve "nil" as the handler value to describe the situations
+  ; where an actual handler is being used
+  [(δbasic xpcall v_1 nil v_2 ...)
+   ((v_1 (v_2 ...)) ProtMD "no error handler")]
+  
   [(δbasic xpcall v_1 v_2 v_3 ...)
-   ((v_1 (v_3 ...)) ProtectedMode v_2)]
+   ((v_1 (v_3 ...)) ProtMD v_2)]
+  
+  
+
+  
+  
 
   ; to capture the "no value" error for every builtinserv 
   [(δbasic builtinserv v ...)
@@ -1440,11 +1459,11 @@
 
 (provide getMetaTableRef)
 
-; Meta-function that tries to get the meta-table of a given value and index it
+; meta-function that tries to get the meta-table of a given value and index it
 ; with a given key. If it doesn't succeed, it returns nil.
-; PRE : {sv_1 is the value whose meta-table we want to index and sv_2 is the
+; PRE : {v_1 is the value whose meta-table we want to index and v_2 is the
 ;        key}
-; ret = (indexMetaTable sv_1 sv_2 θ)
+; ret = (indexMetaTable v_1 v_2 θ)
 (define-metafunction ext-lang
   ; objref_1 points to a table, which has a metatable with key v_1
   [(indexMetaTable objref_1 v_1 (osp_1 ...

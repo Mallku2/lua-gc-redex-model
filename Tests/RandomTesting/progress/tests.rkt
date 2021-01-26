@@ -380,14 +380,14 @@
                        NonTable)))
    #f)
 
-  ; WrongFunCall
+  ; WFunCall
   (test-equal
    (judgment-holds
     (well_formed_term hole
                       ()
                       (((cl 1) (function x (y) break end)))
                       (($statFunCall (cl 1) ())
-                       WrongFunCall)))
+                       WFunCall)))
    #f)
 
   (test-equal
@@ -395,7 +395,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      (($statFunCall 1 (1)) WrongFunCall)))
+                      (($statFunCall 1 (1)) WFunCall)))
    #t)
 
   (test-equal
@@ -403,7 +403,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((1 (1 2 3)) WrongFunCall)))
+                      ((1 (1 2 3)) WFunCall)))
    #t)
 
   (test-equal
@@ -411,7 +411,7 @@
     (well_formed_term hole
                       ()
                       (((cl 1) (function x (y) break end)))
-                      (((cl 1) (1)) WrongFunCall)))
+                      (((cl 1) (1)) WFunCall)))
    #f)
 
   ; FunCall
@@ -783,7 +783,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((\; () RetExp) ProtectedMode 1)))
+                      ((\; () RetExp) ProtMD 1)))
    #t)
 
   (test-equal
@@ -791,7 +791,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((< 1 >) ProtectedMode 1)))
+                      ((< 1 >) ProtMD 1)))
    #t)
 
   (test-equal
@@ -799,7 +799,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      (((1 (2)) WrongFunCall) ProtectedMode 1)))
+                      (((1 (2)) WFunCall) ProtMD 1)))
    #t)
 
   (test-equal
@@ -807,7 +807,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((1 (2)) ProtectedMode 1)))
+                      ((1 (2)) ProtMD 1)))
    #t)
 
   ; NonTable
@@ -1268,10 +1268,10 @@
    (term (free_val_refs () (((1 \[ 2 \]) = 3) NonTable)))
    '())
   
-  ; WrongFunCall
+  ; WFunCall
   (test-equal
    ; only values
-   (term (free_val_refs () (($statFunCall 1 (2)) WrongFunCall)))
+   (term (free_val_refs () (($statFunCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
@@ -1434,12 +1434,12 @@
   ; protected mode
   ; xpcall
   (test-equal
-   (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
+   (term (free_val_refs () ((((ref 1) = 1) () RetExp) ProtMD 1)))
    (term ((ref 1))))
 
   (test-equal
    (term (free_val_refs (((ref 1) 1))
-                        ((((ref 1) = 1) () RetExp) ProtectedMode 1)))
+                        ((((ref 1) = 1) () RetExp) ProtMD 1)))
    '())
   
   
@@ -1696,10 +1696,10 @@
    (term (free_tids () (((1 \[ 2 \]) = 3) NonTable)))
    '())
   
-  ; WrongFunCall
+  ; WFunCall
   (test-equal
    ; only values
-   (term (free_tids () (($statFunCall 1 (2)) WrongFunCall)))
+   (term (free_tids () (($statFunCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
@@ -1872,12 +1872,12 @@
   ; protected mode
   ; xpcall
   (test-equal
-   (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtectedMode 1)))
+   (term (free_tids () ((((ref 1) = (objr 1)) () RetExp) ProtMD 1)))
    (term ((objr 1))))
 
   (test-equal
    (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    ((((ref 1) = (objr 1)) () RetExp) ProtectedMode 1)))
+                    ((((ref 1) = (objr 1)) () RetExp) ProtMD 1)))
    '())
   
   
@@ -2135,10 +2135,10 @@
    (term (free_clids () (((1 \[ 2 \]) = 3) NonTable)))
    '())
   
-  ; WrongFunCall
+  ; WFunCall
   (test-equal
    ; only values
-   (term (free_clids () (($statFunCall 1 (2)) WrongFunCall)))
+   (term (free_clids () (($statFunCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
@@ -2311,12 +2311,12 @@
   ; protected mode
   ; xpcall
   (test-equal
-   (term (free_clids () ((((ref 1) = (cl 1)) () RetExp) ProtectedMode 1)))
+   (term (free_clids () ((((ref 1) = (cl 1)) () RetExp) ProtMD 1)))
    (term ((cl 1))))
 
   (test-equal
    (term (free_clids (((cl 1) (function x () \; end)))
-                     ((((ref 1) = (cl 1)) () RetExp) ProtectedMode 1)))
+                     ((((ref 1) = (cl 1)) () RetExp) ProtMD 1)))
    '())
   
   

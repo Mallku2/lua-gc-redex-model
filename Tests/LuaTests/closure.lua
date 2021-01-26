@@ -43,7 +43,6 @@ print "testing closures"
 -- end
 
 -- local a = f(10)
--- collectgarbage()
 
 ------------------------------------------
 -- TODO: internal state of garbage collector
@@ -70,11 +69,9 @@ assert(B.g == 19)]]--
 -- testing equality
 a = {}
 for i = 1, 5 do  a[i] = function (x) return x + a + _ENV end  end
-collectgarbage()
 assert(a[3] == a[4] and a[4] == a[5])
 
 for i = 1, 5 do  a[i] = function (x) return i + a + _ENV end  end
-collectgarbage()
 assert(a[3] ~= a[4] and a[4] ~= a[5])
 
 local function f()
@@ -82,14 +79,12 @@ local function f()
 end
 assert(f() == f())
 
-collectgarbage()
 -- testing closures with 'for' control variable
 a = {}
 for i=1,10 do
   a[i] = {set = function(x) i=x end, get = function () return i end}
   if i == 3 then break end
 end
-collectgarbage()
 assert(a[4] == nil)
 a[1].set(10)
 assert(a[2].get() == 2)
@@ -104,7 +99,6 @@ for i = 1, #t do
   a[i] = {set = function(x, y) i=x; k=y end,
           get = function () return i, k end}
   if i == 2 then break end
-  collectgarbage()
 end
 a[1].set(10, 20)
 local r,s = a[2].get()
@@ -114,7 +108,6 @@ assert(r == 10 and s == 20)
 a[2].set('a', 'b')
 r,s = a[2].get()
 assert(r == "a" and s == "b")
-collectgarbage()
 
 -- testing closures with 'for' control variable x break
 for i=1,3 do
@@ -130,7 +123,6 @@ for k = 1, #t do
 end
 assert(({f()})[1] == 1)
 assert(({f()})[2] == "a")
-collectgarbage()
 
 -- testing closure x break x return x errors
 
@@ -153,7 +145,6 @@ function f(x)
     end
     first = nil
   end
-  collectgarbage()
 end
 
 for i=1,3 do
@@ -162,11 +153,9 @@ for i=1,3 do
   b('set', 10); assert(b('get') == 10+i)
   b = nil
 end
-collectgarbage()
 pcall(f, 4);
 assert(b('get') == 'xuxu')
 b('set', 10); assert(b('get') == 14)
-collectgarbage()
 
 local w
 -- testing multi-level closure
@@ -179,7 +168,6 @@ end
 y = f(10)
 w = 1.345
 assert(y(20)(30) == 60+w)
-collectgarbage()
 
 -- testing closures x repeat-until
 local a = {}
@@ -236,7 +224,6 @@ local function t ()
 end
 t()
 
-collectgarbage()
 
 ------------------------------------------
 -- TODO: debug

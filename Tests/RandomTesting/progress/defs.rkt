@@ -10,7 +10,7 @@
          "../../../Relations/meta.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
-         "../../../Meta-functions/objStoreMetafunctions.rkt"
+         "../../../Meta-functions/objStoreMetaFunctions.rkt"
          "./prepare.rkt")
 
 ;                                                                                          
@@ -311,12 +311,12 @@
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (((v_1 \[ v_2 \]) = v_3) NonTable))]
 
-  ; WrongFunCall
+  ; WFunCall
   [(well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2) ...
    (side-condition ,(not (is_cid? (term v_1))))
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ (($statFunCall v_1 (v_2 ...)) WrongFunCall))]
+   (well_formed_term any σ θ (($statFunCall v_1 (v_2 ...)) WFunCall))]
   
   [(well_formed_term ,(plug (term any)
                             (term (hole ((rEnv r) ...) RetStat))) σ θ s)
@@ -535,10 +535,10 @@
                                       (term e))
 
                         (redex-match? ext-lang
-                                      ((v_1 (v_2 ...)) WrongFunCall)
+                                      ((v_1 (v_2 ...)) WFunCall)
                                       (term e))))
    ------------------------------------------------------------
-   (well_formed_term any σ θ (e ProtectedMode v))]
+   (well_formed_term any σ θ (e ProtMD v))]
 
   [(well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)
@@ -603,7 +603,7 @@
    (well_formed_term any σ θ v_2) ...
    (side-condition ,(not (is_cid? (term v_1))))
    --------------------------------------------------------------------------
-   (well_formed_term any σ θ ((v_1 (v_2 ...)) WrongFunCall))]
+   (well_formed_term any σ θ ((v_1 (v_2 ...)) WFunCall))]
 
   [(well_formed_term ,(plug (term any)
                             (term (hole ((rEnv r) ...) RetExp))) σ θ s)
