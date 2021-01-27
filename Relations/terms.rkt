@@ -252,30 +252,30 @@
            E-BuiltInTerm]
 
    ; protected mode
-   ; error, but with a proper handler
-   [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
-           ((cid (v)) ProtMD nil)
-        
-           E-XProtMDErrorWithHandler]
-
    ; no error
    [-->s/e ((< v_1 ... >) ProtMD v_2)
            (< true v_1 ... >)
         
-           E-XProtMDNoErrorWithHandler
+           E-XProtMDNoError]
+   
+   ; error, but with a proper handler
+   [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
+           ((\( (cid (v)) \)) ProtMD)
+        
+           E-XProtMDErrorWithHandler]
 
-           (side-condition (not (is_nil? (term v_2))))]
-
-   ; error without a proper handler OR error during error handling
-   [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2)
+   ; error without a proper handler
+   [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2 ...)
            (< false "error in error handling" >)
         
-           E-XProtMDErrorCatchedNoHandler
+           E-XProtMDErrorNoHandler
 
-           (side-condition (not (is_cid? (term v_2))))]
+           (side-condition (not (redex-match? ext-lang
+                                              (cid)
+                                              (term (v_2 ...)))))]
 
    ; no error during error handling
-   [-->s/e ((< v ... >) ProtMD nil)
+   [-->s/e ((< v ... >) ProtMD)
            (< false v ... >)
            
            E-XProtMDNoErrorInHandling]

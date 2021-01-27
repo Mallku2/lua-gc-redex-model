@@ -2,7 +2,8 @@
 (require redex
          "../grammar.rkt"
          "../executionEnvironment.rkt"
-         "../Relations/fullProgs.rkt")
+         "../Relations/fullProgs.rkt"
+         "../Meta-functions/objStoreMetaFunctions.rkt")
 
 ; "black-box testing"
 
@@ -15,16 +16,16 @@
              (term ($statFunCall ($ENV \[ "type" \]) ())))
             
             (term
-             ((((ref 1) (objr 7)) ((ref 2) nil))
+             ((((ref 1) (objr ,objStoreFirstLocation)) ((ref 2) nil))
               :
-              (((objr 7)
+              (((objr ,objStoreFirstLocation)
                 ((|{|
-                  (|[| "_G" |]| = (objr 7))
-                  (|[| "type" |]| = (cl 8))
+                  (|[| "_G" |]| = (objr ,objStoreFirstLocation))
+                  (|[| "type" |]| = (cl 7))
                   |}|)
                  nil
                  ⊥))
-               ((cl 8)
+               ((cl 7)
                 (function
                  $type
                  (<<<)
@@ -40,16 +41,16 @@
              (term ($statFunCall ($ENV \[ "assert" \]) ())))
             
             (term
-             ((((ref 1) (objr 7)) ((ref 2) nil))
+             ((((ref 1) (objr ,objStoreFirstLocation)) ((ref 2) nil))
               :
-              (((objr 7)
+              (((objr ,objStoreFirstLocation)
                 ((|{|
-                  (|[| "_G" |]| = (objr 7))
-                  (|[| "assert" |]| = (cl 8))
+                  (|[| "_G" |]| = (objr ,objStoreFirstLocation))
+                  (|[| "assert" |]| = (cl 7))
                   |}|)
                  nil
                  ⊥))
-               ((cl 8)
+               ((cl 7)
                 (function
                  $assert
                  (<<<)
@@ -94,7 +95,7 @@
           
           
           
-          
+            
             ;                                          
             ;                                          
             ;                                          
@@ -215,8 +216,7 @@
               end)
         
         
-                                         
-         
+            ($statFunCall ($ENV \[ "collectgarbage" \]) ())
                                               
             ;                          ; 
             ;     ;                          ; 
@@ -296,6 +296,8 @@
                           (((($ENV \[ "fat" \]) (1)) == 1)))
             ($statFunCall ($ENV \[ "assert" \])
                           (((($ENV \[ "fat" \]) (6)) == 720)))
+
+            ($statFunCall ($ENV \[ "collectgarbage" \]) ())
             
             ;                                  
             ;                                  
@@ -399,6 +401,8 @@
                   )
                  end))
               end)
+
+            ($statFunCall ($ENV \[ "collectgarbage" \]) ())
             ;                                          
             ;                           ;;;     ;;;    
             ;                             ;       ;    
@@ -512,7 +516,7 @@
               end)
                                   
                                   
-                                   
+            ($statFunCall ($ENV \[ "collectgarbage" \]) ())
                                                               
             ;                            
             ;                     ;                            

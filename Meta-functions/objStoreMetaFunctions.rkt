@@ -58,16 +58,10 @@
 
 (provide refBelongsToTheta?)
 
-
-; position in θ used to store a table used to store information useful to help
-; in the definition of the meta-table mechanism
-(define metaTablesStack (term (objr 1)))
-(provide metaTablesStack)
-
 ; first location in the object store where values can be stored:
 ; locations from 2 to objStoreFirstLocation-1 are
 ; reserved to meta-tables of types different than table
-(define objStoreFirstLocation 7)
+(define objStoreFirstLocation 6)
 (provide objStoreFirstLocation)
 
 

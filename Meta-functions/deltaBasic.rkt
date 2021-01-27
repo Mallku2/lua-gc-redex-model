@@ -470,25 +470,62 @@
   ;                                  
   ;                                  
   ;
-  [(δbasic load String v_1 "b" v_3)
-   any
+  ; default values for source, mode, env
+  [(δbasic load v)
+   (δbasic load v String "bt" (objr ,objStoreFirstLocation))
 
-   ; String should be a string (flattened) representation of a function
+   (where String ,(if (is_string? (term v))
+                      (term v)
+                      "=(load)"))]
+
+  [(δbasic load v_1 v_2)
+   (δbasic load v_1 v_2  "bt" (objr ,objStoreFirstLocation))]
+
+  [(δbasic load v_1 v_2 v_3)
+   (δbasic load v_1 v_2 v_3 (objr ,objStoreFirstLocation))]
+
+  ; final check of parameters
+  [(δbasic load v_1 v_2 v_3 v_4)
+   (δbasic load v_1 v_5 v_6 v_7)
+
+   (side-condition (or (not (is_string? (term v_2)))
+                       (not (is_string? (term v_3)))
+                       (not (is_tid? (term v_4)))))
+   
+   (where v_5 ,(if (is_string? (term v_2))
+                   (term v_2)
+                   (if (is_string? (term v_1))
+                       (term v_1)
+                       "=(load)")))
+
+   (where v_6 ,(if (is_string? (term v_3))
+                   (term v_3)
+                   "bt"))
+
+   (where v_7 ,(if (is_tid? (term v_4))
+                   (term v_4)
+                   ; tid of the global environment
+                   (term (objr ,objStoreFirstLocation))))]
+  
+  [(δbasic load String_1 v_1 "b" v_2)
+   t
+
+   ; String_1 should be a string (flattened) representation of a function
    ; (obtained through string.dump). We reuse Racket's reader to
    ; try to parse it and obtain the corresponding redex term.
-   (where any ,(with-handlers
+   (where t ,(with-handlers
                      ([exn:fail?
                        ; the string cannot be parsed
                        (λ (e) (term (< nil
                                        "attempt to load a text chunk (mode is 'b')"
                                        >)))])
                    
-                   (read (open-input-string (term String)))
+                   (read (open-input-string (term String_1)))
                    ))
    ]
  
   ; Lua program expressed into a string, either syntactically correct or not 
-  [(δbasic load String v_1 "t" v_3)
+  [(δbasic load String v_1 "t" v_2)
    any_2
    
    (where any_1 ,(with-handlers
@@ -519,13 +556,13 @@
                      ; if the parsing succeeded, return the code obtained
                      ; wrapped into a vararg function
                      (append (term (function $loaded (<<<)))
-                             (if (not (equal? (term v_3) (term nil)))
+                             (if (not (equal? (term v_2) (term nil)))
                                  ; received new value for the global
                                  ; environment
                                  (list (term
                                         (local $old_env $ret = (ref 1) nil
                                           in
-                                          (((ref 1) = v_3)
+                                          (((ref 1) = v_2)
                                            ($ret = ((\( (function $aux (<<<)
                                                                   any_1
                                                                   end) \))
@@ -541,33 +578,24 @@
                      (term any_1)))]
 
   ; default behavior for mode: "bt"
-  [(δbasic load String v_1 v_2 v_3)
+  [(δbasic load String v_1 "bt" v_2)
    any
 
-   (where any (δbasic load String v_1 "b" v_3))
+   (where any (δbasic load String v_1 "b" v_2))
 
    (side-condition (is_fdef? (term any)))]
 
-  [(δbasic load String v_1 v_2 v_3)
-   (δbasic load String v_1 "t" v_3)
-   ]
+  [(δbasic load String v_1 "bt" v_2)
+   (δbasic load String v_1 "t" v_2)]
   
-  ; Received a function from which we can obtain the string that represents the
+  ; received a function from which we can obtain the string that represents the
   ; program
   [(δbasic load cid v_1 v_2 v_3)
    any_2
-   
-   ; Set the appropriate value to the "source" argument (second argument)
-   (where any ,(if (equal? (term v_1) (term nil))
-                   
-                   "=(load)"
-                   
-                   (term v_1)))
 
    ; TODO: we don't impose a limit to the times the function is called:
    ; load(function() return "return true" end) is and endless loop in our
    ; mechanization, while it isn't the case for the Lua official interpreter.
-
    (where any_2 ((function $loaded ()
                            (local program nextPiece = "" ""
                              in
@@ -592,17 +620,14 @@
                                      
                                      end)
                               
-                              (return ($builtIn load (program any v_2 v_3))))
+                              (return ($builtIn load (program v_1 v_2 v_3))))
                              
                              end)
-                           end) ()))
-   ]
+                           end) ()))]
 
-  ; Default case
-  [(δbasic load v ...)
-   (δbasic error String)
-   
-   (where String ,(string-append "load: bad argument #1"))]
+  ; this service does not inform about errors processing String_1
+  [(δbasic load String_1 String_2 String_3 tid)
+   nil]
 
   
   ;                                                                  
@@ -619,7 +644,29 @@
   ;      ;;;   ;;;;    ;;; ;   ;;;;;    ;     ;;;;;      ;;;   ;;;;  
   ;                                                                  
   ;                                                                  
-  ;                                                                  
+  ;
+  ; default values
+  [(δbasic loadfile String θ)
+   (δbasic loadfile String "bt" (objr ,objStoreFirstLocation) θ)]
+
+  [(δbasic loadfile String v θ)
+   (δbasic loadfile String v (objr ,objStoreFirstLocation) θ)]
+
+  ; last check
+  [(δbasic loadfile String_1 v_1 v_2 θ)
+   (δbasic loadfile String_1 String_2 tid θ)
+
+   (side-condition (not (or (is_string? (term v_1))
+                            (is_tid? (term v_2)))))
+
+   (where String_2 ,(if (is_string? (term v_1))
+                        (term v_1)
+                        "bt"))
+
+   (where tid ,(if (is_tid? (term v_2))
+                        (term v_2)
+                        (term (objr ,objStoreFirstLocation))))]
+   
   [(δbasic loadfile String_1 v_2 v_3 θ)
    (δbasic load String_2 nil v_2 v_3)
 
@@ -1379,11 +1426,6 @@
   ;           ;                                      
   ;           ;                                      
   ;           ;
-  ; we need to reserve "nil" as the handler value to describe the situations
-  ; where an actual handler is being used
-  [(δbasic xpcall v_1 nil v_2 ...)
-   ((v_1 (v_2 ...)) ProtMD "no error handler")]
-  
   [(δbasic xpcall v_1 v_2 v_3 ...)
    ((v_1 (v_3 ...)) ProtMD v_2)]
   
