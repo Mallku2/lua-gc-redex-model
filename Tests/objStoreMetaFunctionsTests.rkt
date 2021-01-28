@@ -52,10 +52,10 @@
 
 (define (freshObjRef-test-suite)
   (test-equal (term (freshObjRef ()))
-              (term (objr 7)))
+              (term (objr ,objStoreFirstLocation)))
               
-  (test-equal (term (freshObjRef (((objr 6) ((\{ \}) nil 1)))))
-              (term (objr 7)))
+  (test-equal (term (freshObjRef (((objr ,objStoreFirstLocation) ((\{ \}) nil 1)))))
+              (term (objr ,(add1 objStoreFirstLocation))))
   
   (test-results))
 

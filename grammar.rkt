@@ -87,6 +87,7 @@
      ; constructions does not describe the renv added
      (s (renv ...) RetExp)
      (e ProtMD v)
+     (e ProtMD) ; protected mode where the handler has been used
      
      ; to help with the definition of well-formed programs, we exclude with the
      ; grammar as many ill-formed programs as possible
@@ -368,6 +369,7 @@
      (in-hole Elf (E (renv ...) RetStat))
      (in-hole Elf (E (renv ...) RetExp))
      (in-hole Elf (E ProtMD v))
+     (in-hole Elf (E ProtMD))
      ]
 
   ; tuples

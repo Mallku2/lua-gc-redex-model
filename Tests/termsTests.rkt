@@ -743,7 +743,7 @@
   ; protected mode
   (test-->> terms-rel
             (term (($err 1) ProtMD (cl 6)))
-            (term (((cl 6) (1)) ProtMD nil)))
+            (term ((\( ((cl 6) (1)) \)) ProtMD)))
 
   (test-->> terms-rel
             (term (($err 1) ProtMD 1))

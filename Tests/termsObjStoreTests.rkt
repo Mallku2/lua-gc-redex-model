@@ -1,25 +1,27 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Relations/termsObjStore.rkt")
+         "../Relations/termsObjStore.rkt"
+         "../Meta-functions/objStoreMetaFunctions.rkt")
 
 (define (terms-obj-store-test-suite)
   ; Table creation
   (test-->> terms-obj-store
             (term (() : (\{ \})))
-            (term ((((objr 7) ((\{ \}) nil ⊥))) : (objr 7))))
+            (term ((((objr ,objStoreFirstLocation)
+                     ((\{ \}) nil ⊥))) : (objr ,objStoreFirstLocation))))
   
   (test-->> terms-obj-store
             (term (() : (\{ 1 (\[ 1 \] = 2) 2 (\[ 2 \] = 3) nil 4 \})))
-            (term ((((objr 7) ((\{ (\[ 1 \] = 1) 
-                                   (\[ 2 \] = 2) 
-                                   (\[ 4 \] = 4) \}) nil ⊥))) 
-                   : (objr 7))))
+            (term ((((objr ,objStoreFirstLocation) ((\{ (\[ 1 \] = 1) 
+                                                        (\[ 2 \] = 2) 
+                                                        (\[ 4 \] = 4) \}) nil ⊥))) 
+                   : (objr ,objStoreFirstLocation))))
 
   (test-->> terms-obj-store
             (term (() : (\{ (\[ 1 \] = 2) (\[ 1 \] = 3) \})))
-            (term ((((objr 7) ((\{ (\[ 1 \] = 3) \}) nil ⊥))) 
-                   : (objr 7))))
+            (term ((((objr ,objStoreFirstLocation) ((\{ (\[ 1 \] = 3) \}) nil ⊥))) 
+                   : (objr ,objStoreFirstLocation))))
   
   ; Table indexing
   (test-->> terms-obj-store
@@ -59,8 +61,9 @@
   ; Function creation
   (test-->> terms-obj-store
             (term (() : (function X () ($statFunCall Y ()) end)))
-            (term ((((cl 7) (function X () ($statFunCall Y ()) end)))
-                   : (cl 7))))
+            (term ((((cl ,objStoreFirstLocation)
+                     (function X () ($statFunCall Y ()) end)))
+                   : (cl ,objStoreFirstLocation))))
 
   (test-->> terms-obj-store
             (term ((((cl 1) (function X () ($statFunCall Y ()) end)))

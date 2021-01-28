@@ -275,8 +275,8 @@
                                               (term (v_2 ...)))))]
 
    ; no error during error handling
-   [-->s/e ((< v ... >) ProtMD)
-           (< false v ... >)
+   [-->s/e (v ProtMD)
+           (< false v >)
            
            E-XProtMDNoErrorInHandling]
    ;                                                                                  

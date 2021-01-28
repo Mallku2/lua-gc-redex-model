@@ -1,7 +1,8 @@
 #lang racket
 (require redex
          "../grammar.rkt"
-         "../Relations/fullProgs.rkt")
+         "../Relations/fullProgs.rkt"
+         "../Meta-functions/objStoreMetaFunctions.rkt")
 
 (define (full-progs-rel-test-suite)
   ; full "while" loop
@@ -55,7 +56,7 @@
                           end))))
             ; TODO: first location is hard-coded...
             (term ((((ref 1) 1)) 
-                   : (((cl 7) (function X () (return 1) end)))
+                   : (((cl ,objStoreFirstLocation) (function X () (return 1) end)))
                    : \;)))
 
   ; Vararg function definition + function call
@@ -70,7 +71,7 @@
             
             ; TODO: first location is hard-coded...
             (term ((((ref 1) 1)) 
-                   : (((cl 7) (function X (<<<) (return <<<) end)))
+                   : (((cl ,objStoreFirstLocation) (function X (<<<) (return <<<) end)))
                    : \;)))
 
   ; From http://www.luafaq.org/: function with a modified _ENV as upvalue
@@ -92,19 +93,19 @@
                                   end)
                                 end)))
 
-            (term ((((ref 1) (objr 7))
-                    ((ref 2) (cl 8))
-                    ((ref 3) (objr 7)))
+            (term ((((ref 1) (objr ,objStoreFirstLocation))
+                    ((ref 2) (cl ,(add1 objStoreFirstLocation)))
+                    ((ref 3) (objr ,objStoreFirstLocation)))
                    :
-                   (((objr 7) ((|{| (|[| "z" |]| = 30.0)
-                                    (|[| "x" |]| = 10.0)
-                                    (|[| "y" |]| = 20.0) |}|) nil ⊥))
-                    ((cl 8)
+                   (((objr ,objStoreFirstLocation) ((|{| (|[| "z" |]| = 30.0)
+                                                         (|[| "x" |]| = 10.0)
+                                                         (|[| "y" |]| = 20.0) |}|) nil ⊥))
+                    ((cl ,(add1 objStoreFirstLocation))
                      (function $func1
-                      ()
-                      (return
-                       (((ref 3) |[| "x" |]|) + ((ref 3) |[| "y" |]|)))
-                      end)))
+                               ()
+                               (return
+                                (((ref 3) |[| "x" |]|) + ((ref 3) |[| "y" |]|)))
+                               end)))
                    :
                    |;|)))
   ; Errors
@@ -121,12 +122,12 @@
                           else ((ref 1) = 2)
                           end))))
 
-            (term ((((ref 1) (cl 7))) 
+            (term ((((ref 1) (cl ,objStoreFirstLocation))) 
                    :
-                   (((cl 7) (function X (<<<)
-                                       (return
-                                        ($builtIn error ("error message")))
-                                       end))) 
+                   (((cl ,objStoreFirstLocation) (function X (<<<)
+                                                           (return
+                                                            ($builtIn error ("error message")))
+                                                           end))) 
                    : ($err "error message")))
 
             )
@@ -156,17 +157,17 @@
                    : (return
                       ($builtIn pcall
                                 ((function $1 ()
-                                  (return ($builtIn error ("error")))
-                                  end))))))
+                                           (return ($builtIn error ("error")))
+                                           end))))))
             (term ((((ref 1) "error"))
                    :
-                   (((cl 7)
+                   (((cl ,objStoreFirstLocation)
                      (function
                       $1
                       ()
                       (return ($builtIn error ("error")))
                       end))
-                    ((cl 8)
+                    ((cl ,(add1 objStoreFirstLocation))
                      (function
                       $handler
                       (errMsg)
@@ -189,11 +190,11 @@
                                            end))))))
             (term ((((ref 1) "error"))
                    :
-                   (((cl 7)
+                   (((cl ,objStoreFirstLocation)
                      (function x ()
-                      (return ($builtIn error ("error")))
-                      end))
-                    ((cl 8)
+                               (return ($builtIn error ("error")))
+                               end))
+                    ((cl ,(add1 objStoreFirstLocation))
                      (function $1 (m)
                                (return (m .. " received"))
                                end)))
@@ -217,14 +218,51 @@
                                                     in \; end)
                                                   end))))))
             (term (()
-                   : (((cl 7) (function x () |;| end))
-                      ((cl 8)
+                   : (((cl ,objStoreFirstLocation) (function x () |;| end))
+                      ((cl ,(add1 objStoreFirstLocation))
                        (function
                         $1
                         (m)
                         (local a = (m .. " received") in |;| end)
                         end)))
                    : (return true))))
+
+  (test-->> full-progs-rel
+        (term (()
+               : ()
+               : (return ($builtIn xpcall
+                                   ((function x ()
+                                              (return ($builtIn error ("error1")))
+                                              end)
+                                    (function $1 (m)
+                                              (return ($builtIn error ("error2")))
+                                              end))))))
+
+        (term ((((ref 1)
+                 "error1"))
+               :
+               (((cl ,objStoreFirstLocation)
+                 (function
+                  x
+                  ()
+                  (return
+                   ($builtIn
+                    error
+                    ("error1")))
+                  end))
+                ((cl ,(add1 objStoreFirstLocation))
+                 (function
+                  $1
+                  (m)
+                  (return
+                   ($builtIn
+                    error
+                    ("error2")))
+                  end)))
+               :
+               (return
+                false
+                "error in error handling"))))
 
   (test-results))
 
