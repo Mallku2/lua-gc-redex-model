@@ -92,6 +92,10 @@
   ;                   ;      
   ;                   ;      
   ;                   ;
+  ; default values
+  [(δstring string.rep v_1 v_2)
+   (δstring string.rep v_1 v_2 "")]
+  
   ; coercion
   [(δstring string.rep Number_1 Number_2 v)
    (δstring string.rep String Number_2 v)

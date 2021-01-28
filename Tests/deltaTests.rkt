@@ -83,11 +83,11 @@
               1)
   
   (test-equal (term (δ \# (\{ (\[ 1 \] = 1) (\[ "a" \] = 1) (\[ 2 \] = 1) 
-                               \})))
+                              \})))
               2)
   
   (test-equal (term (δ \# (\{ (\[ -1 \] = 1) (\[ "a" \] = 1) (\[ 1 \] = 1) 
-                               \})))
+                              \})))
               1)
   
   ; Equality comparison
@@ -127,13 +127,13 @@
 
   ; collectgarbage
   (test-equal (term (δ collectgarbage
-                        (((ref 1) 1))
-                        (((objr 1) ((\{ (\[ 1 \] = 2) \})
-                                    nil 1))
-                         ((objr 2) ((\{ \}) (objr 3) 2))
-                         ((cl 4) (function x () \; end))
-                         ((objr 3) ((\{ (\[ "__gc" \] = (cl 4)) \}) nil ⊥)))
-                        ((ref 1) = ((objr 1) ()))))
+                       (((ref 1) 1))
+                       (((objr 1) ((\{ (\[ 1 \] = 2) \})
+                                   nil 1))
+                        ((objr 2) ((\{ \}) (objr 3) 2))
+                        ((cl 4) (function x () \; end))
+                        ((objr 3) ((\{ (\[ "__gc" \] = (cl 4)) \}) nil ⊥)))
+                       ((ref 1) = ((objr 1) ()))))
 
               (term ((((ref 1) 1))
                      (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1))
@@ -144,40 +144,103 @@
   
   ; getmetatable
   (test-equal (term (δ getmetatable 1 (((objr 6)
-                                         ((\{ \}) nil 1)))))
+                                        ((\{ \}) nil 1)))))
               (term nil))
   
   (test-equal (term (δ getmetatable 1 (((objr 1) ((\{ \}) nil 1)))))
               (term (objr 1)))
   
   (test-equal (term (δ getmetatable
-                        (objr 1)
-                        (((objr 1) ((\{ \}) nil 1)))))
+                       (objr 1)
+                       (((objr 1) ((\{ \}) nil 1)))))
               (term nil))
   
   (test-equal (term (δ getmetatable (objr 1)
-                                     (((objr 1) ((\{ \}) (objr 2) 1))
-                                      ((objr 2) ((\{ \}) nil 1)))))
+                       (((objr 1) ((\{ \}) (objr 2) 1))
+                        ((objr 2) ((\{ \}) nil 1)))))
               (term (objr 2)))
   
   (test-equal (term (δ getmetatable (objr 1)
-                                     (((objr 1) ((\{ \}) (objr 2) 1))
-                                      ((objr 2) ((\{ (\[ "__metatable" \] = 1)
-                                                     \}) nil 1)))))
+                       (((objr 1) ((\{ \}) (objr 2) 1))
+                        ((objr 2) ((\{ (\[ "__metatable" \] = 1)
+                                       \}) nil 1)))))
               (term 1))
   
   ; load
   (test-equal (term (δ load "do end" nil nil nil))
-              (term (function $loaded (<<<) (do \; end) end)))
+              (term (function
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 6))
+                        ($ret
+                         =
+                         ((|(| (function $aux (<<<) (do |;| end) end) |)|)
+                          (<<<)))
+                        ((ref 1) = $old_env)
+                        (return $ret))
+                       end)
+                     end)))
   
   (test-equal (term (δ load "a = 1" nil nil nil))
-              (term (function $loaded (<<<) (((ref 1) \[ "a" \]) = 1.0) end)))
+              (term (function
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 6))
+                        ($ret
+                         =
+                         ((|(|
+                           (function
+                            $aux
+                            (<<<)
+                            (((ref 1) |[| "a" |]|) = 1.0)
+                            end)
+                           |)|)
+                          (<<<)))
+                        ((ref 1) = $old_env)
+                        (return $ret))
+                       end)
+                     end)))
   
   (test-equal (term (δ load "local a = 1; a = 2" nil nil nil))
-              (term (function $loaded (<<<) (local a = 1.0 in
-                                              (\; \; (a = 2.0))
-                                              end)
-                              end)))
+              (term (function
+    $loaded
+    (<<<)
+    (local
+     $old_env
+     $ret
+     =
+     (ref 1)
+     nil
+     in
+     (((ref 1) = (objr 6))
+      ($ret
+       =
+       ((|(|
+         (function
+          $aux
+          (<<<)
+          (local a = 1.0 in (|;| |;| (a = 2.0)) end)
+          end)
+         |)|)
+        (<<<)))
+      ((ref 1) = $old_env)
+      (return $ret))
+     end)
+    end)))
 
   (test-equal (term (δ load "local a" nil nil (objr 1)))
               (term (function $loaded (<<<)
@@ -208,42 +271,42 @@
   
   ; rawget
   (test-equal (term (δ rawget (objr 1)
-                               1
-                               (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))))
+                       1
+                       (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))))
               (term 2))
   
   (test-equal (term (δ rawget (objr 1)
-                               1
-                               (((objr 1) ((\{ \}) nil 1)))))
+                       1
+                       (((objr 1) ((\{ \}) nil 1)))))
               (term nil))
   
   (test-equal (term (δ rawget (objr 1)
-                               3
-                               (((objr 1) ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4)
-                                               (\[ 5 \] = 6)
-                                               \}) nil 1)))))
+                       3
+                       (((objr 1) ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4)
+                                       (\[ 5 \] = 6)
+                                       \}) nil 1)))))
               (term 4))
   
   (test-equal (term (δ rawget (objr 1)
-                               3.0
-                               (((objr 1) ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4)
-                                               (\[ 5 \] = 6)
-                                               \}) nil 1)))))
+                       3.0
+                       (((objr 1) ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4)
+                                       (\[ 5 \] = 6)
+                                       \}) nil 1)))))
               (term 4))
   
   (test-equal (term (δ rawget (objr 1)
-                               7
-                               (((objr 1) ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4)
-                                               (\[ 5 \] = 6)
-                                               \}) nil 1)))))
+                       7
+                       (((objr 1) ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4)
+                                       (\[ 5 \] = 6)
+                                       \}) nil 1)))))
               (term nil))
   
   (test-equal (term (δ rawget (objr 1)
-                               true
-                               (((objr 1) ((\{ (\[ true \] = 2) \}) nil 1)))))
+                       true
+                       (((objr 1) ((\{ (\[ true \] = 2) \}) nil 1)))))
               (term 2))
   
   ; rawset
@@ -251,26 +314,26 @@
               (term ((((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1))) (objr 1))))
   
   (test-equal (term (δ rawset (objr 1) 3 5
-                               (((objr 1)
-                                 ((\{ (\[ 1 \] = 2) (\[ 3 \] = 4) \})
-                                  nil 1)))))
+                       (((objr 1)
+                         ((\{ (\[ 1 \] = 2) (\[ 3 \] = 4) \})
+                          nil 1)))))
               
               (term ((((objr 1) ((\{ (\[ 1 \] = 2) (\[ 3 \] = 5) \}) nil 1)))
                      (objr 1))))
   
   (test-equal (term (δ rawset (objr 1) 3.0 5
-                               (((objr 1)
-                                 ((\{ (\[ 1 \] = 2) (\[ 3 \] = 4) \})
-                                  nil 1)))))
+                       (((objr 1)
+                         ((\{ (\[ 1 \] = 2) (\[ 3 \] = 4) \})
+                          nil 1)))))
               
               (term ((((objr 1) ((\{ (\[ 1 \] = 2) (\[ 3 \] = 5) \}) nil 1)))
                      (objr 1))))
 
   (test-equal (term (δ rawset (objr 1) 1 nil
-                               (((objr 1) ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4)
-                                               (\[ 5 \] = 6)
-                                               (\[ 7 \] = 8) \}) nil 1)))))
+                       (((objr 1) ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4)
+                                       (\[ 5 \] = 6)
+                                       (\[ 7 \] = 8) \}) nil 1)))))
               (term ((((objr 1) ((\{ (\[ 3 \] = 4)
                                      (\[ 5 \] = 6)
                                      (\[ 7 \] = 8) \}) nil 1)))
@@ -278,7 +341,7 @@
 
   ; +nan.0 can be stored
   (test-equal (term (δ rawset (objr 1) 1 +nan.0
-                               (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))))
+                       (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))))
               (term ((((objr 1) ((\{ (\[ 1 \] = +nan.0) \}) nil 1)))
                      (objr 1))))
 
@@ -298,40 +361,40 @@
   
   ; tostring
   (test-equal (term (δ tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1))
-                                           ((objr 2) ((\{ \}) nil 1)))))
+                                          ((objr 2) ((\{ \}) nil 1)))))
               "table: (objr 1)")
   
   (test-equal
    (term
     (δ tostring (objr 1)
-                 (((objr 1) ((\{ \}) (objr 2) 1))
-                  ((objr 2) ((\{ (\[ "__tostring" \] = "this ain't a function")
-                                 \}) nil 1)))))
+       (((objr 1) ((\{ \}) (objr 2) 1))
+        ((objr 2) ((\{ (\[ "__tostring" \] = "this ain't a function")
+                       \}) nil 1)))))
    (term ("this ain't a function" ((objr 1)))))
   
   (test-equal (term (δ tostring (objr 1)
-                                 (((objr 1) ((\{ \}) nil 1)))))
+                       (((objr 1) ((\{ \}) nil 1)))))
               "table: (objr 1)")
 
   (test-equal
    (term
     (δ tostring (cl 1)
-                 (((cl 1) (function x () \; end))
-                  ((objr 5) ((\{ (\[ "__tostring" \] = "this ain't a function")
-                                 \}) nil 1)))))
+       (((cl 1) (function x () \; end))
+        ((objr 5) ((\{ (\[ "__tostring" \] = "this ain't a function")
+                       \}) nil 1)))))
    (term ("this ain't a function" ((cl 1)))))
 
   (test-equal
    (term
     (δ tostring (cl 1)
-                 (((cl 1) (function x () \; end)))))
+       (((cl 1) (function x () \; end)))))
    (term "function: (cl 1)"))
 
   (test-equal
    (term
     (δ tostring (cl 1)
-                 (((cl 1) (function x () \; end))
-                  ((objr 5) ((\{ \}) nil 1)))))
+       (((cl 1) (function x () \; end))
+        ((objr 5) ((\{ \}) nil 1)))))
    (term "function: (cl 1)"))
   
   (test-equal (term (δ tostring 1.0 ()))
@@ -389,19 +452,19 @@
   
   ; next
   (test-equal (term (δ next 1 2 (((objr 1)
-                                   ((\{ (\[ 1 \] = 2)
-                                        (\[ 3 \] = 4) \}) nil 1)))))
+                                  ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4) \}) nil 1)))))
               (term ($err
                      "bad argument #1 to 'next' (table expected, got number)")))
   
   (test-equal (term (δ next (objr 1) nil (((objr 1) ((\{ (\[ 1 \] = 2)
-                                                          (\[ 3 \] = 4)
-                                                          \}) nil 1)))))
+                                                         (\[ 3 \] = 4)
+                                                         \}) nil 1)))))
               (term (< 1 2 >)))
   
   (test-equal (term (δ next (objr 1) 5 (((objr 1) ((\{ (\[ 1 \] = 2)
-                                                        (\[ 3 \] = 4)
-                                                        \}) nil 1)))))
+                                                       (\[ 3 \] = 4)
+                                                       \}) nil 1)))))
               (term ($err
                      "invalid key to 'next'")))
   
@@ -409,13 +472,13 @@
               (term (< nil >)))
   
   (test-equal (term (δ next (objr 1) 1 (((objr 1)
-                                          ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4) \}) nil 1)))))
+                                         ((\{ (\[ 1 \] = 2)
+                                              (\[ 3 \] = 4) \}) nil 1)))))
               (term (< 3 4 >)))
   
   (test-equal (term (δ next (objr 1) 3 (((objr 1)
-                                          ((\{ (\[ 1 \] = 2)
-                                               (\[ 3 \] = 4) \}) nil 1)))))
+                                         ((\{ (\[ 1 \] = 2)
+                                              (\[ 3 \] = 4) \}) nil 1)))))
               (term (< nil >)))
   
   ; pcall
@@ -458,12 +521,12 @@
                       "bad argument #2 to 'setmetatable' (nil or table expected)"))))
   
   (test-equal (term (δ setmetatable (objr 1)
-                                     (objr 3)
-                                     (((objr 1) ((\{ \}) (objr 2) 1))
-                                      ((objr 2) ((\{
-                                                  (\[ "__metatable" \] = 1)
-                                                  \}) nil 1))
-                                      ((objr 3) ((\{ \}) nil 1)))))
+                       (objr 3)
+                       (((objr 1) ((\{ \}) (objr 2) 1))
+                        ((objr 2) ((\{
+                                    (\[ "__metatable" \] = 1)
+                                    \}) nil 1))
+                        ((objr 3) ((\{ \}) nil 1)))))
               
               (term ((((objr 1) ((\{ \}) (objr 2) 1))
                       ((objr 2) ((\{ (\[ "__metatable" \] = 1) \}) nil 1))
@@ -471,10 +534,10 @@
                      ($err "cannot change a protected metatable"))))
   
   (test-equal (term (δ setmetatable (objr 1) (objr 3)
-                                     (((objr 1) ((\{ \}) (objr 2) 1))
-                                      ((objr 2) ((\{ \}) nil 1))
-                                      ((objr 3) ((\{ (\[ 1 \] = 2) \})
-                                                 nil 1)))))
+                       (((objr 1) ((\{ \}) (objr 2) 1))
+                        ((objr 2) ((\{ \}) nil 1))
+                        ((objr 3) ((\{ (\[ 1 \] = 2) \})
+                                   nil 1)))))
               
               (term ((((objr 1) ((\{ \}) (objr 3) ⊥))
                       ((objr 2) ((\{ \}) nil 1))
@@ -499,7 +562,7 @@
   ;                                             ;;;
   ; string.dump
   (test-equal (term (δ string.dump (cl 1) (((cl 1)
-                                             (function $1 () \; end)))))     
+                                            (function $1 () \; end)))))     
               (term "(function $1 () \\; end )"))
   
   (test-equal (term (δ string.dump 1 ()))
@@ -551,7 +614,7 @@
   (test-equal (term (δ string.sub "abc" 1 -3))
               (term "a"))
 
-    (test-equal (term (δ string.sub "abc" 2 -1))
+  (test-equal (term (δ string.sub "abc" 2 -1))
               (term "bc"))
 
   (test-equal (term (δ string.sub "abc" 2 -2))
@@ -758,12 +821,12 @@
               (term ((objr 1) \[ 1 \])))
 
   (test-equal (term (δ table.concat (objr 1) "a" 1 2 (((objr 1) ((\{ (\[ 1 \] = "b")
-                                                                      (\[ 2 \] = "b") \}) nil 1)))))
+                                                                     (\[ 2 \] = "b") \}) nil 1)))))
               (term (((objr 1) \[ 1 \]) .. ("a" .. ((objr 1) \[ 2 \])))))
 
   (test-equal (term (δ table.concat (objr 1) "a" 1 3 (((objr 1) ((\{ (\[ 1 \] = "b")
-                                                                      (\[ 2 \] = "b")
-                                                                      (\[ 3 \] = "b")\}) nil 1)))))
+                                                                     (\[ 2 \] = "b")
+                                                                     (\[ 3 \] = "b")\}) nil 1)))))
               (term ((((objr 1) \[ 1 \]) .. ("a" .. ((objr 1) \[ 2 \]))) .. ("a" .. ((objr 1) \[ 3 \])))))
 
   (test-equal (term (δ table.concat (objr 1) "" nil nil (((objr 1) ((\{ \}) nil 1)))))
@@ -789,30 +852,30 @@
   
   ; table.unpack
   (test-equal (term (δ table.unpack (objr 1) nil nil (((objr 1) ((\{ (\[ 1 \] = "a")
-                                                                      (\[ 2 \] = "a")
-                                                                      (\[ 3 \] = "a") \}) nil 1)))))
+                                                                     (\[ 2 \] = "a")
+                                                                     (\[ 3 \] = "a") \}) nil 1)))))
               (term (< ((objr 1) \[ 1 \]) ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) >)))
   
   (test-equal (term (δ table.unpack (objr 1) 2 nil (((objr 1) ((\{ (\[ 1 \] = "a")
-                                                                    (\[ 2 \] = "a")
-                                                                    (\[ 3 \] = "a") \}) nil 1)))))
+                                                                   (\[ 2 \] = "a")
+                                                                   (\[ 3 \] = "a") \}) nil 1)))))
               (term (< ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) >)))
   
   (test-equal (term (δ table.unpack (objr 1) 2 4 (((objr 1) ((\{ (\[ 1 \] = "a")
-                                                                  (\[ 2 \] = "a")
-                                                                  (\[ 3 \] = "a") \}) nil 1)))))
+                                                                 (\[ 2 \] = "a")
+                                                                 (\[ 3 \] = "a") \}) nil 1)))))
               (term (< ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) ((objr 1) \[ 4 \]) >)))
 
   (test-equal (term (δ table.unpack (objr 1) -1 4 (((objr 1) ((\{ (\[ 1 \] = "a")
-                                                                   (\[ 2 \] = "a")
-                                                                   (\[ 3 \] = "a") \}) nil 1)))))
+                                                                  (\[ 2 \] = "a")
+                                                                  (\[ 3 \] = "a") \}) nil 1)))))
               (term (< ((objr 1) \[ -1 \]) ((objr 1) \[ 0 \]) ((objr 1) \[ 1 \])
                        ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) ((objr 1) \[ 4 \]) >)))
 
   ; testing details outside the reference manual
   (test-equal (term (δ table.unpack (objr 1) 2.1 4 (((objr 1) ((\{ (\[ 1 \] = "a")
-                                                                    (\[ 2 \] = "a")
-                                                                    (\[ 3 \] = "a") \}) nil 1)))))
+                                                                   (\[ 2 \] = "a")
+                                                                   (\[ 3 \] = "a") \}) nil 1)))))
               (term (< ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) ((objr 1) \[ 4 \]) >)))
   
   (test-equal (term (δ table.unpack "table" nil nil ()))

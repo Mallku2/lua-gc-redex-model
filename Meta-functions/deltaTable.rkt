@@ -243,6 +243,43 @@
   ;                   ;                              
   ;                   ;                              
   ;                   ;
+  ; default values
+  [(δtable table.unpack objref_1 θ)
+   (δtable table.unpack objref_1 1 (δbasic \# evaluatedtable) θ)
+
+   (where evaluatedtable (getTable objref_1 θ))]
+
+  [(δtable table.unpack objref_1 v_1 θ)
+   (δtable table.unpack objref_1 v_2 (δbasic \# evaluatedtable) θ)
+
+   (where evaluatedtable (getTable objref_1 θ))]
+
+  ; last check
+  [(δtable table.unpack objref_1 v_1 v_2 θ)
+   (δtable table.unpack objref_1 Number_1 Number_2 θ)
+
+   (side-condition (or (is_nil? (term v_1))
+                       (is_nil? (term v_2))))
+
+   (where Number_1 ,(if (is_nil? (term v_1))
+                        1
+                        (term v_1)))
+   
+   (where Number_2 ,(if (is_nil? (term v_2))
+                        (term (δbasic \# (getTable objref_1 θ)))
+                        (term v_2)))]
+
+  ; coercion
+  [(δtable table.unpack objref_1 String v θ)
+   (δtable table.unpack objref_1 Number v θ)
+
+   (where Number (δbasic tonumber String ()))]
+
+  [(δtable table.unpack objref_1 Number_1 String θ)
+   (δtable table.unpack objref_1 Number_1 Number_2 θ)
+
+   (where Number_2 (δbasic tonumber String ()))]
+   
   [(δtable table.unpack objref_1 v_1 v_2 v_3 ... θ)
    any_2
    

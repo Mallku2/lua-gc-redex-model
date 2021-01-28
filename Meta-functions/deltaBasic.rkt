@@ -488,9 +488,9 @@
   [(δbasic load v_1 v_2 v_3 v_4)
    (δbasic load v_1 v_5 v_6 v_7)
 
-   (side-condition (or (not (is_string? (term v_2)))
-                       (not (is_string? (term v_3)))
-                       (not (is_tid? (term v_4)))))
+   (side-condition (or (is_nil? (term v_2))
+                       (is_nil? (term v_3))
+                       (is_nil? (term v_4))))
    
    (where v_5 ,(if (is_string? (term v_2))
                    (term v_2)
@@ -538,7 +538,9 @@
                                                                (term String)
                                                                "]")
                                                            
-                                                (term v_1)))
+                                                (string-append "[string "
+                                                               (term v_1)
+                                                               "]")))
                                       (term ( >))))])
                    
                    (parse-this (term String)
@@ -656,8 +658,8 @@
   [(δbasic loadfile String_1 v_1 v_2 θ)
    (δbasic loadfile String_1 String_2 tid θ)
 
-   (side-condition (not (or (is_string? (term v_1))
-                            (is_tid? (term v_2)))))
+   (side-condition (or (is_nil? (term v_1))
+                       (is_nil? (term v_2))))
 
    (where String_2 ,(if (is_string? (term v_1))
                         (term v_1)
@@ -708,20 +710,9 @@
   ;                                  
   ;                                  
   ;
-  
-  ; Bad argument #1
-  [(δbasic next v_1 v_2 θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_1))
-   
-   (side-condition (not (equal? (term String_1)
-                                "table")))
-   
-   (where String_2 ,(string-append
-                     "bad argument #1 to 'next' (table expected, got "
-                     (term String_1)
-                     ")"))]
+  ; default values
+  [(δbasic next v_1 θ)
+   (δbasic next v_1 nil θ)]
   
   ; {the first argument is a pointer to a table}
 
@@ -764,6 +755,17 @@
   ; Invalid key.
   [(δbasic next objref v θ)
    (δbasic error "invalid key to 'next'")]
+
+   ; bad argument #1
+  [(δbasic next v_1 v_2 θ)
+   (δbasic error String_2)
+   
+   (where String_1 (δbasic type v_1))
+   
+   (where String_2 ,(string-append
+                     "bad argument #1 to 'next' (table expected, got "
+                     (term String_1)
+                     ")"))]
   
   
   ;                                          
@@ -797,8 +799,8 @@
 
   ; Default iterator: next
   [(δbasic pairs objref θ)
-   (< (function $next (table index)
-                (return ($builtIn next (table index)))
+   (< (function $next (<<<)
+                (return ($builtIn next (<<<)))
                 end) objref nil >)
    
    (where nil (indexMetaTable objref "__pairs" θ))]
