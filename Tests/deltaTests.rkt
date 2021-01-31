@@ -455,7 +455,7 @@
                                   ((\{ (\[ 1 \] = 2)
                                        (\[ 3 \] = 4) \}) nil 1)))))
               (term ($err
-                     "bad argument #1 to 'next' (table expected, got number)")))
+                     "erroneous actual parameters to next")))
   
   (test-equal (term (δ next (objr 1) nil (((objr 1) ((\{ (\[ 1 \] = 2)
                                                          (\[ 3 \] = 4)
@@ -507,18 +507,18 @@
               (term (< 2 >)))
   
   (test-equal (term (δ select true 1 2))
-              (term ($err "bad argument #1 to 'select' (number expected)")))
+              (term ($err "erroneous actual parameters to select")))
   
   ; setmetatable
   (test-equal (term (δ setmetatable 1 1 ()))
               (term (()
                      ($err
-                      "bad argument #1 to 'setmetatable' (table expected, got number)"))))
+                       "erroneous actual parameters to setmetatable"))))
   
   (test-equal (term (δ setmetatable (objr 1) 1 (((objr 1) ((\{ \}) nil 1)))))
               (term ((((objr 1) ((\{ \}) nil 1)))
                      ($err
-                      "bad argument #2 to 'setmetatable' (nil or table expected)"))))
+                      "erroneous actual parameters to setmetatable"))))
   
   (test-equal (term (δ setmetatable (objr 1)
                        (objr 3)

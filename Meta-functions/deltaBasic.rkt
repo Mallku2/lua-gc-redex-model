@@ -202,7 +202,7 @@
   [(δbasic not v) 
    false]
 
-   ; default case of binop and unop
+  ; default case of binop and unop
   [(δbasic any v ...)
    (δbasic error String)
 
@@ -211,7 +211,7 @@
                                
    
    (where String ,(string-append (symbol->string (term any))
-                              ": erroneous parameters"))]
+                                 ": erroneous parameters"))]
 
     
   ;                                                                                                                          
@@ -250,26 +250,24 @@
   ; assert: weird behavior
   [(δbasic assert)
    (δbasic error "assertion failed!")]
-  
-  ; assert: condition evaluates to false or nil
-  [(δbasic assert v_1)
-   (δbasic error "assertion failed!")
-   
-   (side-condition (is_false_cond? (term v_1)))]
 
-  [(δbasic assert v_1 v_2)
-   (δbasic error any)
-   
-   (side-condition (is_false_cond? (term v_1)))
-   
-   (where any ,(if (equal? (term v_2) (term nil))
-                   ; v_2 is nil. Return default error message.
-                   (term "assertion failed!")
-                   (term v_2)))]
-  
-  ; assert: condition evaluates to true
-  [(δbasic assert v ...)
-   (< v ... >)]
+  ; condition evaluates to true
+  [(δbasic assert v_1 v_2 ...)
+   (< v_1 v_2 ... >)
+
+   (side-condition (not (is_false_cond? (term v_1))))]
+
+  ; default error message
+  [(δbasic assert v_1)
+   (δbasic assert v_1 "assertion failed!")]
+
+  [(δbasic assert v_1 nil v ...)
+   (δbasic assert v_1 "assertion failed!")]
+
+  ; {is_false_cond? v_1}
+  ; {v_2 is a proper error message}
+  [(δbasic assert v_1 v_2 v_3 ...)
+   (δbasic error v_2)]
 
   
   ;                                                                                                                  
@@ -305,15 +303,29 @@
   ;    ;;;;    ;       ;       ;;;;    ;     
   ;                                          
   ;                                          
-  ;                                          
+  ;
+  ; correction of parameters
+  [(δbasic error)
+   (δbasic error nil 1)]
   
-  [(δbasic error v)
-   ($err v)]
-  
+  [(δbasic error v_1)
+   (δbasic error v_1 1)]
+
+  [(δbasic error v_1 nil v ...)
+   (δbasic error v_1 1)]
+
+  [(δbasic error v_1 v_2 v_3 v_4 ...)
+   (δbasic error v_1 v_2)]
+
+  ; coercion
+  [(δbasic error v_1 String)
+   (δbasic error v_1 Number)
+
+   (where Number (δbasic tonumber v_1 nil))]
+
   ; TODO: model level
-  [(δbasic error v_1 v_2)
-   ($err v_1)]
-  
+  [(δbasic error v Number)
+   ($err v)]
   
   ;                                                                                                  
   ;                                                                           ;       ;;;            
@@ -329,59 +341,60 @@
   ;    ;;; ;   ;;;;      ;;;  ;  ;  ;  ;;;;      ;;;   ;;; ;     ;;;   ;;; ;  ;;;;;      ;;;   ;;;;  
   ;        ;                                                                                         
   ;    ;   ;                                                                                         
-  ;     ;;;                                                                                          
+  ;     ;;;
+  ;
+  ; discarding surplus parameters
+  [(δbasic getmetatable v_1 v_2 v_3 ... θ)
+   (δbasic getmetatable v_1 θ)]
+  
   ; table value has a meta-table, which has a "__metatable" key.
-  [(δbasic getmetatable objref_1 (osp_1 ...
-                              (objref_1 (tableconstructor objref_3 any_1))
-                              osp_2 ...))
+  [(δbasic getmetatable tid_1 (osp_1 ...
+                                  (tid_1 (tableconstructor tid_3 any_1))
+                                  osp_2 ...))
    v
    
    (where (osp_3 ...
-           (objref_3 ((\{ field_1 ... (\[ "__metatable" \] = v) field_2 ... \})
+           (tid_3 ((\{ field_1 ... (\[ "__metatable" \] = v) field_2 ... \})
                       any_2 ...))
            osp_4 ...)
 
           (osp_1 ...
-           (objref_1 (tableconstructor objref_3 any_1))
+           (tid_1 (tableconstructor tid_3 any_1))
            osp_2 ...))
 
-   (side-condition (not (is_nil? (term v))))
-   ]
+   (side-condition (not (is_nil? (term v))))]
 
   ; table value doesn't have a protected meta-table
-  [(δbasic getmetatable objref (osp_1 ...
-                            (objref (tableconstructor v any))
-                            osp_2 ...))
+  [(δbasic getmetatable tid (osp_1 ...
+                                (tid (tableconstructor v any))
+                                osp_2 ...))
    v]
 
   
   ; the value isn't a table. It has a meta-table, which has
   ; a "__metatable" key,
   [(δbasic getmetatable any_1 (osp_1 ...
-                           (objref_2 ((\{ field ...
-                                          (\[ "__metatable" \] = v)
-                                          field ... \})
-                                      any_2 ...))
-                           osp_2 ...))
+                               (tid_2 ((\{ field ...
+                                              (\[ "__metatable" \] = v)
+                                              field ... \})
+                                          any_2 ...))
+                               osp_2 ...))
    v
    
-   (where objref_2 (getMetaTableRef any_1))
-   ]
+   (where tid_2 (getMetaTableRef any_1))]
   
   ; the value isn't a table. It has a meta-table, which has not a "__metatable"
   ; key
   [(δbasic getmetatable any_1 (osp_1 ...
-                           (objref_2 any_2)
-                           osp_2 ...))
-   objref_2
+                               (tid_2 any_2)
+                               osp_2 ...))
+   tid_2
    
-   (where objref_2 (getMetaTableRef any_1))
-   ]
-  
-  ; the value isn't a table. Its type has not a meta-table set.
-  [(δbasic getmetatable any θ)
+   (where tid_2 (getMetaTableRef any_1))]
+
+  ; the value isn't a table and its type has not a meta-table set.
+  [(δbasic getmetatable v θ)
    nil]
-  
   
   ;                                                  
   ;     ;                       ;                    
@@ -398,23 +411,26 @@
   ;           ;                                      
   ;           ;                                      
   ;           ;
+  ; discarding surplus parameters
+  [(δbasic ipairs tid v_1 v_2 ... θ)
+   (δbasic ipairs tid θ)]
   
   ; custom iterator, provided by the metatable
-  [(δbasic ipairs objref θ)
+  [(δbasic ipairs tid θ)
    ((function $IpairsCustomIter ()
-              (local v1 v2 v3 = (any (objref))
+              (local v1 v2 v3 = (any (tid))
                 in
                 (return (< v1 v2 v3 >))
                 end)
               end) ())
    
-   (where any (indexMetaTable objref "__ipairs" θ))
+   (where any (indexMetaTable tid "__ipairs" θ))
    
    (side-condition (not (equal? (term any)
                                 (term nil))))]
 
   ; default iterator
-  [(δbasic ipairs objref θ)
+  [(δbasic ipairs tid θ)
    (< (function $iPairsDefaultIter (t var)
                 (local result ttype = nil ($builtIn type (t))
                   in
@@ -447,12 +463,9 @@
                        
                        end))
                   end)
-                end) objref 0 >)
+                end) tid 0 >)
    
-   (where nil (indexMetaTable objref "__ipairs" θ))]
-  
-  [(δbasic ipairs v ... θ)
-   (δbasic error "bad argument #1 (table expected)")]
+   (where nil (indexMetaTable tid "__ipairs" θ))]
   
   
   ;                                  
@@ -485,7 +498,7 @@
    (δbasic load v_1 v_2 v_3 (objr ,objStoreFirstLocation))]
 
   ; final check of parameters
-  [(δbasic load v_1 v_2 v_3 v_4)
+  [(δbasic load v_1 v_2 v_3 v_4 v_8 ...)
    (δbasic load v_1 v_5 v_6 v_7)
 
    (side-condition (or (is_nil? (term v_2))
@@ -514,15 +527,14 @@
    ; (obtained through string.dump). We reuse Racket's reader to
    ; try to parse it and obtain the corresponding redex term.
    (where t ,(with-handlers
-                     ([exn:fail?
-                       ; the string cannot be parsed
-                       (λ (e) (term (< nil
-                                       "attempt to load a text chunk (mode is 'b')"
-                                       >)))])
+                 ([exn:fail?
+                   ; the string cannot be parsed
+                   (λ (e) (term (< nil
+                                   "attempt to load a text chunk (mode is 'b')"
+                                   >)))])
                    
-                   (read (open-input-string (term String_1)))
-                   ))
-   ]
+               (read (open-input-string (term String_1)))
+               ))]
  
   ; Lua program expressed into a string, either syntactically correct or not 
   [(δbasic load String v_1 "t" v_2)
@@ -647,6 +659,7 @@
   ;                                                                  
   ;                                                                  
   ;
+  ; TODO: include reading from standard input
   ; default values
   [(δbasic loadfile String θ)
    (δbasic loadfile String "bt" (objr ,objStoreFirstLocation) θ)]
@@ -655,7 +668,7 @@
    (δbasic loadfile String v (objr ,objStoreFirstLocation) θ)]
 
   ; last check
-  [(δbasic loadfile String_1 v_1 v_2 θ)
+  [(δbasic loadfile String_1 v_1 v_2 v_3 ... θ)
    (δbasic loadfile String_1 String_2 tid θ)
 
    (side-condition (or (is_nil? (term v_1))
@@ -666,16 +679,16 @@
                         "bt"))
 
    (where tid ,(if (is_tid? (term v_2))
-                        (term v_2)
-                        (term (objr ,objStoreFirstLocation))))]
+                   (term v_2)
+                   (term (objr ,objStoreFirstLocation))))]
    
   [(δbasic loadfile String_1 v_2 v_3 θ)
    (δbasic load String_2 nil v_2 v_3)
 
    (where String_2 ,(with-handlers
-                     ([exn:fail? (λ (e) (term nil))])
+                        ([exn:fail? (λ (e) (term nil))])
                       (file->string (term String_1))
-                   ))]
+                      ))]
 
   ; no file found
   [(δbasic loadfile String_1 v_2 v_3 θ)
@@ -711,61 +724,60 @@
   ;                                  
   ;
   ; default values
-  [(δbasic next v_1 θ)
-   (δbasic next v_1 nil θ)]
-  
-  ; {the first argument is a pointer to a table}
+  [(δbasic next tid θ)
+   (δbasic next tid nil θ)]
+
+  [(δbasic next tid v_1 v_2 v_3 ... θ)
+   (δbasic next tid v_1 θ)]
 
   ; from the ref. manual: "The order in which the indices are enumerated is not
   ; specified, even for numeric indices"
   ; we use the order of occurrence of the fields in the int. rep. of the table 
 
   ; nil index, non empty table
-  [(δbasic next objref nil (osp_1 ...
-                        (objref ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
-                        osp_2 ...))
+  [(δbasic next tid nil (osp_1 ...
+                            (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
+                            osp_2 ...))
    (< v_1 v_2 >)]
   
   ; nil index, empty table
-  [(δbasic next objref nil θ)
+  [(δbasic next tid nil θ)
    (< nil >)]
   
   ; not the last index
-  [(δbasic next objref v_1 (osp_1 ...
-                        (objref
-                         ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
-                              field_2 ... \})
-                          any ...))
-                        osp_2 ...))
+  [(δbasic next tid v_1 (osp_1 ...
+                            (tid
+                             ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
+                                  field_2 ... \})
+                              any ...))
+                            osp_2 ...))
    (< v_4 v_5 >)
    
-   (side-condition (is_true? (term (δbasic == v_1 v_2))))
-   ]
+   (where true (δbasic == v_1 v_2))]
   
   ; Last index
-  [(δbasic next objref v_1 (osp_1 ...
-                        (objref
-                         ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
-                        osp_2 ...))
+  [(δbasic next tid v_1 (osp_1 ...
+                            (tid
+                             ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
+                            osp_2 ...))
    (< nil >)
    
-   (side-condition (is_true? (term (δbasic == v_1 v_2))))
-   ]
+   (where true (δbasic == v_1 v_2))]
   
-  ; Invalid key.
-  [(δbasic next objref v θ)
+  ; invalid key.
+  [(δbasic next tid v θ)
    (δbasic error "invalid key to 'next'")]
 
-   ; bad argument #1
-  [(δbasic next v_1 v_2 θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_1))
-   
-   (where String_2 ,(string-append
-                     "bad argument #1 to 'next' (table expected, got "
-                     (term String_1)
-                     ")"))]
+;  ; bad argument #1
+;  [(δbasic next v_1 v_2 θ)
+;   (δbasic error String_2)
+;   
+;   (where String_1 (δbasic type v_1))
+;   
+;   (where String_2 ,(string-append
+;                     "bad argument #1 to 'next' (table expected, got "
+;                     (term String_1)
+;                     ")"))]
   
   
   ;                                          
@@ -783,27 +795,29 @@
   ;   ;                                      
   ;   ;                                      
   ;   ;
-
-  ; Custom iterator, provided by the metatable
-  [(δbasic pairs objref θ)
+  [(δbasic pairs tid v_1 v_2 ... θ)
+   (δbasic pairs tid θ)]
+  
+  ; custom iterator, provided by the metatable
+  [(δbasic pairs tid θ)
    ((function $pairsCustomIter ()
-              (local v1 v2 v3 = (any (objref))
+              (local v1 v2 v3 = (any (tid))
                 in
                 (return (< v1 v2 v3 >))
                 end)
               end) ())
    
-   (where any (indexMetaTable objref "__pairs" θ))
+   (where any (indexMetaTable tid "__pairs" θ))
    
    (side-condition (not (is_nil? (term any))))]
 
   ; Default iterator: next
-  [(δbasic pairs objref θ)
+  [(δbasic pairs tid θ)
    (< (function $next (<<<)
                 (return ($builtIn next (<<<)))
-                end) objref nil >)
+                end) tid nil >)
    
-   (where nil (indexMetaTable objref "__pairs" θ))]
+   (where nil (indexMetaTable tid "__pairs" θ))]
   
   [(δbasic pairs v θ)
    (δbasic error String_2)
@@ -863,7 +877,7 @@
                              (string-append accum
                                             (term (δbasic tostring ,str θ))
                                             )
-                            )
+                             )
                            (term String_1)
                            (term (v_1 ...))))
 
@@ -879,7 +893,7 @@
                              (string-append accum
                                             (term (δbasic tostring ,str θ))
                                             )
-                            )
+                             )
                            (term " ")
                            (term (v_1 ...))))
 
@@ -901,7 +915,10 @@
   ;    ;       ;;; ;   ;  ;    ;;;;    ;;; ;   ;;; ;   ;;; ;     ;;; 
   ;                                        ;                         
   ;                                        ;                         
-  ;                                        ;                         
+  ;
+  ; discarding surplus parameters: defined here for clarity purposes                         
+  [(δbasic rawequal v_1 v_2 v_3 v_4 ...)
+   (δbasic rawequal v_1 v_2)]
   
   [(δbasic rawequal v_1 v_2)
    (δbasic == v_1 v_2)]
@@ -921,34 +938,22 @@
   ;                                ;                 
   ;                            ;   ;                 
   ;                             ;;;                  
+  [(δbasic rawget tid v_1 v_2 v_3 ... θ)
+   (δbasic rawget tid v_1 θ)]
   
-  ; Bad argument #1
-  [(δbasic rawget v_1 v_2 θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_1))
-   
-   (side-condition (not (equal? (term String_1)
-                                "table")))
-   
-   (where String_2 ,(string-append 
-                     "bad argument #1 (table expected, got "
-                     (term String_1)
-                     ")"))]
-  
-  ; {objref points to a table}
-  [(δbasic rawget objref_1 v_1
-              (osp_1 ...
-               (objref_1 ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
-                          any ...))
-               osp_2 ...))
+  ; {tid points to a table}
+  [(δbasic rawget tid_1 v_1
+           (osp_1 ...
+            (tid_1 ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
+                       any ...))
+            osp_2 ...))
    v_3
    
    (side-condition (equal? (term (δbasic == v_1 v_2))
                            'true))]
   
-  ; {v isn't a key of the table pointed by objref}
-  [(δbasic rawget objref v θ)
+  ; {v isn't a key of the table pointed by tid}
+  [(δbasic rawget tid v θ)
    nil]
   
   
@@ -966,25 +971,28 @@
   ;    ;       ;;; ;   ;  ;      ;;;   ;;;;   ;    ; 
   ;                                                  
   ;                                                  
-  ;                                                  
-  ; Bad argument #1 to 'rawlen'
-  [(δbasic rawlen v θ)
-   (δbasic error "bad argument #1 to 'rawlen'(table or string expected)")
-   
-   (where string (δbasic type v))
-   
-   (side-condition (not (or (equal? (term string)
-                                    "table")
-                            
-                            (equal? (term string)
-                                    "string"))))]
+  ;
+  [(δbasic rawlen v_1 v_2 v_3 ... θ)
+   (δbasic rawlen v_1 θ)]
+  
+;  ; Bad argument #1 to 'rawlen'
+;  [(δbasic rawlen v θ)
+;   (δbasic error "bad argument #1 to 'rawlen'(table or string expected)")
+;   
+;   (where string (δbasic type v))
+;   
+;   (side-condition (not (or (equal? (term string)
+;                                    "table")
+;                            
+;                            (equal? (term string)
+;                                    "string"))))]
   
   [(δbasic rawlen String θ)
    (δbasic \# String)]
   
-  [(δbasic rawlen objref_1 (osp_1 ...
-                        (objref_1 (tableconstructor any ...))
-                        osp_2 ...))
+  [(δbasic rawlen tid (osp_1 ...
+                       (tid (tableconstructor any ...))
+                       osp_2 ...))
    (δbasic \# tableconstructor)]
   
   ;                                                  
@@ -1002,34 +1010,23 @@
   ;                                                  
   ;                                                  
   ;                                                  
-  
-  ; Bad argument #1 to 'rawset'
-  [(δbasic rawset v_1 v_2 v_3 θ)
-   (θ (δbasic error String_2))
-   
-   (where String_1 (δbasic type v_1))
-   
-   (side-condition (not (equal? (term String_1)
-                                "table")))
-   
-   (where String_2 ,(string-append
-                     "bad argument #1 (table expected, got "
-                     (term String_1)
-                     ")"))]
+  [(δbasic rawset tid v_1 v_2 v_3 v_4 ... θ)
+   (δbasic rawset tid v_1 v_2 θ)]
 
-  ; {(δbasic type v_1) == "table"}
-  ; Bad argument #2 to 'rawset'
-  [(δbasic rawset v_1 nil v_3 θ)
+  ; special erroneous cases
+  ; bad argument #2 to 'rawset'
+  [(δbasic rawset tid nil v θ)
    (θ (δbasic error String_2))
    
    (where String_2 "table index is nil")]
   
-  [(δbasic rawset v_1 +nan.0 v_3 θ)
+  [(δbasic rawset tid +nan.0 v θ)
    (θ (δbasic error String_2))
    
    (where String_2 "table index is NaN")]
-  
-  ; Delete field
+
+  ; {v_1 ∉ {nil, Nan}}
+  ; delete field
   [(δbasic rawset tid v_1 nil θ)
    ((osp_1 ...
      (tid ((\{ field_1 ... field_2 ... \}) any ...))
@@ -1043,48 +1040,46 @@
                      osp_2 ...))
            (equal? (term (δbasic == v_1 v_2))
                    'true))
-          (tid v_1 θ))
-   ]
+          (tid v_1 θ))]
   
   ; v_2 != nil
-  [(δbasic rawset objref v_1 v_2 (osp_1 ...
-                              (objref ((\{ field_1 ... (\[ v_3 \] = v_4)
-                                           field_2
-                                           ... \})
-                                       any ...))
-                              osp_2 ...))
+  ; field update
+  [(δbasic rawset tid v_1 v_2 (osp_1 ...
+                                  (tid ((\{ field_1 ... (\[ v_3 \] = v_4)
+                                               field_2
+                                               ... \})
+                                           any ...))
+                                  osp_2 ...))
    ((osp_1 ...
-     (objref ((\{ field_1 ... (\[ v_3 \] = v_2) field_2 ... \}) any ...))
-     osp_2 ...) objref)
+     (tid ((\{ field_1 ... (\[ v_3 \] = v_2) field_2 ... \}) any ...))
+     osp_2 ...) tid)
 
-   (side-condition (equal? (term (δbasic == v_1 v_3))
-                           'true))
-   ]
+   (where true (δbasic == v_1 v_3))]
   
-  ; Add a new field 
-  [(δbasic rawset objref v_1 v_2 (osp_1 ...
-                              (objref ((\{ field ... \}) any ...))
-                              osp_2 ...))
+  ; add a new field 
+  [(δbasic rawset tid v_1 v_2 (osp_1 ...
+                                  (tid ((\{ field ... \}) any ...))
+                                  osp_2 ...))
 
    ((osp_1 ...
-     (objref ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
-     osp_2 ...) objref)
+     (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
+     osp_2 ...) tid)
 
    (side-condition (not (equal? (term v_2)
                                 (term nil))))]
 
-  [(δbasic rawset objref v_1 nil (osp_1 ...
-                              (objref ((\{ field ... \}) any ...))
-                              osp_2 ...))
+;  [(δbasic rawset tid v_1 nil (osp_1 ...
+;                                  (tid ((\{ field ... \}) any ...))
+;                                  osp_2 ...))
+;
+;   ((osp_1 ... (tid ((\{ field ... \}) any ...)) osp_2 ...) tid)]
 
-   ((osp_1 ... (objref ((\{ field ... \}) any ...)) osp_2 ...) objref)]
-
-  ; Wrong arguments
-  [(δbasic rawset v ... nil θ)
-   (θ (δbasic error "rawset: missing arguments"))
-
-   (side-condition (< (length (term (v ...)))
-                      3))]
+;  ; Wrong arguments
+;  [(δbasic rawset v ... nil θ)
+;   (θ (δbasic error "rawset: missing arguments"))
+;
+;   (side-condition (< (length (term (v ...)))
+;                      3))]
   
   ;                                                  
   ;                   ;;;                            
@@ -1100,7 +1095,13 @@
   ;    ;;;;    ;;;;      ;;;   ;;;;     ;;;      ;;; 
   ;                                                  
   ;                                                  
-  ;                                                  
+  ;
+  ; coercion
+  [(δbasic select String v ...)
+   (δbasic select Number v ...)
+
+   (where Number (δbasic tonumber String nil))]
+  
   ; index out of range
   [(δbasic select Number_1 v ...)
    (δbasic error "bad argument #1 to 'select' (index out of range)")
@@ -1123,7 +1124,7 @@
 
    (where (v_2 ...) ,(list-tail (term (v ...)) (- (term Number_2) 1)))]
   
-  ; positive NUmber_1 > (length (sv ...))
+  ; positive NUmber_1 > (length (v ...))
   [(δbasic select Number_1 v ...)
    (< >)
    
@@ -1131,7 +1132,7 @@
    
    (side-condition (> (term Number_2) (length (term (v ...)))))]
   
-  ; Negative index
+  ; negative index
   [(δbasic select Number_1 v_1 ...)
    (< v_2 ... >)
 
@@ -1148,20 +1149,20 @@
 
    (where (v_2 ...) ,(list-tail (term (v_1 ...)) (term Number_5)))]
   
-  ; Obtain the total number of actual arguments received.
+  ; obtain the total number of actual arguments received.
   [(δbasic select "#" v ...)
-   (< any >)
+   (< Number >)
    
-   (where any ,(length (term (v ...))))]
+   (where Number ,(length (term (v ...))))]
   
   [(δbasic select '#' v ...)
-   (< any >)
+   (< Number >)
    
-   (where any ,(length (term (v ...))))]
-  
-  ; Default case
-  [(δbasic select v_1 v ...)
-   (δbasic error "bad argument #1 to 'select' (number expected)")]
+   (where Number ,(length (term (v ...))))]
+;  
+;  ; Default case
+;  [(δbasic select v_1 v ...)
+;   (δbasic error "bad argument #1 to 'select' (number expected)")]
   
   ;                                                                                                  
   ;                                                                           ;       ;;;            
@@ -1178,53 +1179,65 @@
   ;                                                                                                  
   ;                                                                                                  
   ;
+  [(δbasic setmetatable tid v_1 v_2 v_3 ... θ)
+   (δbasic setmetatable tid v_1 θ)
+
+   (side-condition (or (is_tid? (term v_1))
+                       (is_nil? (term v_1))))]
+;  ; Bad argument #1.
+;  [(δbasic setmetatable v_1 v_2 θ)
+;   (θ (δbasic error String_2))
+;   
+;   (where String_1 (δbasic type v_1))
+;   
+;   (side-condition (not (equal? (term String_1)
+;                                "table")))
+;   
+;   (where String_2 ,(string-append
+;                     "bad argument #1 to 'setmetatable' (table expected, got "
+;                     (term String_1)
+;                     ")"))]
   
-  ; Bad argument #1.
-  [(δbasic setmetatable v_1 v_2 θ)
-   (θ (δbasic error String_2))
-   
-   (where String_1 (δbasic type v_1))
-   
-   (side-condition (not (equal? (term String_1)
-                                "table")))
-   
-   (where String_2 ,(string-append
-                     "bad argument #1 to 'setmetatable' (table expected, got "
-                     (term String_1)
-                     ")"))]
+;  ; {tid is a pointer to a table}
+;  ; Bad argument #2.
+;  [(δbasic setmetatable tid v θ)
+;   (θ (δbasic error "bad argument #2 to 'setmetatable' (nil or table expected)"))
+;   
+;   (where String_1 (δbasic type v))
+;   
+;   (side-condition (not (or (equal? (term String_1)
+;                                    "table")
+;                            
+;                            (equal? (term String_1)
+;                                    "nil"))))]
   
-  ; {objref is a pointer to a table}
-  ; Bad argument #2.
-  [(δbasic setmetatable objref v θ)
-   (θ (δbasic error "bad argument #2 to 'setmetatable' (nil or table expected)"))
-   
-   (where String_1 (δbasic type v))
-   
-   (side-condition (not (or (equal? (term String_1)
-                                    "table")
-                            
-                            (equal? (term String_1)
-                                    "nil"))))]
-  
-  ; {v points to a table or is nil}
-  
-  ; Protected meta-table
-  [(δbasic setmetatable objref v θ)
+;  ; {v points to a table or is nil}
+
+  ; {v ∈ {tid, nil}}
+  ; protected meta-table
+  [(δbasic setmetatable tid v θ)
    (θ (δbasic error "cannot change a protected metatable"))
    
-   (side-condition (term (protectedMetaTable? objref θ)))]
+   (side-condition (term (protectedMetaTable? tid θ)))
+
+   (side-condition (or (is_tid? (term v))
+                       (is_nil? (term v))))]
   
-  ; Non protected meta-table
-  [(δbasic setmetatable tid v (osp_1 ...
-                           (tid (evaluatedtable any pos_1))
-                           osp_2 ...))
+  ; non protected meta-table
+  [(δbasic setmetatable tid v_1 (osp_1 ...
+                               (tid (evaluatedtable v_2 pos_1))
+                               osp_2 ...))
    ((osp_1 ...
-     (tid (evaluatedtable v pos_2))
+     (tid (evaluatedtable v_1 pos_2))
      osp_2 ...) tid)
 
-   (where pos_2 (setFin tid v (osp_1 ...
-                               (tid (evaluatedtable any pos_1))
-                               osp_2 ...)))]
+   (side-condition (or (is_tid? (term v_1))
+                       (is_nil? (term v_1))))
+   
+   ; if metatable has a __gc field, set tid for finalization
+   (where pos_2 (setFin tid v_1 (osp_1 ...
+                                 (tid (evaluatedtable v_2 pos_1))
+                                 osp_2 ...)))]
   
   
   ;                                                                  
@@ -1242,13 +1255,18 @@
   ;                                                                  
   ;                                                                  
   ;
+  [(δbasic tonumber v)
+   (δbasic tonumber v nil)]
+
+  [(δbasic tonumber v_1 v_2 v_3 v_4 ...)
+   (δbasic tonumber v_1 v_2)]
+  
   [(δbasic tonumber Number v)
    (δbasic tonumber String v)
 
    ; since Number could be in a non-decimal base v, it is easier to coerce it
    ; to string, and apply the same algorithm of conversion over it
-   (where String (δbasic tostring Number ()))
-   ]
+   (where String (δbasic tostring Number ()))]
 
   ; decimal number, no base specified
   [(δbasic tonumber String nil)
@@ -1259,15 +1277,15 @@
    ; however, lexer alone will not suffice: for example, in case of malformed
    ; strings beginning with a correct string representation of numbers.
    (where (any = Number) ,(with-handlers ([exn:fail?
-                                      (λ (e) #f)])
-                       ((λ ()
-                          ; to use the parser, we need to feed it with an
-                          ; statement...
-                          ; NOTE: we append String directly. Then, the
-                          ; conversion to a number is done by the lexer/parser.
-                          (parse-this (string-append "_ENV = " (term String))
-                                      #f
-                                      (void))))))]
+                                           (λ (e) #f)])
+                            ((λ ()
+                               ; to use the parser, we need to feed it with an
+                               ; statement...
+                               ; NOTE: we append String directly. Then, the
+                               ; conversion to a number is done by the lexer/parser.
+                               (parse-this (string-append "_ENV = " (term String))
+                                           #f
+                                           (void))))))]
 
   ; {v ∉ String ∨ v cannot be coerced to a number}
   [(δbasic tonumber v nil)
@@ -1285,13 +1303,13 @@
   [(δbasic tonumber String Number)
    (convert_string String Number)]
 
-  ; {v_2 ≠ nil ∧ (v_1 ∉ String ∨ v_1 cannot be coerced to a number)}
-  [(δbasic tonumber v_1 v_2)
-   (δbasic error String)
-
-   (where String ,(string-append
-                   "bad argument #1 to 'tonumber' (string expected)"))]
-  
+;  ; {v_2 ≠ nil ∧ (v_1 ∉ String ∨ v_1 cannot be coerced to a number)}
+;  [(δbasic tonumber v_1 v_2)
+;   (δbasic error String)
+;
+;   (where String ,(string-append
+;                   "bad argument #1 to 'tonumber' (string expected)"))]
+;  
   
   ;                                                                  
   ;                                             ;                    
@@ -1308,12 +1326,16 @@
   ;                                                                ; 
   ;                                                            ;   ; 
   ;                                                             ;;;
-  ; table objref has an associated metatable, with field ("__tostring" = any)
-  [(δbasic tostring objref θ)
-   (any (objref))
 
-   ; index metatable of objref
-   (where any (indexMetaTable objref "__tostring" θ))
+  [(δbasic tostring v_1 v_2 v_3 ... θ)
+   (δbasic tostring v_1 θ)]
+  
+  ; table tid has an associated metatable, with field ("__tostring" = any)
+  [(δbasic tostring tid θ)
+   (any (tid))
+
+   ; index metatable of tid
+   (where any (indexMetaTable tid "__tostring" θ))
 
    (side-condition (not (is_nil? (term any))))]
   
@@ -1323,17 +1345,17 @@
 
    (side-condition (not (is_tid? (term v))))
    
-   (where objref (getMetaTableRef v))
+   (where tid (getMetaTableRef v))
    
-   (side-condition (term (refBelongsToTheta? objref θ)))
+   (side-condition (term (refBelongsToTheta? tid θ)))
 
-   ; directly index metatable objref
-   (where any (δbasic rawget objref "__tostring" θ))
+   ; directly index metatable tid
+   (where any (δbasic rawget tid "__tostring" θ))
 
    (side-condition (not (is_nil? (term any))))]
   
   ; {meta-table of value's type is not set ∨ meta-table does not have
-  ; __tostring field ∨ v ∈ objref}
+  ; __tostring field ∨ v ∈ tid}
   
   ; implement custom conversions to string
   ; simple way of avoiding exception check, when using inexact->exact, below
@@ -1392,9 +1414,12 @@
   ;      ;;;     ;    ;;;;;    ;;;;  
   ;              ;    ;              
   ;             ;     ;              
-  ;            ;;     ;              
+  ;            ;;     ;
+  
+  [(δbasic type v_1 v_2 v_3 ...)
+   (δbasic type v_1)]
 
-  [(δbasic type Number )
+  [(δbasic type Number)
    "number"]
   
   [(δbasic type nil)
@@ -1409,8 +1434,7 @@
   [(δbasic type cid)
    "function"]
   
-  ; Default case
-  [(δbasic type objref)
+  [(δbasic type tid)
    "table"]
   
   ;                                                  
@@ -1440,8 +1464,8 @@
   [(δbasic builtinserv v ...)
    (δbasic error any)
 
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
   
   ; services that don't modify theta
   [(δbasic builtinserv v ... θ)
@@ -1459,16 +1483,16 @@
                                   rawget
                                   rawlen))))
    
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))
    ]
 
   ; services that modify theta
   [(δbasic builtinserv v ... θ)
    (θ (δbasic error any))
    
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))
    ]
   )
 
@@ -1509,49 +1533,49 @@
 ;        key}
 ; ret = (indexMetaTable v_1 v_2 θ)
 (define-metafunction ext-lang
-  ; objref_1 points to a table, which has a metatable with key v_1
-  [(indexMetaTable objref_1 v_1 (osp_1 ...
-                                 (objref_1 (evaluatedtable objref_2 any))
+  ; tid_1 points to a table, which has a metatable with key v_1
+  [(indexMetaTable tid_1 v_1 (osp_1 ...
+                                 (tid_1 (evaluatedtable tid_2 any))
                                  osp_2 ...))
    v_2
    
-   (where v_2 (δbasic rawget objref_2 v_1 (osp_1 ...
-                                      (objref_1 (evaluatedtable objref_2 any))
-                                      osp_2 ...)))]
+   (where v_2 (δbasic rawget tid_2 v_1 (osp_1 ...
+                                           (tid_1 (evaluatedtable tid_2 any))
+                                           osp_2 ...)))]
 
-  ; objref_1 points to a table, which hasn't a metatable
-  [(indexMetaTable objref v θ)
+  ; tid_1 points to a table, which hasn't a metatable
+  [(indexMetaTable tid v θ)
    nil]
   
   ; v_1 isn't a table and doesn't have a metatable.
   [(indexMetaTable v_1 v_2 θ)
    nil
    
-   (where objref (getMetaTableRef v_1))
+   (where tid (getMetaTableRef v_1))
    
-   (side-condition (not (term (refBelongsToTheta? objref θ))))]
+   (side-condition (not (term (refBelongsToTheta? tid θ))))]
   
   ; v_1 isn't a table and has a metatable.
   [(indexMetaTable v_1 v_2 θ)
    v_3
    
-   (where objref (getMetaTableRef v_1))
+   (where tid (getMetaTableRef v_1))
    
-   (where v_3 (δbasic rawget objref v_2 θ))])
+   (where v_3 (δbasic rawget tid v_2 θ))])
 
 (provide indexMetaTable)
 
 
 (define-metafunction ext-lang
   ; Protected meta-table
-  [(protectedMetaTable? objref θ)
+  [(protectedMetaTable? tid θ)
    #t
    
-   (side-condition (not (equal? (term (indexMetaTable objref "__metatable" θ))
+   (side-condition (not (equal? (term (indexMetaTable tid "__metatable" θ))
                                 (term nil))))]
   
   ; Default case
-  [(protectedMetaTable? objref θ)
+  [(protectedMetaTable? tid θ)
    #f])
 
 (provide protectedMetaTable?)
