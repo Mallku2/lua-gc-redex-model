@@ -676,7 +676,7 @@
               (term +nan.0))
   
   (test-equal (term (δ math.acos true))
-              (term ($err "math.acos: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.acos")))
 
   ; asin
   (test-equal (term (δ math.asin 0))
@@ -688,7 +688,7 @@
               (term +nan.0))
   
   (test-equal (term (δ math.asin true))
-              (term ($err "math.asin: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.asin")))
 
   ; atan
   (test-equal (term (δ math.atan 0))
@@ -696,14 +696,14 @@
               #:equiv =)
   
   (test-equal (term (δ math.atan true))
-              (term ($err "math.atan: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.atan")))
 
   ; ceil
   (test-equal (term (δ math.ceil 2.34))
               (term 3.0))
   
   (test-equal (term (δ math.ceil true))
-              (term ($err "math.ceil: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.ceil")))
 
   ; cos
   (test-equal (term (δ math.cos 0))
@@ -711,28 +711,28 @@
               #:equiv =)
   
   (test-equal (term (δ math.cos true))
-              (term ($err "math.cos: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.cos")))
 
   ; cosh
   (test-equal (term (δ math.cosh 1))
               (term 1.5430806348152437))
   
   (test-equal (term (δ math.cosh true))
-              (term ($err "math.cosh: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.cosh")))
 
   ; deg
   (test-equal (term (δ math.deg 0))
               (term 0))
   
   (test-equal (term (δ math.deg true))
-              (term ($err "math.deg: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.deg")))
 
   ; exp
   (test-equal (term (δ math.exp 1))
               (term ,euler.0))
   
   (test-equal (term (δ math.exp true))
-              (term ($err "math.exp: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.exp")))
   
   ; floor
   (test-equal (term (δ math.floor 1.8))
@@ -759,7 +759,7 @@
               (term 0))
   
   (test-equal (term (δ math.rad true))
-              (term ($err "math.rad: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.rad")))
 
   ; sin
   (test-equal (term (δ math.sin 0))
@@ -767,14 +767,14 @@
               #:equiv =)
   
   (test-equal (term (δ math.sin true))
-              (term ($err "math.sin: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.sin")))
 
   ; sinh
   (test-equal (term (δ math.sinh 1))
               (term 1.1752011936438014))
   
   (test-equal (term (δ math.sinh true))
-              (term ($err "math.sinh: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.sinh")))
 
   ; sqrt
   (test-equal (term (δ math.sqrt 9))
@@ -782,7 +782,7 @@
               #:equiv =)
   
   (test-equal (term (δ math.sqrt true))
-              (term ($err "math.sqrt: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.sqrt")))
 
   ; tan
   (test-equal (term (δ math.tan 0))
@@ -790,14 +790,14 @@
               #:equiv =)
   
   (test-equal (term (δ math.tan true))
-              (term ($err "math.tan: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.tan")))
 
   ; tanh
   (test-equal (term (δ math.tanh 1))
               (term 0.7615941559557649))
   
   (test-equal (term (δ math.tanh true))
-              (term ($err "math.tanh: bad argument #1 (number expected)")))
+              (term ($err "erroneous actual parameters to math.tanh")))
   
   
   

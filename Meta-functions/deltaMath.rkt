@@ -1,5 +1,6 @@
 #lang racket
 (require redex
+         math/base
          math/flonum ; operations over flonums
          "../grammar.rkt"
          "./deltaBasic.rkt")
@@ -38,6 +39,9 @@
   ;                          
   ;                          
   ;
+  [(δmath math.abs v_1 v_2 v_3 ...)
+   (δmath math.abs v_1)]
+  
   [(δmath math.abs String)
    (δmath math.abs Number)
    
@@ -60,6 +64,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.acos v_1 v_2 v_3 ...)
+   (δmath math.acos v_1)]
+  
   [(δmath math.acos String)
    (δmath math.acos Number)
    
@@ -85,6 +92,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.asin v_1 v_2 v_3 ...)
+   (δmath math.asin v_1)]
+  
   [(δmath math.asin String)
    (δmath math.asin Number)
    
@@ -110,6 +120,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.atan v_1 v_2 v_3 ...)
+   (δmath math.atan v_1)]
+  
   [(δmath math.atan String)
    (δmath math.atan Number)
    
@@ -134,6 +147,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.ceil v_1 v_2 v_3 ...)
+   (δmath math.ceil v_1)]
+  
   [(δmath math.ceil String)
    (δmath math.ceil Number)
    
@@ -156,6 +172,9 @@
   ;                          
   ;                          
   ;
+  [(δmath math.cos v_1 v_2 v_3 ...)
+   (δmath math.cos v_1)]
+  
   [(δmath math.cos String)
    (δmath math.cos Number)
    
@@ -180,6 +199,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.cosh v_1 v_2 v_3 ...)
+   (δmath math.cosh v_1)]
+  
   [(δmath math.cosh String)
    (δmath math.cosh Number)
    
@@ -203,6 +225,9 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;
+  [(δmath math.deg v_1 v_2 v_3 ...)
+   (δmath math.deg v_1)]
+  
   [(δmath math.deg String)
    (δmath math.deg Number)
    
@@ -227,6 +252,9 @@
   ;                   ;      
   ;                   ;      
   ;                   ;
+  [(δmath math.exp v_1 v_2 v_3 ...)
+   (δmath math.exp v_1)]
+  
   [(δmath math.exp String)
    (δmath math.exp Number)
    
@@ -249,7 +277,10 @@
   ;     ;        ;;;   ;;;;    ;;;;    ;     
   ;                                          
   ;                                          
-  ;                                          
+  ;
+  [(δmath math.floor v_1 v_2 v_3 ...)
+   (δmath math.floor v_1)]
+  
   [(δmath math.floor String)
    (δmath math.floor Number)
    
@@ -272,7 +303,10 @@
   ;     ;     ;  ;  ;  ;;;;    ;;;;; 
   ;                                  
   ;                                  
-  ;                                  
+  ;
+  [(δmath math.fmod v_1 v_2 v_3 v_4 ...)
+   (δmath math.fmod v_1 v_2)]
+  
   [(δmath math.fmod Number_1 ... String v ...)
    (δmath math.fmod Number_1 ... Number_2 v ...)
    
@@ -308,18 +342,30 @@
   ;                        ; 
   ;                    ;   ; 
   ;                     ;;;
+  ; default for base is e
+  [(δmath math.log v_1)
+   (δmath math.log v_1 ,euler.0)]
+  
+  [(δmath math.log v_1 v_2 v_3 v_4 ...)
+   (δmath math.log v_1 v_2)]
+  
   ; coercion
   [(δmath math.log Number_1 ... String v ...)
    (δmath math.log Number_1 ... Number_2 v ...)
    
    (where Number_2 (δbasic tonumber String nil))]
 
-  ; base is optional
-  [(δmath math.log Number_1 nil)
+  [(δmath math.log Number_1 v)
    ,(fllog (term Number_2))
 
+   ; or returns its value into a parenthesized expression
+   (where (\( true \)) (δbasic or
+                               (δbasic == v ,euler.0)
+                               (δbasic == v nil)))
+   
    (where Number_2 ,(real->double-flonum (term Number_1)))]
 
+  ; {Number_2 ≠ euler.0}
   [(δmath math.log Number_1 Number_2)
    ,(fllogb (real->double-flonum (term Number_2))
             (real->double-flonum (term Number_1)))]
@@ -344,10 +390,10 @@
    
    (where Number_2 (δbasic tonumber String nil))]
   
-  [(δmath math.max Number ...)
+  [(δmath math.max Number_1 Number_2 ...)
    ,(foldr (λ (nmbr accum) (max nmbr accum))
            -inf.0
-           (term (Number ...)))]
+           (term (Number_1 Number_2 ...)))]
   ;                                  
   ;                        ;     ;;  
   ;                        ;    ;    
@@ -363,6 +409,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.modf v_1 v_2 v_3 ...)
+   (δmath math.modf v_1)]
+  
   [(δmath math.modf String)
    (δmath math.modf Number)
    
@@ -387,7 +436,10 @@
   ;    ;       ;;; ;   ;;;;; 
   ;                          
   ;                          
-  ;                          
+  ;
+  [(δmath math.rad v_1 v_2 v_3 ...)
+   (δmath math.rad v_1)]
+  
   [(δmath math.rad String)
    (δmath math.rad Number)
    
@@ -410,7 +462,10 @@
   ;    ;;;;   ;;;;;   ;    ; 
   ;                          
   ;                          
-  ;                          
+  ;
+  [(δmath math.sin v_1 v_2 v_3 ...)
+   (δmath math.sin v_1)]
+  
   [(δmath math.sin String)
    (δmath math.sin Number)
    
@@ -434,6 +489,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.sinh v_1 v_2 v_3 ...)
+   (δmath math.sinh v_1)]
+  
   [(δmath math.sinh String)
    (δmath math.sinh Number)
    
@@ -459,6 +517,9 @@
   ;                ;                 
   ;                ;                 
   ;                ;
+  [(δmath math.sqrt v_1 v_2 v_3 ...)
+   (δmath math.sqrt v_1)]
+  
   [(δmath math.sqrt String)
    (δmath math.sqrt Number)
    
@@ -482,6 +543,9 @@
   ;                          
   ;                          
   ;
+  [(δmath math.tan v_1 v_2 v_3 ...)
+   (δmath math.tan v_1)]
+  
   [(δmath math.tan String)
    (δmath math.tan Number)
    
@@ -505,6 +569,9 @@
   ;                                  
   ;                                  
   ;
+  [(δmath math.tanh v_1 v_2 v_3 ...)
+   (δmath math.tanh v_1)]
+  
   [(δmath math.tanh String)
    (δmath math.tanh Number)
    
@@ -517,8 +584,8 @@
   [(δmath builtinserv v ...)
    (δbasic error any)
 
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              ": bad argument #1 (number expected)"))
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))
    ]
   )
 
