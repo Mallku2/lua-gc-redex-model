@@ -148,21 +148,6 @@
           (stat-fun-call (id-name '$dummyVar)
                          (exps '()))
           ))))
-
-;        (set! actual-block (close-scopes-in-block actual-block))
-;        ; TODO: simple fix to manage break statements into the body of repeat:
-;        ; by putting them into a while that loops once, that also contains the
-;        ; rest of the repeat loop
-;        (local-vars (exps (list (id-name '$dummyVar)))
-;                    (exps (make-list 1 (nmbr 0)))
-;                    (while (binop (lt)
-;                                  (id-name '$dummyVar)
-;                                  (nmbr 1))
-;                           (add-to-block (var-assign (exps (list (id-name '$dummyVar)))
-;                                                     (exps (make-list 1 (nmbr 1))))
-;                                         (add-to-block $2 (while (unop (\\not) $4) $2)))
-;                           ))
-      
      
      ((LOCAL namelist) (begin
                          ; New scope
