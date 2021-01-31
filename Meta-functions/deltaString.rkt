@@ -38,6 +38,9 @@
   ;                           ;      
   ;                           ;
 
+  [(δstring string.dump cid v_1 v_2 ... θ)
+   (δstring string.dump cid θ)]
+  
   ; PRE : {cid ∈ dom(θ)}
   [(δstring string.dump cid (osp_1 ... (cid functiondef) osp_2 ...))
    String
@@ -50,8 +53,7 @@
    (where any (δbasic error ,(string-append
                          "bad argument #1 (function expected, got "
                          (term (δbasic type v))
-                         ")")))
-   ]
+                         ")")))]
 
   
   ;                          
@@ -69,6 +71,14 @@
   ;                          
   ;                          
   ;
+  [(δstring string.len v_1 v_2 v_3 ...)
+   (δstring string.len v_1)]
+  
+  [(δstring string.len Number)
+   (δstring string.len String)
+
+   (where String (δbasic tostring Number ()))]
+  
   [(δstring string.len Number)
    (δstring string.len String)
 
@@ -95,6 +105,9 @@
   ; default values
   [(δstring string.rep v_1 v_2)
    (δstring string.rep v_1 v_2 "")]
+
+  [(δstring string.rep v_1 v_2 v_3 v_4 v_5 ...)
+   (δstring string.rep v_1 v_2 v_3)]
   
   ; coercion
   [(δstring string.rep Number_1 Number_2 v)
@@ -137,11 +150,10 @@
                                                   ,accum)))
                       (term (δbasic .. String_1 String_2))
                       (build-list (- (term Number) 2)
-                                  (λ (nmbr) (term String_1)))))
-   ]
+                                  (λ (nmbr) (term String_1)))))]
 
-  [(δstring string.rep v_1 v_2 v_3)
-   (δbasic error "string.rep: arguments of the wrong type")]
+;  [(δstring string.rep v_1 v_2 v_3)
+;   (δbasic error "string.rep: arguments of the wrong type")]
   ;                                                          
   ;                                                          
   ;                                                          
@@ -157,6 +169,10 @@
   ;                                                          
   ;                                                          
   ;
+  [(δstring string.reverse v_1 v_2 v_3 ...)
+   (δstring string.reverse v_1)]
+  
+  ; coercion
   [(δstring string.reverse Number)
    (δstring string.reverse String)
 
@@ -179,6 +195,9 @@
   ;    ;;;;    ;;; ;  ;;;;;  
   ;                          
   ;
+  [(δstring string.sub v_1 v_2 v_3 v_4 v_5 ...)
+   (δstring string.sub v_1 v_2 v_3)]
+  
   ; coercion
   [(δstring string.sub Number_1 Number_2 ...)
    (δstring string.sub String Number_2 ...)
@@ -259,10 +278,10 @@
   [(δstring builtinserv v ...)
    (δbasic error any)
 
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
 
-  ; Services that don't modify theta
+  ; services that don't modify theta
   [(δstring builtinserv v ... θ)
    (δbasic error any)
 
@@ -270,16 +289,8 @@
                            (term (; string
                                   string.dump))))
    
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
-   ]
-
-  ; Services that modify theta
-  [(δstring builtinserv v ... θ)
-   (θ (δbasic error any))
-   
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
-   ])
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
+  )
   
 (provide δstring)

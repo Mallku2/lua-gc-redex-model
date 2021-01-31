@@ -40,27 +40,70 @@
   ;    ;   ;  ;;  ;;  ;    ;   ;   ;  ;   ;;    ;    
   ;     ;;;    ;;;;   ;    ;    ;;;    ;;; ;     ;;; 
   ;                                                  
-  ;                                                  
-  ; Missing parameters
-  [(δtable table.concat objref nil v_1 v_2 θ)
-   (δtable table.concat objref "" v_1 v_2 θ)]
+  ;
+  [(δtable table.concat tid v_1 v_2 v_3 v_4 v_5 ... θ)
+   (δtable table.concat tid v_1 v_2 v_3 θ)]
+  
+  ; missing parameters
+  [(δtable table.concat tid θ)
+   (δtable table.concat tid "" θ)]
 
-  [(δtable table.concat objref String nil v θ)
-   (δtable table.concat objref String 1 v θ)]
+  [(δtable table.concat tid String θ)
+   (δtable table.concat tid String 1 θ)]
 
-  [(δtable table.concat objref_1 String v nil θ)
-   (δtable table.concat objref_1
-                    String
-                    v
-                    (δbasic \# evaluatedtable)
-                    θ)
+  ; default value for j is #tid
+  [(δtable table.concat tid_1 String Number_1
+           ((tid_2 object_2) ...
+            (tid_1 (evaluatedtable any_1 any_2))
+            (tid_3 object_3) ...))
+   (δtable table.concat tid String Number_1 (δbasic \# evaluatedtable)
+           ((tid_2 object_2) ...
+            (tid_1 (evaluatedtable any_1 any_2))
+            (tid_3 object_3) ...))]
 
-   (where ((objref_2 object_2) ...
-           (objref_1 (evaluatedtable any_1 any_2))
-           (objref_3 object_3) ...) θ)]
+  ; last check
+  [(δtable table.concat tid_1 v_1 v_2 v_3 ((tid_2 object_2) ...
+                                           (tid_1 (evaluatedtable any_1 any_2))
+                                           (tid_3 object_3) ...))
+   (δtable table.concat tid_1 v_4 v_5 v_6 ((tid_2 object_2) ...
+                                           (tid_1 (evaluatedtable any_1 any_2))
+                                           (tid_3 object_3) ...))
+
+   (side-condition (or (is_nil? (term v_1))
+                       (is_nil? (term v_2))
+                       (is_nil? (term v_3))))
+
+   (where v_4 ,(if (is_nil? (term v_1))
+                   ""
+                   (term v_1)))
+
+   (where v_5 ,(if (is_nil? (term v_2))
+                   1
+                   (term v_2)))
+
+   (where v_6 ,(if (is_nil? (term v_3))
+                   (term (δbasic \# evaluatedtable))
+                   (term v_3)))]
+  
+;  [(δtable table.concat tid nil v_1 v_2 θ)
+;   (δtable table.concat tid "" v_1 v_2 θ)]
+
+;  [(δtable table.concat tid String nil v θ)
+;   (δtable table.concat tid String 1 v θ)]
+
+;  [(δtable table.concat tid_1 String v nil θ)
+;   (δtable table.concat tid_1
+;                    String
+;                    v
+;                    (δbasic \# evaluatedtable)
+;                    θ)
+;
+;   (where ((tid_2 object_2) ...
+;           (tid_1 (evaluatedtable any_1 any_2))
+;           (tid_3 object_3) ...) θ)]
   
   ; simpler case
-  [(δtable table.concat objref String Number_1 Number_2 θ)
+  [(δtable table.concat tid String Number_1 Number_2 θ)
    any_3
 
    ; quantity of fields to be accessed
@@ -74,7 +117,7 @@
    ; Number_1 to Number_2
    (where (any_1 any_2 ...)
           ,(build-list (inexact->exact (term Number_3))
-                       (λ (nmbr) (term (objref \[ ,(+ nmbr (term Number_1)) \])))))
+                       (λ (nmbr) (term (tid \[ ,(+ nmbr (term Number_1)) \])))))
 
    ; apply string concatenation between each field, separated by String
    (where any_3 ,(foldl (λ (field accum) (term (,accum .. (String .. ,field))))
@@ -82,14 +125,14 @@
                         (term (any_2 ...))))]
 
   ; default case
-  [(δtable table.concat objref String Number_1 Number_2 θ)
+  [(δtable table.concat tid String Number_1 Number_2 θ)
    ""]
 
-  ; wrong parameters
-  [(δtable table.concat v_1 v_2 ... θ)
-   (δbasic error "table.concat: table expected")
-
-   (side-condition (not (is_tid? (term v_1))))]
+;  ; wrong parameters
+;  [(δtable table.concat v_1 v_2 ... θ)
+;   (δbasic error "table.concat: table expected")
+;
+;   (side-condition (not (is_tid? (term v_1))))]
   
   ;                                                  
   ;     ;                                            
@@ -106,31 +149,39 @@
   ;                                                  
   ;                                                  
   ;
-  ; special cases
-  [(δtable table.insert tid nil θ)
-   (θ (< >))]
+  [(δtable table.insert tid v_1 v_2 v_3 v_4 ... θ)
+   (δtable table.insert tid v_1 v_2 θ)]
 
+  ; default value for pos is #list + 1
+  [(δtable table.insert tid_1 v ((tid_2 object_2) ...
+                                 (tid_1 (evaluatedtable any_1 any_2))
+                                 (tid_3 object_3) ...))
+   (δtable table.concat tid_1 (δbasic + 1 (δbasic \# evaluatedtable)) v
+           ((tid_2 object_2) ...
+            (tid_1 (evaluatedtable any_1 any_2))
+            (tid_3 object_3) ...))]
+
+  ; special case
   [(δtable table.insert tid Number nil θ)
    (θ (< >))]
   
-  ; no pos provided: insert v at the end of tid
-  [(δtable table.insert tid v
-                    (osp_1 ...
-                     (tid ((\{ field ... \}) any ...))
-                     osp_2 ...))
-
-   ((osp_1 ...
-     (tid ((\{ field ... (\[  Number \] = v) \}) any ...))
-     osp_2 ...) (< >))
-
-   ; default value for pos is #list+1
-   (where Number (δbasic + 1 (δbasic \# (\{ field ... \}))))]
+;  ; no pos provided: insert v at the end of tid
+;  [(δtable table.insert tid v
+;                    (osp_1 ...
+;                     (tid ((\{ field ... \}) any ...))
+;                     osp_2 ...))
+;
+;   ((osp_1 ...
+;     (tid ((\{ field ... (\[  Number \] = v) \}) any ...))
+;     osp_2 ...) (< >))
+;
+;   ; default value for pos is #list+1
+;   (where Number (δbasic + 1 (δbasic \# (\{ field ... \}))))]
 
   ; pos provided
-  [(δtable table.insert tid Number_1 v_1
-                    (osp_1 ...
-                     (tid ((\{ efield_1 ... \}) any ...))
-                     osp_2 ...))
+  [(δtable table.insert tid Number_1 v_1 (osp_1 ...
+                                          (tid ((\{ efield_1 ... \}) any ...))
+                                          osp_2 ...))
 
    ((osp_1 ...
      (tid ((\{ efield_2 ...
@@ -177,9 +228,7 @@
    ; list of new numeric keys: v_1
    (where (Number_3 ...) ,(build-list (length (term ((\[ v_4 \] = v_5) ...)))
                                       (lambda (nmbr) (+ nmbr
-                                                        (+ 1 (term Number_1))))))
-   
-   ]
+                                                        (+ 1 (term Number_1))))))]
   ;                                  
   ;                           ;      
   ;                           ;      
@@ -243,20 +292,23 @@
   ;                   ;                              
   ;                   ;                              
   ;                   ;
+  [(δtable table.unpack tid_1 v_1 v_2 v_3 v_4 ... θ)
+   (δtable table.unpack tid_1 v_1 v_2 θ)]
+  
   ; default values
-  [(δtable table.unpack objref_1 θ)
-   (δtable table.unpack objref_1 1 (δbasic \# evaluatedtable) θ)
+  [(δtable table.unpack tid_1 θ)
+   (δtable table.unpack tid_1 1 (δbasic \# evaluatedtable) θ)
 
-   (where evaluatedtable (getTable objref_1 θ))]
+   (where evaluatedtable (getTable tid_1 θ))]
 
-  [(δtable table.unpack objref_1 v_1 θ)
-   (δtable table.unpack objref_1 v_2 (δbasic \# evaluatedtable) θ)
+  [(δtable table.unpack tid_1 v_1 θ)
+   (δtable table.unpack tid_1 v_2 (δbasic \# evaluatedtable) θ)
 
-   (where evaluatedtable (getTable objref_1 θ))]
+   (where evaluatedtable (getTable tid_1 θ))]
 
   ; last check
-  [(δtable table.unpack objref_1 v_1 v_2 θ)
-   (δtable table.unpack objref_1 Number_1 Number_2 θ)
+  [(δtable table.unpack tid_1 v_1 v_2 θ)
+   (δtable table.unpack tid_1 Number_1 Number_2 θ)
 
    (side-condition (or (is_nil? (term v_1))
                        (is_nil? (term v_2))))
@@ -266,24 +318,24 @@
                         (term v_1)))
    
    (where Number_2 ,(if (is_nil? (term v_2))
-                        (term (δbasic \# (getTable objref_1 θ)))
+                        (term (δbasic \# (getTable tid_1 θ)))
                         (term v_2)))]
 
   ; coercion
-  [(δtable table.unpack objref_1 String v θ)
-   (δtable table.unpack objref_1 Number v θ)
+  [(δtable table.unpack tid_1 String v θ)
+   (δtable table.unpack tid_1 Number v θ)
 
    (where Number (δbasic tonumber String ()))]
 
-  [(δtable table.unpack objref_1 Number_1 String θ)
-   (δtable table.unpack objref_1 Number_1 Number_2 θ)
+  [(δtable table.unpack tid_1 Number_1 String θ)
+   (δtable table.unpack tid_1 Number_1 Number_2 θ)
 
    (where Number_2 (δbasic tonumber String ()))]
    
-  [(δtable table.unpack objref_1 v_1 v_2 v_3 ... θ)
+  [(δtable table.unpack tid_1 v_1 v_2 v_3 ... θ)
    any_2
    
-   (where evaluatedtable (getTable objref_1 θ))
+   (where evaluatedtable (getTable tid_1 θ))
 
    ; set range of indexes. v_1 and v_2 should be nil or a number 
    (where Number_1 ,(if (not (equal? (term v_1)
@@ -302,7 +354,7 @@
    (where any_2 ,(append (term (< ))
 
                          (map (λ (index)
-                                (append (term (objref_1 \[ ))
+                                (append (term (tid_1 \[ ))
                                         (term (,index))
                                         (term (\]))))
                               
@@ -311,47 +363,47 @@
 
                          (term ( >))))]
 
-  ; erroneous cases
-  [(δtable table.unpack v_1 v_2 ... θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_1))
-   
-   (side-condition (not (equal? (term String_1)
-                                "table")))
-   
-   (where String_2 ,(string-append "bad argument #1 (table expected, got "
-                                   (term String_1)
-                                   ")"))]
+;  ; erroneous cases
+;  [(δtable table.unpack v_1 v_2 ... θ)
+;   (δbasic error String_2)
+;   
+;   (where String_1 (δbasic type v_1))
+;   
+;   (side-condition (not (equal? (term String_1)
+;                                "table")))
+;   
+;   (where String_2 ,(string-append "bad argument #1 (table expected, got "
+;                                   (term String_1)
+;                                   ")"))]
+;  
+;  [(δtable table.unpack v_1 v_2 v_3 ... θ)
+;   (δbasic error String_2)
+;   
+;   (where String_1 (δbasic type v_2))
+;   
+;   (side-condition (not (equal? (term String_1)
+;                                "number")))
+;   
+;   (where String_2 ,(string-append "bad argument #2 (number expected, got "
+;                                   (term String_1)
+;                                   ")"))]
   
-  [(δtable table.unpack v_1 v_2 v_3 ... θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_2))
-   
-   (side-condition (not (equal? (term String_1)
-                                "number")))
-   
-   (where String_2 ,(string-append "bad argument #2 (number expected, got "
-                                   (term String_1)
-                                   ")"))]
-  
-  ; default case
-  [(δtable table.unpack v_1 v_2 v_3 v_4 ... θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v_3))
-   
-   (where String_2 ,(string-append "bad argument #3 (number expected, got "
-                                   (term String_1)
-                                   ")"))]
+;  ; default case
+;  [(δtable table.unpack v_1 v_2 v_3 v_4 ... θ)
+;   (δbasic error String_2)
+;   
+;   (where String_1 (δbasic type v_3))
+;   
+;   (where String_2 ,(string-append "bad argument #3 (number expected, got "
+;                                   (term String_1)
+;                                   ")"))]
 
   ; to capture the "no value" error for every builtinserv 
   [(δtable builtinserv v ...)
    (δbasic error any)
 
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
 
   ; services that don't modify theta
   [(δtable builtinserv v ... θ)
@@ -362,16 +414,14 @@
                                   table.concat
                                   table.unpack))))
    
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
-   ]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
 
   ; services that modify theta
   [(δtable builtinserv v ... θ)
    (θ (δbasic error any))
    
-   (where any ,(string-append (symbol->string (term builtinserv))
-                              " got no value"))
-   ]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
   )
 (provide δtable)
