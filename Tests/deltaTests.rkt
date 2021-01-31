@@ -879,13 +879,13 @@
               (term (< ((objr 1) \[ 2 \]) ((objr 1) \[ 3 \]) ((objr 1) \[ 4 \]) >)))
   
   (test-equal (term (δ table.unpack "table" nil nil ()))
-              (term ($err "bad argument #1 (table expected, got string)")))
+              (term ($err "erroneous actual parameters to table.unpack")))
 
   (test-equal (term (δ table.unpack (objr 1) "2" nil (((objr 1) ((\{ \}) nil 1)))))
-              (term ($err "bad argument #2 (number expected, got string)")))
+              (term ($err "erroneous actual parameters to table.unpack")))
 
   (test-equal (term (δ table.unpack (objr 1) 2 "3" (((objr 1) ((\{ \}) nil 1)))))
-              (term ($err "bad argument #3 (number expected, got string)")))
+              (term ($err "erroneous actual parameters to table.unpack")))
   
   (test-results))
 

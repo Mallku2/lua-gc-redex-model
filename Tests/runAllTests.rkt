@@ -48,8 +48,8 @@
   (meta-test-suite)
   (print "full-progs-rel-test-suite: ")
   (full-progs-rel-test-suite)
-  (print "execution-environment-test-suite: ")
-  (execution-environment-test-suite)
+  (print "standard-library-test-suite: ")
+  (standard-library-test-suite)
   )
 
 (define (test-all-random-tests)

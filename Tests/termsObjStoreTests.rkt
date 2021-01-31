@@ -149,7 +149,7 @@
                    : ($builtIn rawget (1 1))))
             
             (term ((((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 0))) 
-                   : ($err  "bad argument #1 (table expected, got number)"))))
+                   : ($err  "erroneous actual parameters to rawget"))))
   
   ; rawset
   ; Alter field
@@ -182,7 +182,7 @@
             
             (term ((((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 0))) 
                    : ($err
-                      "bad argument #2 to 'setmetatable' (nil or table expected)"))))
+                      "erroneous actual parameters to setmetatable"))))
   
   (test-->> terms-obj-store
             (term ((((objr 1) ((\{ (\[ 1 \] = 2) \}) (objr 2) 0))
