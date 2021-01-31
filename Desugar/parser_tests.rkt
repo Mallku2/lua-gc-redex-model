@@ -1,9 +1,6 @@
 #lang racket
-(require "./lexer.rkt"
-         "./parser.rkt"
-         "./phrases_constructors.rkt"
+(require "./parser.rkt"
          rackunit
-         rackunit/text-ui
          racket/match
          redex)
 
@@ -154,23 +151,30 @@
                 (term (local
                         $dummyVar
                         =
-                        0
+                        nil
                         in
-                        (while
-                         ($dummyVar < 1)
-                         do
-                         (($dummyVar = 1)
-                          (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                          |;|
-                          (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
-                          (while
-                           (not ($ENV |[| "finish" |]|))
-                           do
-                           ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                            |;|
-                            (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|))))
+                        (($dummyVar
+                          =
+                          (function
+                           $1
+                           ()
+                           (local
+                             $dummyGuardVar
+                             =
+                             0
+                             in
+                             (while
+                              ($dummyGuardVar < 1)
+                              do
+                              (($dummyGuardVar = 1)
+                               (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                               |;|
+                               (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
+                               (if (not ($ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                              end)
+                             end)
                            end))
-                         end)
+                         ($statFunCall $dummyVar ()))
                         end)))
 
   ; local vars in guard
@@ -179,17 +183,29 @@
                 (term (local
                         $dummyVar
                         =
-                        0
+                        nil
                         in
-                        (while ($dummyVar < 1) do
-                               (($dummyVar = 1)
-                                (local i = 1.0 in
-                                  (|;|
-                                   (while (not (i > 2.0)) do
-                                          (local i = 1.0 in |;| end)
-                                          end))
-                                  end))
-                               end)
+                        (($dummyVar
+                          =
+                          (function
+                           $1
+                           ()
+                           (local
+                             $dummyGuardVar
+                             =
+                             0
+                             in
+                             (while
+                              ($dummyGuardVar < 1)
+                              do
+                              (($dummyGuardVar = 1)
+                               (local i = 1.0 in (|;| (if (not (i > 2.0))
+                                                          then
+                                                          ($statFunCall $dummyVar ()) else |;| end)) end))
+                              end)
+                             end)
+                           end))
+                         ($statFunCall $dummyVar ()))
                         end)))
 
   ; concat
@@ -201,23 +217,30 @@
                        (local
                          $dummyVar
                          =
-                         0
+                         nil
                          in
-                         (while
-                          ($dummyVar < 1)
-                          do
-                          (($dummyVar = 1)
-                           (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                           |;|
-                           (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
-                           (while
-                            (not ($ENV |[| "finish" |]|))
-                            do
-                            ((($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
-                             |;|
-                             (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|))))
+                         (($dummyVar
+                           =
+                           (function
+                            $1
+                            ()
+                            (local
+                              $dummyGuardVar
+                              =
+                              0
+                              in
+                              (while
+                               ($dummyGuardVar < 1)
+                               do
+                               (($dummyGuardVar = 1)
+                                (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                                |;|
+                                (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
+                                (if (not ($ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                               end)
+                              end)
                             end))
-                          end)
+                          ($statFunCall $dummyVar ()))
                          end))))
   
   ; numeric for

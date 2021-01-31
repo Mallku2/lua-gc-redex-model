@@ -118,26 +118,51 @@
 
      ((beginning_repeat block UNTIL exp)
       (begin
-;        (set! actual-block
-;              (close-scopes-in-block actual-block))
         (set! actual-block
               (new-scope actual-block
                          (map (lambda (id) (id-name-name id))
                               (exps-el (exps (list (id-name '$dummyVar)))))))
-        (set! actual-block (close-scopes-in-block actual-block))
-        ; TODO: simple fix to manage break statements into the body of repeat:
-        ; by putting them into a while that loops once, that also contains the
-        ; rest of the repeat loop
-        (local-vars (exps (list (id-name '$dummyVar)))
-                    (exps (make-list 1 (nmbr 0)))
-                    (while (binop (lt)
-                                  (id-name '$dummyVar)
-                                  (nmbr 1))
-                           (add-to-block (var-assign (exps (list (id-name '$dummyVar)))
-                                                     (exps (make-list 1 (nmbr 1))))
-                                         (add-to-block $2 (while (unop (\\not) $4) $2)))
-                           ))
-        ))
+        (local-vars
+         (exps (list (id-name '$dummyVar)))
+         (exps (list (nil)))
+         (add-to-block
+          (var-assign (exps (list (id-name '$dummyVar)))
+                      (exps (list (func-def (id-name (new-label))
+                                            (params (exps '()))
+                                            (local-vars
+                                             (exps (list (id-name '$dummyGuardVar)))
+                                             (exps (list (nmbr 0)))
+                                             
+                                             (while (binop (lt)
+                                                           (id-name '$dummyGuardVar)
+                                                           (nmbr 1))
+                                                     (add-to-block (var-assign (exps (list (id-name '$dummyGuardVar)))
+                                                                               (exps (make-list 1 (nmbr 1))))
+                                                                   (add-to-block $2
+                                                                                 (conditional (unop (\\not) $4)
+                                                                                              (stat-fun-call (id-name '$dummyVar)
+                                                                                                             (exps '()))
+                                                                                              (skip)
+                                                                               ))))
+                                            )))))
+          (stat-fun-call (id-name '$dummyVar)
+                         (exps '()))
+          ))))
+
+;        (set! actual-block (close-scopes-in-block actual-block))
+;        ; TODO: simple fix to manage break statements into the body of repeat:
+;        ; by putting them into a while that loops once, that also contains the
+;        ; rest of the repeat loop
+;        (local-vars (exps (list (id-name '$dummyVar)))
+;                    (exps (make-list 1 (nmbr 0)))
+;                    (while (binop (lt)
+;                                  (id-name '$dummyVar)
+;                                  (nmbr 1))
+;                           (add-to-block (var-assign (exps (list (id-name '$dummyVar)))
+;                                                     (exps (make-list 1 (nmbr 1))))
+;                                         (add-to-block $2 (while (unop (\\not) $4) $2)))
+;                           ))
+      
      
      ((LOCAL namelist) (begin
                          ; New scope
