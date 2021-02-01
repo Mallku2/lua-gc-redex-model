@@ -2,43 +2,6 @@
 (require redex
          "../grammar.rkt")
 
-(define-metafunction ext-lang
-  getTable : tid θ -> any
-
-  [(getTable tid (osp_1 ... (tid (evaluatedtable any ...)) osp_2 ...))
-   evaluatedtable]
-
-  ; Allows calling getTable with a tid ∉ dom(θ). Simplifies the
-  ; definition of meta-functions that iterate over θ
-  [(getTable tid θ)
-   nil]
-  )
-
-(provide getTable)
-
-(define-metafunction ext-lang
-  getMetaTable : tid θ -> any
-
-  [(getMetaTable tid (osp_1 ... (tid (evaluatedtable any_1 any_2)) osp_2 ...))
-   any_1]
-
-  ; Allows calling getMetaTable with a tid ∉ dom(θ). Simplifies the
-  ; definition of meta-functions that iterate over θ
-  [(getMetaTable tid θ)
-   nil]
-  )
-
-(provide getMetaTable)
-
-; PRE : {tid in dom(θ)}
-(define-metafunction ext-lang
-  getPos : tid θ -> Number
-
-  [(getPos tid (osp_1 ... (tid tableconstructor any Number) osp_2 ...))
-   Number])
-
-(provide getTable getMetaTable getPos)
-
 ; Determine if a reference belongs to the domain of a store
 ; PRE : {the store received satisfy the invariant of representation}
 (define-metafunction ext-lang
@@ -63,9 +26,6 @@
 ; reserved to meta-tables of types different than table
 (define objStoreFirstLocation 6)
 (provide objStoreFirstLocation)
-
-
-
 
 ; meta-function that generates a fresh tid
 (define-metafunction ext-lang
@@ -97,22 +57,3 @@
   )
 
 (provide freshClosId)
-
-(define-metafunction ext-lang
-  [(loopMetaEvent θ v_1 String_1)
-   #t
-   
-   (where (osp_1 ...
-           (metaTablesStack (tableconstructor any ...))
-           osp_2 ...) θ)
-   
-   (where (v_2 String_2 (\{ efield_1 ...
-                            (\[ v_2 \] = String_2)
-                            efield_2 ... \}))
-          (v_1 String_1 tableconstructor))]
-
-  [(loopMetaEvent θ v_1 String_1)
-   #f]
-  )
-
-(provide loopMetaEvent)

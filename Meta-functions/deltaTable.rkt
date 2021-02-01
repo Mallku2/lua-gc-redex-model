@@ -85,23 +85,6 @@
                    (term (δbasic \# evaluatedtable))
                    (term v_3)))]
   
-;  [(δtable table.concat tid nil v_1 v_2 θ)
-;   (δtable table.concat tid "" v_1 v_2 θ)]
-
-;  [(δtable table.concat tid String nil v θ)
-;   (δtable table.concat tid String 1 v θ)]
-
-;  [(δtable table.concat tid_1 String v nil θ)
-;   (δtable table.concat tid_1
-;                    String
-;                    v
-;                    (δbasic \# evaluatedtable)
-;                    θ)
-;
-;   (where ((tid_2 object_2) ...
-;           (tid_1 (evaluatedtable any_1 any_2))
-;           (tid_3 object_3) ...) θ)]
-  
   ; simpler case
   [(δtable table.concat tid String Number_1 Number_2 θ)
    any_3
@@ -127,12 +110,6 @@
   ; default case
   [(δtable table.concat tid String Number_1 Number_2 θ)
    ""]
-
-;  ; wrong parameters
-;  [(δtable table.concat v_1 v_2 ... θ)
-;   (δbasic error "table.concat: table expected")
-;
-;   (side-condition (not (is_tid? (term v_1))))]
   
   ;                                                  
   ;     ;                                            
@@ -292,23 +269,33 @@
   ;                   ;                              
   ;                   ;                              
   ;                   ;
-  [(δtable table.unpack tid_1 v_1 v_2 v_3 v_4 ... θ)
-   (δtable table.unpack tid_1 v_1 v_2 θ)]
+  [(δtable table.unpack tid v_1 v_2 v_3 v_4 ... θ)
+   (δtable table.unpack tid v_1 v_2 θ)]
   
   ; default values
-  [(δtable table.unpack tid_1 θ)
-   (δtable table.unpack tid_1 1 (δbasic \# evaluatedtable) θ)
+  [(δtable table.unpack tid (osp_1 ...
+                             (tid (evaluatedtable any ...))
+                             osp_2 ...))
+   (δtable table.unpack tid 1 (δbasic \# evaluatedtable)
+           (osp_1 ...
+            (tid (evaluatedtable any ...))
+            osp_2 ...))]
 
-   (where evaluatedtable (getTable tid_1 θ))]
-
-  [(δtable table.unpack tid_1 v_1 θ)
-   (δtable table.unpack tid_1 v_2 (δbasic \# evaluatedtable) θ)
-
-   (where evaluatedtable (getTable tid_1 θ))]
+  [(δtable table.unpack tid v (osp_1 ...
+                                 (tid (evaluatedtable any ...))
+                                 osp_2 ...))
+   (δtable table.unpack tid v (δbasic \# evaluatedtable)
+           (osp_1 ...
+            (tid (evaluatedtable any ...))
+            osp_2 ...))]
 
   ; last check
-  [(δtable table.unpack tid_1 v_1 v_2 θ)
-   (δtable table.unpack tid_1 Number_1 Number_2 θ)
+  [(δtable table.unpack tid v_1 v_2 (osp_1 ...
+                                       (tid (evaluatedtable any ...))
+                                       osp_2 ...))
+   (δtable table.unpack tid Number_1 Number_2 (osp_1 ...
+                                               (tid (evaluatedtable any ...))
+                                               osp_2 ...))
 
    (side-condition (or (is_nil? (term v_1))
                        (is_nil? (term v_2))))
@@ -318,7 +305,7 @@
                         (term v_1)))
    
    (where Number_2 ,(if (is_nil? (term v_2))
-                        (term (δbasic \# (getTable tid_1 θ)))
+                        (term (δbasic \# evaluatedtable))
                         (term v_2)))]
 
   ; coercion
@@ -331,30 +318,16 @@
    (δtable table.unpack tid_1 Number_1 Number_2 θ)
 
    (where Number_2 (δbasic tonumber String ()))]
-   
-  [(δtable table.unpack tid_1 v_1 v_2 v_3 ... θ)
-   any_2
-   
-   (where evaluatedtable (getTable tid_1 θ))
 
-   ; set range of indexes. v_1 and v_2 should be nil or a number 
-   (where Number_1 ,(if (not (equal? (term v_1)
-                                     (term nil)))
-                        (term v_1)
-                        1) ; default first index
-          )
-   
-   (where Number_2 ,(if (not (equal? (term v_2)
-                                     (term nil)))
-                        (term v_2)
-                        (term (δbasic \# evaluatedtable)) ; Default last index
-                        ))
+  ; normal case
+  [(δtable table.unpack tid Number_1 Number_2 θ)
+   any_2
 
    ; construct a tuple of table indexing expressions
    (where any_2 ,(append (term (< ))
 
                          (map (λ (index)
-                                (append (term (tid_1 \[ ))
+                                (append (term (tid \[ ))
                                         (term (,index))
                                         (term (\]))))
                               
@@ -363,40 +336,8 @@
 
                          (term ( >))))]
 
-;  ; erroneous cases
-;  [(δtable table.unpack v_1 v_2 ... θ)
-;   (δbasic error String_2)
-;   
-;   (where String_1 (δbasic type v_1))
-;   
-;   (side-condition (not (equal? (term String_1)
-;                                "table")))
-;   
-;   (where String_2 ,(string-append "bad argument #1 (table expected, got "
-;                                   (term String_1)
-;                                   ")"))]
-;  
-;  [(δtable table.unpack v_1 v_2 v_3 ... θ)
-;   (δbasic error String_2)
-;   
-;   (where String_1 (δbasic type v_2))
-;   
-;   (side-condition (not (equal? (term String_1)
-;                                "number")))
-;   
-;   (where String_2 ,(string-append "bad argument #2 (number expected, got "
-;                                   (term String_1)
-;                                   ")"))]
-  
-;  ; default case
-;  [(δtable table.unpack v_1 v_2 v_3 v_4 ... θ)
-;   (δbasic error String_2)
-;   
-;   (where String_1 (δbasic type v_3))
-;   
-;   (where String_2 ,(string-append "bad argument #3 (number expected, got "
-;                                   (term String_1)
-;                                   ")"))]
+
+
 
   ; to capture the "no value" error for every builtinserv 
   [(δtable builtinserv v ...)
