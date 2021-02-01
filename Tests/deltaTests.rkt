@@ -2,7 +2,8 @@
 (require redex
          math/base
          "../grammar.rkt"
-         "../Meta-functions/delta.rkt")
+         "../Meta-functions/delta.rkt"
+         "../Meta-functions/deltaBasic.rkt")
 
 (define (delta-test-suite)
   ; Arithmetic operations
@@ -914,13 +915,13 @@
                                                 (\[ "__add" \] = (objr 2))
                                                 \}) nil 1))
                                     ((objr 2) ((\{ \}) nil 1)))))
-              (term (objr 2)))
+              (term ((objr 1) (objr 2))))
   
   (test-equal (term (getBinHandler true 2 "__add" 
                                    (((objr 1) ((\{ (\[ "__add" \] = (objr 2)) \})
                                                nil 1))
                                     ((objr 2) ((\{ \}) nil 1)))))
-              (term (objr 2)))
+              (term ((objr 1) (objr 2))))
   
   (test-equal (term (getBinHandler true false "__add" 
                                    ()))
@@ -978,7 +979,7 @@
                                       ((objr 2) ((\{ \}) nil 1))
                                       ((objr 3) ((\{ \}) (objr 1) 1))
                                       ((objr 4) ((\{ \}) (objr 1) 1)))))
-              (term (objr 2)))
+              (term ((objr 1) (objr 2))))
   
   (test-results))
 

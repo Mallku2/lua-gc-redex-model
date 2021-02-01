@@ -173,7 +173,7 @@
 ; simple solution to the problem of pluging a concat of stats into another
 ; concat of stats, obtaining a well-formed concat of stats
 (define-metafunction ext-lang
-  concat-stats : E any -> s
+  concat-stats : E any -> t
 
   [(concat-stats (in-hole E (hole scoresing_1 scoresing_2 ...))
                  (ssing scoresing_4 scoresing_5 ...))

@@ -349,13 +349,13 @@
   
   ; table value has a meta-table, which has a "__metatable" key.
   [(δbasic getmetatable tid_1 (osp_1 ...
-                                  (tid_1 (tableconstructor tid_3 any_1))
-                                  osp_2 ...))
+                               (tid_1 (tableconstructor tid_3 any_1))
+                               osp_2 ...))
    v
    
    (where (osp_3 ...
            (tid_3 ((\{ field_1 ... (\[ "__metatable" \] = v) field_2 ... \})
-                      any_2 ...))
+                   any_2 ...))
            osp_4 ...)
 
           (osp_1 ...
@@ -366,8 +366,8 @@
 
   ; table value doesn't have a protected meta-table
   [(δbasic getmetatable tid (osp_1 ...
-                                (tid (tableconstructor v any))
-                                osp_2 ...))
+                             (tid (tableconstructor v any))
+                             osp_2 ...))
    v]
 
   
@@ -375,9 +375,9 @@
   ; a "__metatable" key,
   [(δbasic getmetatable any_1 (osp_1 ...
                                (tid_2 ((\{ field ...
-                                              (\[ "__metatable" \] = v)
-                                              field ... \})
-                                          any_2 ...))
+                                           (\[ "__metatable" \] = v)
+                                           field ... \})
+                                       any_2 ...))
                                osp_2 ...))
    v
    
@@ -736,8 +736,8 @@
 
   ; nil index, non empty table
   [(δbasic next tid nil (osp_1 ...
-                            (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
-                            osp_2 ...))
+                         (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
+                         osp_2 ...))
    (< v_1 v_2 >)]
   
   ; nil index, empty table
@@ -746,20 +746,20 @@
   
   ; not the last index
   [(δbasic next tid v_1 (osp_1 ...
-                            (tid
-                             ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
-                                  field_2 ... \})
-                              any ...))
-                            osp_2 ...))
+                         (tid
+                          ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
+                               field_2 ... \})
+                           any ...))
+                         osp_2 ...))
    (< v_4 v_5 >)
    
    (where true (δbasic == v_1 v_2))]
   
   ; Last index
   [(δbasic next tid v_1 (osp_1 ...
-                            (tid
-                             ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
-                            osp_2 ...))
+                         (tid
+                          ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
+                         osp_2 ...))
    (< nil >)
    
    (where true (δbasic == v_1 v_2))]
@@ -767,18 +767,6 @@
   ; invalid key.
   [(δbasic next tid v θ)
    (δbasic error "invalid key to 'next'")]
-
-;  ; bad argument #1
-;  [(δbasic next v_1 v_2 θ)
-;   (δbasic error String_2)
-;   
-;   (where String_1 (δbasic type v_1))
-;   
-;   (where String_2 ,(string-append
-;                     "bad argument #1 to 'next' (table expected, got "
-;                     (term String_1)
-;                     ")"))]
-  
   
   ;                                          
   ;                     ;                    
@@ -945,7 +933,7 @@
   [(δbasic rawget tid_1 v_1
            (osp_1 ...
             (tid_1 ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
-                       any ...))
+                    any ...))
             osp_2 ...))
    v_3
    
@@ -974,18 +962,6 @@
   ;
   [(δbasic rawlen v_1 v_2 v_3 ... θ)
    (δbasic rawlen v_1 θ)]
-  
-;  ; Bad argument #1 to 'rawlen'
-;  [(δbasic rawlen v θ)
-;   (δbasic error "bad argument #1 to 'rawlen'(table or string expected)")
-;   
-;   (where string (δbasic type v))
-;   
-;   (side-condition (not (or (equal? (term string)
-;                                    "table")
-;                            
-;                            (equal? (term string)
-;                                    "string"))))]
   
   [(δbasic rawlen String θ)
    (δbasic \# String)]
@@ -1045,11 +1021,11 @@
   ; v_2 != nil
   ; field update
   [(δbasic rawset tid v_1 v_2 (osp_1 ...
-                                  (tid ((\{ field_1 ... (\[ v_3 \] = v_4)
-                                               field_2
-                                               ... \})
-                                           any ...))
-                                  osp_2 ...))
+                               (tid ((\{ field_1 ... (\[ v_3 \] = v_4)
+                                         field_2
+                                         ... \})
+                                     any ...))
+                               osp_2 ...))
    ((osp_1 ...
      (tid ((\{ field_1 ... (\[ v_3 \] = v_2) field_2 ... \}) any ...))
      osp_2 ...) tid)
@@ -1058,8 +1034,8 @@
   
   ; add a new field 
   [(δbasic rawset tid v_1 v_2 (osp_1 ...
-                                  (tid ((\{ field ... \}) any ...))
-                                  osp_2 ...))
+                               (tid ((\{ field ... \}) any ...))
+                               osp_2 ...))
 
    ((osp_1 ...
      (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
@@ -1067,19 +1043,6 @@
 
    (side-condition (not (equal? (term v_2)
                                 (term nil))))]
-
-;  [(δbasic rawset tid v_1 nil (osp_1 ...
-;                                  (tid ((\{ field ... \}) any ...))
-;                                  osp_2 ...))
-;
-;   ((osp_1 ... (tid ((\{ field ... \}) any ...)) osp_2 ...) tid)]
-
-;  ; Wrong arguments
-;  [(δbasic rawset v ... nil θ)
-;   (θ (δbasic error "rawset: missing arguments"))
-;
-;   (side-condition (< (length (term (v ...)))
-;                      3))]
   
   ;                                                  
   ;                   ;;;                            
@@ -1159,10 +1122,6 @@
    (< Number >)
    
    (where Number ,(length (term (v ...))))]
-;  
-;  ; Default case
-;  [(δbasic select v_1 v ...)
-;   (δbasic error "bad argument #1 to 'select' (number expected)")]
   
   ;                                                                                                  
   ;                                                                           ;       ;;;            
@@ -1184,35 +1143,7 @@
 
    (side-condition (or (is_tid? (term v_1))
                        (is_nil? (term v_1))))]
-;  ; Bad argument #1.
-;  [(δbasic setmetatable v_1 v_2 θ)
-;   (θ (δbasic error String_2))
-;   
-;   (where String_1 (δbasic type v_1))
-;   
-;   (side-condition (not (equal? (term String_1)
-;                                "table")))
-;   
-;   (where String_2 ,(string-append
-;                     "bad argument #1 to 'setmetatable' (table expected, got "
-;                     (term String_1)
-;                     ")"))]
-  
-;  ; {tid is a pointer to a table}
-;  ; Bad argument #2.
-;  [(δbasic setmetatable tid v θ)
-;   (θ (δbasic error "bad argument #2 to 'setmetatable' (nil or table expected)"))
-;   
-;   (where String_1 (δbasic type v))
-;   
-;   (side-condition (not (or (equal? (term String_1)
-;                                    "table")
-;                            
-;                            (equal? (term String_1)
-;                                    "nil"))))]
-  
-;  ; {v points to a table or is nil}
-
+ 
   ; {v ∈ {tid, nil}}
   ; protected meta-table
   [(δbasic setmetatable tid v θ)
@@ -1225,8 +1156,8 @@
   
   ; non protected meta-table
   [(δbasic setmetatable tid v_1 (osp_1 ...
-                               (tid (evaluatedtable v_2 pos_1))
-                               osp_2 ...))
+                                 (tid (evaluatedtable v_2 pos_1))
+                                 osp_2 ...))
    ((osp_1 ...
      (tid (evaluatedtable v_1 pos_2))
      osp_2 ...) tid)
@@ -1302,14 +1233,6 @@
   ; to be interpreted as an integer numeral in that base
   [(δbasic tonumber String Number)
    (convert_string String Number)]
-
-;  ; {v_2 ≠ nil ∧ (v_1 ∉ String ∨ v_1 cannot be coerced to a number)}
-;  [(δbasic tonumber v_1 v_2)
-;   (δbasic error String)
-;
-;   (where String ,(string-append
-;                   "bad argument #1 to 'tonumber' (string expected)"))]
-;  
   
   ;                                                                  
   ;                                             ;                    
@@ -1456,9 +1379,25 @@
    ((v_1 (v_3 ...)) ProtMD v_2)]
   
   
-
   
-  
+  ;                                                        
+  ;                                                        
+  ;                                                        
+  ;                                                        
+  ;                                                        
+  ;                                                        
+  ;     ;;;      ; ;;;    ; ;;;    ;;;      ; ;;;   ;;;;;  
+  ;    ;   ;     ;;   ;   ;;   ;  ;   ;     ;;   ; ;     ; 
+  ;   ;     ;    ;        ;      ;     ;    ;      ;       
+  ;   ;     ;    ;        ;      ;     ;    ;      ;;;;    
+  ;   ;;;;;;;    ;        ;      ;     ;    ;          ;;; 
+  ;   ;          ;        ;      ;     ;    ;            ; 
+  ;    ;    ;    ;        ;       ;   ;     ;      ;     ; 
+  ;     ;;;;     ;        ;        ;;;      ;       ;;;;;  
+  ;                                                        
+  ;                                                        
+  ;                                                        
+  ;                                                        
 
   ; to capture the "no value" error for every builtinserv 
   [(δbasic builtinserv v ...)
@@ -1527,55 +1466,162 @@
 
 (provide getMetaTableRef)
 
+; returns the meta-table tid of a given value, if set, or nil, otherwise
+(define-metafunction ext-lang
+  getMetaTable : v θ -> v
+
+  [(getMetaTable tid (osp_1 ...
+                      (tid (evaluatedtable v any))
+                      osp_2 ...))
+   v]
+
+  ; {v ∉ tid}
+  [(getMetaTable v θ)
+   tid
+   
+   (where tid (getMetaTableRef v))
+   
+   (side-condition (term (refBelongsToTheta? tid θ)))]
+
+  ; {metatable of type(v) ∉ dom(θ)}
+  [(getMetaTable _ _)
+   nil])
+
+(provide getMetaTable)
 ; meta-function that tries to get the meta-table of a given value and index it
 ; with a given key. If it doesn't succeed, it returns nil.
 ; PRE : {v_1 is the value whose meta-table we want to index and v_2 is the
 ;        key}
 ; ret = (indexMetaTable v_1 v_2 θ)
 (define-metafunction ext-lang
-  ; tid_1 points to a table, which has a metatable with key v_1
-  [(indexMetaTable tid_1 v_1 (osp_1 ...
-                                 (tid_1 (evaluatedtable tid_2 any))
-                                 osp_2 ...))
-   v_2
-   
-   (where v_2 (δbasic rawget tid_2 v_1 (osp_1 ...
-                                           (tid_1 (evaluatedtable tid_2 any))
-                                           osp_2 ...)))]
-
-  ; tid_1 points to a table, which hasn't a metatable
-  [(indexMetaTable tid v θ)
-   nil]
   
-  ; v_1 isn't a table and doesn't have a metatable.
-  [(indexMetaTable v_1 v_2 θ)
-   nil
-   
-   (where tid (getMetaTableRef v_1))
-   
-   (side-condition (not (term (refBelongsToTheta? tid θ))))]
-  
-  ; v_1 isn't a table and has a metatable.
   [(indexMetaTable v_1 v_2 θ)
    v_3
-   
-   (where tid (getMetaTableRef v_1))
-   
-   (where v_3 (δbasic rawget tid v_2 θ))])
+
+   (where tid (getMetaTable v_1 θ))
+   (where v_3 (δbasic rawget tid v_2 θ))]
+  
+  ; value does not have a meta-table set
+  [(indexMetaTable _ _ _)
+   nil])
 
 (provide indexMetaTable)
 
 
 (define-metafunction ext-lang
-  ; Protected meta-table
+  ; protected meta-table
   [(protectedMetaTable? tid θ)
    #t
    
    (side-condition (not (equal? (term (indexMetaTable tid "__metatable" θ))
                                 (term nil))))]
   
-  ; Default case
+  ; default case
   [(protectedMetaTable? tid θ)
    #f])
 
 (provide protectedMetaTable?)
+
+; since theses defs. make use of δ, and δ uses them too, they cannot be put in
+; an external module
+
+; chooses a handler for a binary operation
+; PRE : {v_1, v_2 are the operands and String is the string that serves as
+;       key to index the meta-table
+; any = (getBinHandler v_1 v_2 String θ)
+; POS : {returns the tid and associated value of the indexed meta-table or nil,
+;        if no value has a meta-table set with a proper value in field with
+;        key String}
+(define-metafunction ext-lang
+  getBinHandler : v v String θ -> any
+  
+  [(getBinHandler v_1 v_2 String θ)
+   (tid v_3)
+   
+   ; determine if v_1 has meta-table
+   (where tid (getMetaTable v_1 θ))
+   (where v_3 (δbasic rawget tid String θ))
+
+   (side-condition (not (is_false_cond? (term v_3))))]
+  
+  [(getBinHandler v_1 v_2 String θ)
+   (tid v_3)
+   
+   ; determine if v_1 has meta-table
+   (where tid (getMetaTable v_2 θ))
+   (where v_3 (δbasic rawget tid String θ))
+   
+   (side-condition (not (is_false_cond? (term v_3))))]
+  
+  ; otherwise...
+  [(getBinHandler v_1 v_2 String θ)
+   nil])
+
+(provide getBinHandler)
+
+; chooses a handler for an unary operation
+; PRE : {v is the operand and String is the string that serves as
+;       key to index the meta-table
+; ret = (getUnaryHandler v String θ)
+; POS : {returns the value of v's meta-table indexed with key String (if
+;        it belongs to the meta-table and the value is not nil or false), and
+;        the tid of the indexed meta-table; or nil}
+(define-metafunction ext-lang
+  getUnaryHandler : v String θ -> any
+  
+  [(getUnaryHandler v_1 String θ)
+   (tid v_2)
+   
+   ; determine if v has meta-table
+   (where tid (getMetaTable v_1 θ))
+   (where v_2 (δbasic rawget tid String θ))
+   
+   (side-condition (not (is_false_cond? (term v_2))))]
+  
+  ; otherwise
+  [(getUnaryHandler v String θ)
+   nil])
+
+(provide getUnaryHandler)
+
+; obtain a handler for an equality comparison, following the criterion defined
+; in the procedure of the same name, in Lua's reference manual;
+; it also returns the tid of every meta-table accessed
+(define-metafunction ext-lang 
+  
+  ; the values compared are tables, with the same handler for the equality
+  ; comparison
+  [(getEqualHandler v_1 v_2 θ)
+   (tid_3 ... v_3)
+   
+   (where true (δbasic == (δbasic type v_1) (δbasic type v_2)))
+
+   (where true (δbasic == (δbasic type v_1) "table"))
+
+   (where tid_1 (getMetaTable v_1 θ))
+   (where v_3 (δbasic rawget tid_1 "__eq" θ))
+   ;(where any_1 (indexMetaTable v_1 "__eq" θ))
+
+   (where tid_2 (getMetaTable v_2 θ))
+   (where v_4 (δbasic rawget tid_2 "__eq" θ))
+   ;(where any_2 (indexMetaTable v_2 "__eq" θ))
+
+   ; compare handlers through Lua's equality
+   (where true (δbasic == v_3 v_4))
+
+   (where (tid_3 ...) ,(remove-duplicates (term (tid_1 tid_2))))]
+  
+  ; the values compared are tables, with the different handlers for the equality
+  ; comparison
+  [(getEqualHandler v_1 v_2 θ)
+   nil
+   
+   (where true (δbasic == (δbasic type v_1) (δbasic type v_2)))
+
+   (where true (δbasic == (δbasic type v_1) "table"))]
+  
+  ; the types of the values compared are different, or they are not tables
+  [(getEqualHandler v_1 v_2 θ)
+   nil])
+
+(provide getEqualHandler)

@@ -9,16 +9,16 @@
   (test-->> meta
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
-                   : ((1 (2))WFunCall)))
+                   : ((1 (2)) WFunCall)))
             
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) ((\{ (\[ "__call" \] = (cl 2)) \}) nil 0))) 
-                   : (((cl 2) (1 2)) Meta))))
+                   : (((cl 2) (1 2)) Meta (objr 1)))))
 
   ; E-WFunCallNoHandler
   (test-->> meta
             (term ((((objr 1) ((\{ \}) nil 0))) 
-                   : ((1 (2))WFunCall)))
+                   : ((1 (2)) WFunCall)))
             
             (term ((((objr 1) ((\{ \}) nil 0))) 
                    : ($err "attempt to call a number value."))))
@@ -42,7 +42,7 @@
                     ((cl 3) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 2) 
                      ((\{ (\[ "__index" \] = (cl 3)) \}) nil 0))) 
-                   : ((\( ((cl 3) ((objr 1) 2)) \)) Meta))))
+                   : ((\( ((cl 3) ((objr 1) 2)) \)) Meta (objr 2)))))
   
   ; E-WrongKeyWithHandlerRepeat
   (test-->> meta
@@ -56,7 +56,7 @@
                      ((\{ (\[ 1 \] = 1) \}) (objr 2) 0))
                     ((objr 2)
                      ((\{ (\[ "__index" \] = 1) \}) nil 0))) 
-                   : ((1 |[| 2 |]|) Meta))))
+                   : ((1 |[| 2 |]|) Meta (objr 2)))))
   
   (test-->> meta
             (term ((((objr 1)
@@ -73,7 +73,7 @@
                      ((\{ (\[ "__index" \] = (objr 3)) \}) nil 0))
                     ((objr 3)
                      ((\{  \}) nil 0)))
-                   : (((objr 3) \[ 2 \]) Meta (objr 3)))))
+                   : (((objr 3) \[ 2 \]) Meta (objr 2)))))
 
   ; E-WrongKeyNoHandler
   (test-->> meta
@@ -108,7 +108,7 @@
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1)
                      ((\{ (\[ "__index" \] = (cl 2)) \}) nil 0))) 
-                   : ((\( ((cl 2) (1 2)) \)) Meta))))
+                   : ((\( ((cl 2) (1 2)) \)) Meta (objr 1)))))
   
   ; E-NonTableIndexedWithHandlerRepeat
   (test-->> meta
@@ -122,7 +122,7 @@
                      ((\{ (\[ "__index" \] = (objr 6)) \}) nil 0))
                     ((objr 6)
                      ((\{ \}) nil 0)))
-                   : (((objr 6) \[ 2 \]) Meta (objr 6)))))
+                   : (((objr 6) \[ 2 \]) Meta (objr 1)))))
   
   ; E-NonTableIndexedNoHandler
   (test-->> meta
@@ -139,9 +139,9 @@
   ; E-AdditionWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__add" \] = 1) \}) nil 0))) 
-                   : (("q" + "q")ArithWrongOps)))
+                   : (("q" + "q") ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__add" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-AdditionWrongOperandsNoHandler
   (test-->> meta
@@ -152,9 +152,9 @@
   ; E-SubstractionWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__sub" \] = 1) \}) nil 0))) 
-                   : (("q" - "q")ArithWrongOps)))
+                   : (("q" - "q") ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__sub" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-SubstractionWrongOperandsNoHandler
   (test-->> meta
@@ -164,9 +164,9 @@
   ; E-MultiplicationWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__mul" \] = 1) \}) nil 0))) 
-                   : (("q" * "q")ArithWrongOps)))
+                   : (("q" * "q") ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__mul" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-MultiplicationWrongOperandsNoHandler
   (test-->> meta
@@ -178,7 +178,7 @@
             (term ((((objr 4) ((\{ (\[ "__div" \] = 1) \}) nil 0))) 
                    : (("q" / "q")ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__div" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-DivisionWrongOperandsNoHandler
   (test-->> meta
@@ -190,7 +190,7 @@
             (term ((((objr 4) ((\{ (\[ "__pow" \] = 1) \}) nil 0))) 
                    : (("q" ^ "q")ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__pow" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-ExponentiationWrongOperandsNoHandler
   (test-->> meta
@@ -202,7 +202,7 @@
             (term ((((objr 4) ((\{ (\[ "__mod" \] = 1) \}) nil 0))) 
                    : (("q" % "q")ArithWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__mod" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" "q")) \)) Meta))))
+                   : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-ModuleWrongOperandsNoHandler
   (test-->> meta
@@ -217,7 +217,7 @@
             (term ((((objr 4) ((\{ (\[ "__unm" \] = 1) \}) nil 0))) 
                    : ((- "q")NegWrongOp)))
             (term ((((objr 4) ((\{ (\[ "__unm" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q")) \)) Meta))))
+                   : ((\( (1 ("q")) \)) Meta (objr 4) ))))
   
   ; E-NegationWrongOperandsNoHandler
   (test-->> meta
@@ -230,19 +230,19 @@
   ; E-StringConcatWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
-                   : ((1 .. "q")StrConcatWrongOps)))
+                   : ((1 .. "q") StrConcatWrongOps)))
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
-                   : ((\( (1 (1 "q")) \)) Meta))))
+                   : ((\( (1 (1 "q")) \)) Meta (objr 1)))))
   
   (test-->> meta
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
                    : (("q" .. 1)StrConcatWrongOps)))
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
-                   : ((\( (1 ("q" 1)) \)) Meta))))
+                   : ((\( (1 ("q" 1)) \)) Meta (objr 1)))))
   
   ; E-StringConcatWrongOperandsWithHandler
   (test-->> meta
-            (term (() : ((1 .. "q")StrConcatWrongOps)))
+            (term (() : ((1 .. "q") StrConcatWrongOps)))
             (term
              (()
               :
@@ -253,7 +253,7 @@
             (term ((((objr 1) ((\{ (\[ "__len" \] = 1) \}) nil 0))) 
                    : ((\# 1) StrLenWrongOp)))
             (term ((((objr 1) ((\{ (\[ "__len" \] = 1) \}) nil 0))) 
-                   : ((\( (1 (1)) \)) Meta))))
+                   : ((\( (1 (1)) \)) Meta (objr 1)))))
   
   ; E-StringLengthWrongOperandTableLength
   (test-->> meta
@@ -307,7 +307,7 @@
             (term ((((objr 1) ((\{ \}) (objr 3) 0)) 
                     ((objr 2) ((\{ \}) (objr 3) 0))
                     ((objr 3) ((\{ (\[ "__eq" \] = 1) \}) nil 0))) 
-                   : ((not (not (1 ((objr 1) (objr 2))))) Meta))))
+                   : ((not (not (1 ((objr 1) (objr 2))))) Meta (objr 3)))))
   
   ; E-EqualityFailNoHandler
   (test-->> meta
@@ -326,7 +326,7 @@
             (term ((((objr 4) ((\{ (\[ "__lt" \] = 1) \}) nil 0))) 
                    : (("a" < 1)OrdCompWrongOps)))
             (term ((((objr 4) ((\{ (\[ "__lt" \] = 1) \}) nil 0))) 
-                   : ((not (not (1 ("a" 1)))) Meta))))
+                   : ((not (not (1 ("a" 1)))) Meta (objr 4)))))
   
   ; E-LessThanFailNoHandler
   (test-->> meta
@@ -339,20 +339,20 @@
   ; E-LessThanOrEqualFailWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__le" \] = 1) \}) nil 0))) 
-                   : (("a" <= 1)OrdCompWrongOps)))
+                   : (("a" <= 1) OrdCompWrongOps)))
             
             (term ((((objr 4) ((\{ (\[ "__le" \] = 1) \}) nil 0))) 
-                   : ((not (not (1 ("a" 1)))) Meta))))
+                   : ((not (not (1 ("a" 1)))) Meta (objr 4)))))
   
   ; E-LessThanOrEqualFailWithAltHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__le" \] = nil)
                                    (\[ "__lt" \] = 1) \}) nil 0))) 
-                   : (("a" <= 1)OrdCompWrongOps)))
+                   : (("a" <= 1) OrdCompWrongOps)))
             
             (term ((((objr 4) ((\{ (\[ "__le" \] = nil)
                                    (\[ "__lt" \] = 1) \}) nil 0))) 
-                   : ((not (1 (1 "a"))) Meta))))
+                   : ((not (1 (1 "a"))) Meta (objr 4)))))
   
   ; E-LessThanOrEqualFailNoHandler
   (test-->> meta
@@ -388,7 +388,7 @@
             (term ((((cl 3) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) ((\{ (\[ "__newindex" \] = (cl 3)) \}) nil 0))
                     ((objr 2) ((\{ \}) (objr 1) 0))) 
-                   : (($statFunCall (cl 3) ((objr 2) 1 2)) Meta))))
+                   : (($statFunCall (cl 3) ((objr 2) 1 2)) Meta (objr 1)))))
   
   ; E-FieldAssignWrongKeyRepeat
   (test-->> meta
@@ -406,7 +406,7 @@
                      ((\{ \}) (objr 1) 0))
                     ((objr 3)
                      ((\{ (\[ 1 \] = 1) \}) nil 0))) 
-                   : ((((objr 3) \[ 1 \]) = 2) Meta (objr 3)))))
+                   : ((((objr 3) \[ 1 \]) = 2) Meta (objr 1)))))
   
   ; E-FieldAssignWrongKeyNoHandler
   (test-->> meta
@@ -444,12 +444,12 @@
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) 
                      ((\{ (\[ "__newindex" \] = (cl 2)) \}) nil 0)))
-                   : (((1 \[ 2 \]) = 2)NonTable)))
+                   : (((1 \[ 2 \]) = 2) NonTable)))
             
             (term ((((cl 2) (function X () ($statFunCall (ref 1) ()) end))
                     ((objr 1) 
                      ((\{ (\[ "__newindex" \] = (cl 2)) \}) nil 0)))
-                   : (($statFunCall (cl 2) (1 2 2)) Meta))))
+                   : (($statFunCall (cl 2) (1 2 2)) Meta (objr 1)))))
   
     ; E-FieldAssignOverNonTableRepeat
     (test-->> meta
@@ -457,13 +457,13 @@
                        ((\{ (\[ "__newindex" \] = (objr 6)) \}) nil 0))
                       ((objr 6)
                        ((\{ \}) nil 0)))
-                     : (((1 \[ 2 \]) = 3)NonTable)))
+                     : (((1 \[ 2 \]) = 3) NonTable)))
               
               (term ((((objr 1)
                        ((\{ (\[ "__newindex" \] = (objr 6)) \}) nil 0))
                       ((objr 6)
                        ((\{ \}) nil 0)))
-                     : ((((objr 6) \[ 2 \]) = 3) Meta (objr 6)))))
+                     : ((((objr 6) \[ 2 \]) = 3) Meta (objr 1)))))
     
     ; E-FieldAssignOverNonTableNoHandler
     (test-->> meta
