@@ -8,6 +8,8 @@
 (define (locals)
   (test-suite "locals.lua"
               (list "assert"
+                    "select"
+                    "load"
                     "collectgarbage"
                     "load"
                     "print"
