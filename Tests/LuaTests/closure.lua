@@ -20,39 +20,34 @@
 
 print "testing closures"
 
-------------------------------------------
--- TODO: performance
-------------------------------------------
--- local A,B = 0,{g=10}
--- function f(x)
---   local a = {}
---   for i=1,1000 do
---     local y = 0
---     do
---       a[i] = function () B.g = B.g+1; y = y+x; return y+A end
---     end
---     collectgarbage()
---   end
---   local dummy = function () return a[A] end
---   A = 1; assert(dummy() == a[1]); A = 0;
---   assert(a[1]() == x)
---   assert(a[3]() == x)
---   collectgarbage()
---   assert(B.g == 12)
---   return a
--- end
+local A,B = 0,{g=10}
+function f(x)
+  local a = {}
+  for i=1,10 do --WAS: for i=1,1000 do
+    local y = 0
+    do
+      a[i] = function () B.g = B.g+1; y = y+x; return y+A end
+    end
+    collectgarbage()
+  end
+  local dummy = function () return a[A] end
+  A = 1; assert(dummy() == a[1]); A = 0;
+  assert(a[1]() == x)
+  assert(a[3]() == x)
+  collectgarbage()
+  assert(B.g == 12)
+  return a
+end
 
--- local a = f(10)
+local a = f(10)
 
-------------------------------------------
--- TODO: internal state of garbage collector
-------------------------------------------
 -- force a GC in this level
---[[local x = {[1] = {}}   -- to detect a GC
+local x = {[1] = {}}   -- to detect a GC
 setmetatable(x, {__mode = 'kv'})
 while x[1] do   -- repeat until GC
   local a = A..A..A..A  -- create garbage
   A = A+1
+  collectgarbage() --WAS: nothing (now manually triggering GC)
 end
 assert(a[1]() == 20+A)
 assert(a[1]() == 30+A)
@@ -63,8 +58,7 @@ assert(a[2]() == 30+A)
 assert(a[3]() == 20+A)
 assert(a[8]() == 10+A)
 assert(getmetatable(x).__mode == 'kv')
-assert(B.g == 19)]]--
-
+assert(B.g == 19)
 
 -- testing equality
 a = {}

@@ -5,14 +5,22 @@
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
-(define (closure)
-  (test-suite "closure.lua"
+(define (errors)
+  (test-suite "errors.lua"
               (list "assert"
                     "collectgarbage"
-                    "error"
+                    "getmetatable"
                     "pcall"
+                    "xpcall"
                     "print"
+                    "load"
+                    "table"
+                    "table.unpack"
+                    "tonumber"
+                    "tostring"
+                    "error"
+                    "type"
                     "math"
                     "math.sin"
-                    "setmetatable"
-                    "getmetatable")))
+                    "string")))
+
