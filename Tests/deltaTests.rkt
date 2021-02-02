@@ -340,6 +340,18 @@
                                      (\[ 7 \] = 8) \}) nil 1)))
                      (objr 1))))
 
+  ; does not change θ
+  (test-equal (term (δ rawset (objr 1) 9 nil
+                       (((objr 1) ((\{ (\[ 1 \] = 2)
+                                       (\[ 3 \] = 4)
+                                       (\[ 5 \] = 6)
+                                       (\[ 7 \] = 8) \}) nil 1)))))
+              (term ((((objr 1) ((\{ (\[ 1 \] = 2)
+                                     (\[ 3 \] = 4)
+                                     (\[ 5 \] = 6)
+                                     (\[ 7 \] = 8) \}) nil 1)))
+                     (objr 1))))
+
   ; +nan.0 can be stored
   (test-equal (term (δ rawset (objr 1) 1 +nan.0
                        (((objr 1) ((\{ (\[ 1 \] = 2) \}) nil 1)))))

@@ -1017,6 +1017,10 @@
            (equal? (term (δbasic == v_1 v_2))
                    'true))
           (tid v_1 θ))]
+
+  ; special case: v ∉ dom(θ(tid))
+  [(δbasic rawset tid v nil θ)
+   (θ tid)]
   
   ; v_2 != nil
   ; field update
