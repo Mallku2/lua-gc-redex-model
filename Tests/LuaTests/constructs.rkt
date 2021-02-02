@@ -1,24 +1,76 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
          "../../Relations/fullProgs.rkt"
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
-(define (lua-constructs-test-suite)
-    (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment services
-                                                     ; TODO: let's make the parser fill this list
-                                                     (list "assert"
-                                                           "collectgarbage"
-                                                           "print"
-                                                           "tonumber"
-                                                           "type"
-                                                           "math"
-                                                           "math.sin")
-                                                     (parse-this (file->string "constructs.lua") #f (void)))))
-  (test-results))
+;; testing syntax
+;; testing semicollons
+;; testing priorities
+(define (constructs_1)
+  (test-suite "constructs_1.lua"
+              (list "print"
+                    "assert"
+                    "tonumber")))
 
-(provide lua-constructs-test-suite)
+;; testing loops (in three files)
+(define (constructs_2a)
+  (test-suite "constructs_2a.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "print"
+                    "type"
+                    "math"
+                    "math.sin")))
+
+(define (constructs_2b)
+  (test-suite "constructs_2b.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "print"
+                    "type"
+                    "math"
+                    "math.sin")))
+
+(define (constructs_2c)
+  (test-suite "constructs_2c.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "print"
+                    "type"
+                    "math"
+                    "math.sin")))
+
+(define (constructs_2d)
+  (test-suite "constructs_2d.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "print"
+                    "type"
+                    "math"
+                    "math.sin")))
+
+;; misc
+(define (constructs_3)
+  (test-suite "constructs_3.lua"
+              (list "assert"
+                    "load"
+                    "ipairs"
+                    "pairs"
+                    "collectgarbage"
+                    "print")))
+
+(define (constructs)
+  (test-suite "constructs.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "print"
+                    "tonumber"
+                    "type"
+                    "load"
+                    "ipairs"
+                    "pairs"
+                    "math"
+                    "math.sin")))
+
