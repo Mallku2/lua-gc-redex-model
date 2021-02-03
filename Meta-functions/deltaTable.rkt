@@ -56,7 +56,7 @@
            ((tid_2 object_2) ...
             (tid_1 (evaluatedtable any_1 any_2))
             (tid_3 object_3) ...))
-   (δtable table.concat tid String Number_1 (δbasic \# evaluatedtable)
+   (δtable table.concat tid_1 String Number_1 (δbasic \# evaluatedtable)
            ((tid_2 object_2) ...
             (tid_1 (evaluatedtable any_1 any_2))
             (tid_3 object_3) ...))]

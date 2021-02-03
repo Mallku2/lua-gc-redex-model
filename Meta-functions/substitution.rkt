@@ -108,88 +108,90 @@
   [(substExp ($err v) ((id e) ...))
    ($err (substExp v ((id e) ...)))]
 
-  [(substExp ((v_1 \[ v_2 \]) NonTable objid ...) ((id e) ...))
+  [(substExp ((v_1 \[ v_2 \]) NonTable tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])
     NonTable
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((objref \[ v \]) WrongKey objid ...) ((id e) ...))
+  [(substExp ((objref \[ v \]) WrongKey tid ...) ((id e) ...))
    (((substExp objref ((id e) ...)) \[ (substExp v ((id e) ...)) \])
     WrongKey
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
   
-  [(substExp ((v_1 arithop v_2) ArithWrongOps objid ...) ((id e) ...))
+  [(substExp ((v_1 arithop v_2) ArithWrongOps tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) arithop (substExp v_2 ((id e) ...)))
     ArithWrongOps
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 .. v_2) StrConcatWrongOps objid ...) ((id e) ...))
+  [(substExp ((v_1 .. v_2) StrConcatWrongOps tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) .. (substExp v_2 ((id e) ...)))
     StrConcatWrongOps
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
      
-  [(substExp ((v_1 < v_2) OrdCompWrongOps objid ...) ((id e) ...))
+  [(substExp ((v_1 < v_2) OrdCompWrongOps tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) < (substExp v_2 ((id e) ...)))
     OrdCompWrongOps
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 <= v_2) OrdCompWrongOps objid ...) ((id e) ...))
+  [(substExp ((v_1 <= v_2) OrdCompWrongOps tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) <= (substExp v_2 ((id e) ...)))
     OrdCompWrongOps
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((- v)NegWrongOp objid ...) ((id e) ...))
+  [(substExp ((- v)NegWrongOp tid ...) ((id e) ...))
    ((- (substExp v ((id e) ...)))
     NegWrongOp
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
   
-  [(substExp ((\# v) StrLenWrongOp objid ...) ((id e) ...))
+  [(substExp ((\# v) StrLenWrongOp tid ...) ((id e) ...))
    ((\# (substExp v ((id e) ...)))
     StrLenWrongOp
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 == v_2) EqFail objid ...) ((id e) ...))
+  [(substExp ((v_1 == v_2) EqFail tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) == (substExp v_2 ((id e) ...)))
     EqFail
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 relop v_2) OrdCompWrongOps objid ...) ((id e) ...))
+  [(substExp ((v_1 relop v_2) OrdCompWrongOps tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) relop (substExp v_2 ((id e) ...)))
     OrdCompWrongOps
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 (v_2 ...)) Meta objid ...) ((id e) ...))
+  [(substExp ((v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((not (v_1 (v_2 ...))) Meta objid ...) ((id e) ...))
+  [(substExp ((not (v_1 (v_2 ...))) Meta tid ...) ((id e) ...))
    ((not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((not (not (v_1 (v_2 ...)))) Meta objid ...) ((id e) ...))
+  [(substExp ((not (not (v_1 (v_2 ...)))) Meta tid ...) ((id e) ...))
    ((not (not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((\( (v_1 (v_2 ...)) \)) Meta objid ...) ((id e) ...))
+  [(substExp ((\( (v_1 (v_2 ...)) \)) Meta tid ...) ((id e) ...))
    ((\( ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) \))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substExp (((v_1 \[ v_2 \]) Meta objid ...) Meta objid ...) ((id e) ...))
+  [(substExp (((v_1 \[ v_2 \]) Meta tid ...) Meta tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
   [(substExp (e_1 ProtMD v) ((id e_2) ...))
-   ((substExp (substExp e_1 ((id e_2) ...)) ((id e_2) ...))
-    ProtMD (substExp v ((id e_2) ...)))]
+   ((substExp e_1 ((id e_2) ...)) ProtMD (substExp v ((id e_2) ...)))]
+
+  [(substExp (e_1 ProtMD) ((id e_2) ...))
+   ((substExp e_1 ((id e_2) ...)) ProtMD)]
   
   ; these case holds for every expression without an structure, different than
   ; a variable or a vararg exp: nil, empty, boolean, number, string, 
-  ; simpvalref, objref
+  ; val ref, objref
   [(substExp any ((id e_2) ...))
    any]
   )
@@ -298,38 +300,38 @@
   [(substBlock (s Break) ((id e) ...))
    ((substBlock s ((id e) ...)) Break)]
 
-  [(substBlock (((objref \[ v_1 \]) = v_2) WrongKey objid ...) ((id e) ...))
+  [(substBlock (((objref \[ v_1 \]) = v_2) WrongKey tid ...) ((id e) ...))
    ((((substExp objref ((id e) ...))
       \[ (substExp v_1 ((id e) ...)) \]) = (substExp v_2 ((id e) ...)))
     WrongKey
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (((v_1 \[ v_2 \]) = v_3) NonTable objid ...) ((id e) ...))
+  [(substBlock (((v_1 \[ v_2 \]) = v_3) NonTable tid ...) ((id e) ...))
    ((((substExp v_1 ((id e) ...))
       \[ (substExp v_2 ((id e) ...)) \]) = (substExp v_3 ((id e) ...)))
     NonTable
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock ((v_1 (v_2 ...)) WFunCall objid ...) ((id e) ...))
+  [(substBlock ((v_1 (v_2 ...)) WFunCall tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     WFunCall
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall objid ...) ((id e) ...))
+  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall tid ...) ((id e) ...))
    (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     WFunCall
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) Meta objid ...) ((id e) ...))
+  [(substBlock (($statFunCall v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
    (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (((v_1 \[ v_2 \]) = v_3) Meta objid ...) ((id e) ...))
+  [(substBlock (((v_1 \[ v_2 \]) = v_3) Meta tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \]
                                  = (substExp v_3 ((id e) ...)))
     Meta
-    (substExp objid ((id e) ...)) ...)]
+    (substExp tid ((id e) ...)) ...)]
 
   ; every variable bound in s has already been replaced by a ref.
   [(substBlock (s (renv ...) LocalBody) ((id e) ...))
@@ -607,10 +609,10 @@
   [(fv (any Break))
    (fv any)]
 
-  [(fv (any statlabel objid ...))
+  [(fv (any statlabel tid ...))
    (fv any)]
 
-  [(fv (any Meta objid ...))
+  [(fv (any Meta tid ...))
    (fv any)]
   
   ;                                  
@@ -767,7 +769,10 @@
    (where (id_1 ...) (fv e))
    (where (id_2 ...) (fv v))]
 
-  [(fv (any explabel objid ...))
+  [(fv (e ProtMD))
+   (fv e)]
+
+  [(fv (any explabel tid ...))
    (fv any)]
 
   [(fv (any (renv ...) RetExp))

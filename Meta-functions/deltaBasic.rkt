@@ -418,16 +418,15 @@
   ; custom iterator, provided by the metatable
   [(δbasic ipairs tid θ)
    ((function $IpairsCustomIter ()
-              (local v1 v2 v3 = (any (tid))
+              (local v1 v2 v3 = (v (tid))
                 in
                 (return (< v1 v2 v3 >))
                 end)
               end) ())
    
-   (where any (indexMetaTable tid "__ipairs" θ))
+   (where v (indexMetaTable tid "__ipairs" θ))
    
-   (side-condition (not (equal? (term any)
-                                (term nil))))]
+   (side-condition (not (is_nil? (term v))))]
 
   ; default iterator
   [(δbasic ipairs tid θ)
@@ -453,6 +452,7 @@
                    (result = ($builtIn rawget (t var)))
                    
                    (if (result == nil)
+                       
                        then
                        
                        (return (< nil >))
@@ -789,15 +789,15 @@
   ; custom iterator, provided by the metatable
   [(δbasic pairs tid θ)
    ((function $pairsCustomIter ()
-              (local v1 v2 v3 = (any (tid))
+              (local v1 v2 v3 = (v (tid))
                 in
                 (return (< v1 v2 v3 >))
                 end)
               end) ())
    
-   (where any (indexMetaTable tid "__pairs" θ))
+   (where v (indexMetaTable tid "__pairs" θ))
    
-   (side-condition (not (is_nil? (term any))))]
+   (side-condition (not (is_nil? (term v))))]
 
   ; Default iterator: next
   [(δbasic pairs tid θ)
@@ -807,14 +807,14 @@
    
    (where nil (indexMetaTable tid "__pairs" θ))]
   
-  [(δbasic pairs v θ)
-   (δbasic error String_2)
-   
-   (where String_1 (δbasic type v))
-   
-   (where String_2 ,(string-append "bad argument #1 (table expected, got "
-                                   (term String_1)
-                                   ")"))]
+;  [(δbasic pairs v θ)
+;   (δbasic error String_2)
+;   
+;   (where String_1 (δbasic type v))
+;   
+;   (where String_2 ,(string-append "bad argument #1 (table expected, got "
+;                                   (term String_1)
+;                                   ")"))]
   
   ;                                          
   ;                           ;;;     ;;;    
