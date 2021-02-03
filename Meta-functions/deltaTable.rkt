@@ -52,22 +52,22 @@
    (δtable table.concat tid String 1 θ)]
 
   ; default value for j is #tid
-  [(δtable table.concat tid_1 String Number_1
-           ((tid_2 object_2) ...
-            (tid_1 (evaluatedtable any_1 any_2))
-            (tid_3 object_3) ...))
-   (δtable table.concat tid_1 String Number_1 (δbasic \# evaluatedtable)
-           ((tid_2 object_2) ...
-            (tid_1 (evaluatedtable any_1 any_2))
-            (tid_3 object_3) ...))]
+  [(δtable table.concat tid String Number_1
+           (osp_1 ...
+            (tid (evaluatedtable any_1 any_2))
+            osp_2 ...))
+   (δtable table.concat tid String Number_1 (δbasic \# evaluatedtable)
+           (osp_1 ...
+            (tid (evaluatedtable any_1 any_2))
+            osp_2 ...))]
 
   ; last check
-  [(δtable table.concat tid_1 v_1 v_2 v_3 ((tid_2 object_2) ...
-                                           (tid_1 (evaluatedtable any_1 any_2))
-                                           (tid_3 object_3) ...))
-   (δtable table.concat tid_1 v_4 v_5 v_6 ((tid_2 object_2) ...
-                                           (tid_1 (evaluatedtable any_1 any_2))
-                                           (tid_3 object_3) ...))
+  [(δtable table.concat tid v_1 v_2 v_3 (osp_1 ...
+                                         (tid (evaluatedtable any_1 any_2))
+                                         osp_2 ...))
+   (δtable table.concat tid v_4 v_5 v_6 (osp_1 ...
+                                         (tid (evaluatedtable any_1 any_2))
+                                         osp_2 ...))
 
    (side-condition (or (is_nil? (term v_1))
                        (is_nil? (term v_2))
