@@ -1514,14 +1514,13 @@
 
 (define-metafunction ext-lang
   ; protected meta-table
-  [(protectedMetaTable? tid θ)
+  [(protectedMetaTable? v θ)
    #t
    
-   (side-condition (not (equal? (term (indexMetaTable tid "__metatable" θ))
-                                (term nil))))]
+   (side-condition (not (is_nil? (term (indexMetaTable v "__metatable" θ)))))]
   
   ; default case
-  [(protectedMetaTable? tid θ)
+  [(protectedMetaTable? v θ)
    #f])
 
 (provide protectedMetaTable?)

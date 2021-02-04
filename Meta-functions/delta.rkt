@@ -92,8 +92,88 @@
                                   table.insert
                                   table.pack
                                   table.unpack))))]
+
   
-  
+;                                               
+;                                               
+;                                               
+;         ;           ;                         
+;         ;           ;                         
+;         ;           ;                         
+;     ;;; ;    ;;;    ; ;;;    ;     ;    ;;; ; 
+;    ;   ;;   ;   ;   ;;   ;   ;     ;   ;   ;; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;;;;;;;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;        ;     ;  ;     ;  ;     ; 
+;    ;   ;;   ;    ;  ;;   ;   ;;   ;;   ;   ;; 
+;     ;;; ;    ;;;;   ; ;;;     ;;;; ;    ;;; ; 
+;                                             ; 
+;                                        ;   ;; 
+;                                         ;;;;  
+;                                               
+
+  [(δ debug.setmetatable v_1 v_2 v_3 v_4 ... θ)
+   (δ debug.setmetatable v_1 v_2 θ)]
+
+  ; plain setmetatable
+  [(δ debug.setmetatable tid v θ)
+   (δ setmetatable tid v θ)]
+
+  ; meta-table already present
+  [(δ debug.setmetatable v tid_1 θ_1)
+   (θ_2 v)
+
+   (where (osp_1 ...
+           (tid_1 intreptable_1)
+           osp_2 ...) θ_1)
+
+   (where tid_2 (getMetaTableRef v))
+
+   ; meta-table already present
+   (where (osp_3 ...
+           (tid_2 intreptable_2)
+           osp_4 ...) θ_1)
+
+   ; set new meta-table
+   (where θ_2 (osp_3 ...
+               (tid_2 intreptable_1)
+               osp_4 ...))]
+
+  ; set new meta-table
+  [(δ debug.setmetatable v tid_1 θ_1)
+   (θ_2 v)
+
+   (where (osp_1 ...
+           (tid_1 intreptable_1)
+           osp_2 ...) θ_1)
+
+   (where tid_2 (getMetaTableRef v))
+
+   ; set new meta-table
+   (where θ_2 ((tid_2 intreptable_1)
+               osp_1 ...
+               (tid_1 intreptable_1)
+               osp_2 ...))]
+
+  ; delete meta-table
+  [(δ debug.setmetatable v nil θ_1)
+   (θ_2 v)
+
+   (where tid (getMetaTableRef v))
+
+   ; meta-table already present
+   (where (osp_1 ...
+           (tid intreptable_1)
+           osp_2 ...) θ_1)
+
+   (where θ_2 (osp_1 ...
+               osp_2 ...))]
+
+  ; meta-table not set
+  [(δ debug.setmetatable v nil θ_1)
+   (θ v)]
+   
   ;                                                          
   ;                           ;                              
   ;                           ;                              
@@ -126,9 +206,6 @@
   ;                        ;                                 
   ;                        ;                                 
   ;                        ;
-  [(δ require θ)
-   (δbasic error "bad argument #1 to 'require' (string expected, got no value)")]
-  
   ; basic implementation of the require service
   [(δ require String_1 θ)
    (δbasic load String_2 nil nil nil θ)
@@ -138,10 +215,35 @@
                             (λ (e) #f)])
              ((λ ()
                 (file->string (term String_1))))))]
+
+  ; to capture the "no value" error for every builtinserv 
+  [(δ builtinserv v ...)
+   (δ error any)
+
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
   
-  ; something went wrong when trying to open file String_1
-  [(δ require v_1 v_2 ... θ)
-   (δbasic error "module not found")]
+  ; services that don't modify theta
+  [(δ builtinserv v ... θ)
+   (δ error any)
+
+   (side-condition (member (term builtinserv)
+                           (term (require))))
+   
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))
+   ]
+
+  ; services that modify theta
+  [(δ builtinserv v ... θ)
+   (θ (δbasic error any))
+
+   (side-condition (member (term builtinserv)
+                           (term (debug.setmetatable))))
+   
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))
+   ]
 )
 
 ; To export the delta function

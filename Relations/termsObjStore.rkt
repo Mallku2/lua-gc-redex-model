@@ -98,6 +98,8 @@
                                 (term (; basic functions
                                        setmetatable
                                        rawset
+                                       ; debug
+                                       debug.setmetatable
                                        ;table
                                        table.insert))))
         

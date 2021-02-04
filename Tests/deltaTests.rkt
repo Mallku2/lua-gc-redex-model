@@ -556,7 +556,52 @@
                       ((objr 2) ((\{ \}) nil 1))
                       ((objr 3) ((\{ (\[ 1 \] = 2) \}) nil 1)))
                      (objr 1))))
+
   
+;                                               
+;                                               
+;                                               
+;         ;           ;                         
+;         ;           ;                         
+;         ;           ;                         
+;     ;;; ;    ;;;    ; ;;;    ;     ;    ;;; ; 
+;    ;   ;;   ;   ;   ;;   ;   ;     ;   ;   ;; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;;;;;;;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;        ;     ;  ;     ;  ;     ; 
+;    ;   ;;   ;    ;  ;;   ;   ;;   ;;   ;   ;; 
+;     ;;; ;    ;;;;   ; ;;;     ;;;; ;    ;;; ; 
+;                                             ; 
+;                                        ;   ;; 
+;                                         ;;;;  
+;                                               
+
+  ; debug.setmetatable
+  
+  (test-equal (term (δ debug.setmetatable 1 1 ()))
+              (term (()
+                     ($err
+                       "erroneous actual parameters to debug.setmetatable"))))
+  
+  (test-equal (term (δ debug.setmetatable 1
+                       (objr 3)
+                       (((objr 2) ((\{
+                                    (\[ "__metatable" \] = 1)
+                                    \}) nil 1))
+                        ((objr 3) ((\{ \}) nil 1)))))
+              
+              (term ((((objr 1) ((\{ \}) nil 1))
+                      ((objr 2) ((\{ (\[ "__metatable" \] = 1) \}) nil 1))
+                      ((objr 3) ((\{ \}) nil 1)))
+                     1)))
+  
+  (test-equal (term (δ debug.setmetatable true (objr 2)
+                       (((objr 2) ((\{ \}) nil 1)))))
+              
+              (term ((((objr 3) ((\{ \}) nil 1))
+                      ((objr 2) ((\{ \}) nil 1)))
+                     true)))
   
   ;                                                  
   ;                             ;                    

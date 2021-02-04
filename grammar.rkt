@@ -144,6 +144,8 @@
                tostring
                type
                xpcall
+               ; debug
+               debug.setmetatable
                ; math
                math.abs
                math.acos

@@ -147,6 +147,36 @@
    (cons "_G"
          (term (($ENV \[ "_G" \]) = $ENV)
                ))
+
+   
+;                                               
+;                                               
+;                                               
+;         ;           ;                         
+;         ;           ;                         
+;         ;           ;                         
+;     ;;; ;    ;;;    ; ;;;    ;     ;    ;;; ; 
+;    ;   ;;   ;   ;   ;;   ;   ;     ;   ;   ;; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;;;;;;;  ;     ;  ;     ;  ;     ; 
+;   ;     ;  ;        ;     ;  ;     ;  ;     ; 
+;    ;   ;;   ;    ;  ;;   ;   ;;   ;;   ;   ;; 
+;     ;;; ;    ;;;;   ; ;;;     ;;;; ;    ;;; ; 
+;                                             ; 
+;                                        ;   ;; 
+;                                         ;;;;  
+;                                               
+   (cons "debug"
+         (term (($ENV \[ "debug" \]) = (\{ \}))
+               ))
+
+   (cons "debug.setmetatable"
+         (term ((($ENV \[ "debug" \]) \[ "setmetatable" \])
+                = (function $debug.setmetatable (<<<)
+                            (return ($builtIn debug.setmetatable (<<<)))
+                            end))
+               ))
                                                
    ;                           ;      
    ;                           ;      
