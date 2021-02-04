@@ -16,7 +16,7 @@
                     "type")))
 
 (define (test-locals_2)
-  (test-suite "locals.lua"
+  (test-suite "locals_2.lua"
               (list "_G"
                     "assert"
                     "select"
