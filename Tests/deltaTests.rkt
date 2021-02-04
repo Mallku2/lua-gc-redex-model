@@ -591,7 +591,7 @@
                                     \}) nil 1))
                         ((objr 3) ((\{ \}) nil 1)))))
               
-              (term ((((objr 1) ((\{ \}) nil 1))
+              (term ((((objr 1) ((\{ (|[| "__metatable" |]| = (objr 3)) \}) nil 1))
                       ((objr 2) ((\{ (\[ "__metatable" \] = 1) \}) nil 1))
                       ((objr 3) ((\{ \}) nil 1)))
                      1)))
@@ -599,7 +599,7 @@
   (test-equal (term (δ debug.setmetatable true (objr 2)
                        (((objr 2) ((\{ \}) nil 1)))))
               
-              (term ((((objr 3) ((\{ \}) nil 1))
+              (term ((((objr 3) ((\{ (|[| "__metatable" |]| = (objr 2)) \}) nil 1))
                       ((objr 2) ((\{ \}) nil 1)))
                      true)))
   
