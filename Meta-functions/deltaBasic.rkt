@@ -374,9 +374,9 @@
   ; the value isn't a table. It has a meta-table, which has
   ; a "__metatable" key,
   [(δbasic getmetatable any_1 (osp_1 ...
-                               (tid_2 ((\{ field ...
+                               (tid_2 ((\{ field_1 ...
                                            (\[ "__metatable" \] = v)
-                                           field ... \})
+                                           field_2 ... \})
                                        any_2 ...))
                                osp_2 ...))
    v

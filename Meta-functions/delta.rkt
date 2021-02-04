@@ -121,14 +121,17 @@
    (δ setmetatable tid v θ)]
 
   ; meta-table already present
-  [(δ debug.setmetatable v tid_1 θ_1)
-   (θ_2 v)
+  ; __metatable field already defined in tid_1
+  [(δ debug.setmetatable v_1 tid_1 θ_1)
+   (θ_2 v_1)
 
    (where (osp_1 ...
-           (tid_1 intreptable_1)
+           (tid_1 ((\{ field_1  ...
+                       (\[ "__metatable" \] = v_2)
+                       field_2  ... \}) v_3 pos))
            osp_2 ...) θ_1)
 
-   (where tid_2 (getMetaTableRef v))
+   (where tid_2 (getMetaTableRef v_1))
 
    ; meta-table already present
    (where (osp_3 ...
@@ -137,23 +140,73 @@
 
    ; set new meta-table
    (where θ_2 (osp_3 ...
-               (tid_2 intreptable_1)
+               (tid_2 ((\{ field_1  ...
+                           (\[ "__metatable" \] = v_2)
+                           field_2 ... \}) v_3 pos))
+               osp_4 ...))]
+
+  ; __metatable field not defined in tid_1
+  [(δ debug.setmetatable v_1 tid_1 θ_1)
+   (θ_2 v_1)
+
+   (where (osp_1 ...
+           (tid_1 ((\{ field  ... \}) v_2 pos))
+           osp_2 ...) θ_1)
+
+   (where tid_2 (getMetaTableRef v_1))
+
+   ; meta-table already present
+   (where (osp_3 ...
+           (tid_2 intreptable_2)
+           osp_4 ...) θ_1)
+
+   ; set new meta-table
+   ; add "__metatable" field, and make it contain tid_1 (so a call to
+   ; getmetatable returns the expected result)
+   (where θ_2 (osp_3 ...
+               (tid_2 ((\{ field  ... (\[ "__metatable" \] = tid_1) \}) v_2 pos))
                osp_4 ...))]
 
   ; set new meta-table
-  [(δ debug.setmetatable v tid_1 θ_1)
-   (θ_2 v)
+  ; __metatable field already defined in tid_1
+  [(δ debug.setmetatable v_1 tid_1 θ_1)
+   (θ_2 v_1)
 
    (where (osp_1 ...
-           (tid_1 intreptable_1)
+           (tid_1 ((\{ field_1 ...
+                       (\[ "__metatable" \] = v_2)
+                       field_2 ... \}) v_3 pos))
            osp_2 ...) θ_1)
 
-   (where tid_2 (getMetaTableRef v))
+   (where tid_2 (getMetaTableRef v_1))
 
    ; set new meta-table
-   (where θ_2 ((tid_2 intreptable_1)
+   (where θ_2 ((tid_2 ((\{ field_1 ...
+                           (\[ "__metatable" \] = v_2)
+                           field_2 ... \}) v_3 pos))
                osp_1 ...
-               (tid_1 intreptable_1)
+               (tid_1 ((\{ field_1 ...
+                       (\[ "__metatable" \] = v_2)
+                       field_2 ... \}) v_3 pos))
+               osp_2 ...))]
+
+  [(δ debug.setmetatable v_1 tid_1 θ_1)
+   (θ_2 v_1)
+
+   (where (osp_1 ...
+           (tid_1 ((\{ field ... \}) v_2 pos))
+           osp_2 ...) θ_1)
+
+   (where tid_2 (getMetaTableRef v_1))
+
+   ; set new meta-table
+   (where θ_2 ((tid_2 ((\{ field ...
+                            ; add "__metatable" field, and make it contain
+                            ; tid_1 (so a call to getmetatable returns the
+                            ; expected result)
+                           (\[ "__metatable" \] = tid_1) \}) v_2 pos))
+               osp_1 ...
+               (tid_1 ((\{ field ... \}) v_2 pos))
                osp_2 ...))]
 
   ; delete meta-table
