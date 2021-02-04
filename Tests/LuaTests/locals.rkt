@@ -5,9 +5,20 @@
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
-(define (locals)
-  (test-suite "locals.lua"
+(define (test-locals_1)
+  (test-suite "locals_1.lua"
               (list "assert"
+                    "select"
+                    "load"
+                    "collectgarbage"
+                    "load"
+                    "print"
+                    "type")))
+
+(define (test-locals_2)
+  (test-suite "locals_2.lua"
+              (list "_G"
+                    "assert"
                     "select"
                     "load"
                     "collectgarbage"
