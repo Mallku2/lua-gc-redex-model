@@ -237,7 +237,6 @@
    ("function" (token-FUNCTION))
    
    ; identifiers
-   ("_ENV" (token-NAME (string->symbol "$ENV")))
    (id (token-NAME (string->symbol lexeme)))
    
    ; skip whitespaces
