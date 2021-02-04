@@ -856,7 +856,12 @@
   ;   ;                                      
   ;   ;
 
-  ; Hack to implement a simple instrumentation tool.
+  ; hack to implement a simple instrumentation tool.
+  ; nothing has been written to stdout
+  [(δbasic print v_1 ... ((r v) ...) θ)
+   ; create stdout file
+   (δbasic print v_1 ... ((refStdout "") (r v) ...) θ)]
+  
   [(δbasic print v_1 ... ((refStdout String_1) vsp ...) θ)
    ((refStdout String_3) vsp ...)
 
@@ -870,24 +875,9 @@
                            (term (v_1 ...))))
 
    (where String_3, (string-append (term String_2)
-                                   "\n"))
-   ]
+                                   "\n"))]
 
-  ; nothing has been written to stdout
-  [(δbasic print v_1 ... (vsp ...) θ)
-   ((refStdout String_2) vsp ...)
-   
-   (where String_1 ,(foldl (λ (str accum)
-                             (string-append accum
-                                            (term (δbasic tostring ,str θ))
-                                            )
-                             )
-                           (term " ")
-                           (term (v_1 ...))))
-
-   (where String_2 ,(string-append (term String_1)
-                                   "\n"))
-   ]
+  
   
   ;                                                                  
   ;                                                           ;;;    
