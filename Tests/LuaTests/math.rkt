@@ -1,21 +1,52 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
          "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt")
+         "../../Desugar/parser.rkt"
+         "./tests_aux.rkt")
 
-(define (ok? red)
-  (and (eq? (length red) 1)
+(define (test-math_1)
+  (test-suite "math_1.lua"
+              (list "assert"
+                    "print"
+                    "type"
+                    "math"
+                    "math.modf"
+                    "math.huge")))
 
-       (redex-match core-lang
-              (σ : θ : \;)
-              (first red))))
+(define (test-math_2)
+  (test-suite "math_2.lua"
+              (list "assert"
+                    "print"
+                    "tonumber"
+                    "string"
+                    "string.rep"
+                    "select"
+                    )))
 
-(define (lua-math-test-suite)
-    (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment (parse-this (file->string "math.lua") #f (void)))))
-  (test-results))
+(define (test-math_3)
+  (test-suite "math_3.lua"
+              (list "assert"
+                    "print"
+                    "tonumber"
+                    "math"
+                    "math.abs"
+                    )))
 
-(provide lua-math-test-suite)
+(define (math-all)
+  (filter (lambda (x) (string-contains? x "math")) (dict-keys services)))
+
+(define (test-math_4)
+  (test-suite "math_4.lua"
+              (append (list "assert"
+                    "print"
+                    "tonumber") (math-all))))
+
+(define (test-math_5)
+  (test-suite "math_5.lua"
+              (list "assert"
+                    "print"
+                    "tonumber"
+                    "math"
+                    "math.huge"
+                    "pcall")))
