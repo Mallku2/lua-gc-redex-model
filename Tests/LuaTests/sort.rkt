@@ -1,21 +1,18 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
          "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt")
+         "../../Desugar/parser.rkt"
+         "./tests_aux.rkt")
 
-(define (ok? red)
-  (and (eq? (length red) 1)
-
-       (redex-match core-lang
-              (σ : θ : \;)
-              (first red))))
-
-(define (lua-sort-test-suite)
-    (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment (parse-this (file->string "sort.lua") #f (void)))))
-  (test-results))
-
-(provide lua-sort-test-suite)
+(define (test-sort)
+  (test-suite "sort.lua"
+              (list "print"
+                    "assert"
+                    "table"
+                    "table.unpack"
+                    "table.pack"
+                    "next"
+                    "select"
+                    "pcall"
+                    )))
