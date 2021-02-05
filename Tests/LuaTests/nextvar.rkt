@@ -1,21 +1,76 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
-         "../../Relations/standardReductionRelation.rkt"
-         "../../Desugar/parser.rkt")
+         "../../Relations/fullProgs.rkt"
+         "../../Desugar/parser.rkt"
+         "./tests_aux.rkt")
 
-(define (ok? red)
-  (and (eq? (length red) 1)
+(define (test-nextvar_1)
+  (test-suite "nextvar_1.lua"
+              (list "print"
+                    "assert"
+                    "ipairs"
+                    "type"
+                    )))
 
-       (redex-match core-lang
-              (σ : θ : \;)
-              (first red))))
+(define (test-nextvar_2)
+  (test-suite "nextvar_2.lua"
+              (list "_G"
+                    "print"
+                    "next"
+                    "assert"
+                    "pairs"
+                    "math"
+                    "math.fmod"
+                    )))
 
-(define (lua-nextvar-test-suite)
-    (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment (parse-this (file->string "nextvar.lua") #f (void)))))
-  (test-results))
+(define (test-nextvar_3)
+  (test-suite "nextvar_3.lua"
+              (list "_G"
+                    "print"
+                    "next"
+                    "assert"
+                    "pairs"
+                    )))
 
-(provide lua-nextvar-test-suite)
+(define (test-nextvar_4)
+  (test-suite "nextvar_4.lua"
+              (list "_G"
+                    "print"
+                    "next"
+                    "assert"
+                    "pairs"
+                    "math"
+                    "math.max"
+                    "math.pi"
+                    "string"
+                    "string.rep"
+                    "collectgarbage"
+                    "table"
+                    "pcall"
+                    "type"
+                    "table"
+                    "table.insert"
+                    )))
+
+(define (test-nextvar_5)
+  (test-suite "nextvar_5.lua"
+              (list "next"
+                    "assert"
+                    "error"
+                    "pairs"
+                    "print"
+                    "collectgarbage"
+                    "table"
+                    "table.unpack"
+                    )))
+
+(define (test-nextvar_6)
+  (test-suite "nextvar_6.lua"
+              (list "assert"
+                    "type"
+                    "setmetatable"
+                    "ipairs"
+                    "pairs"
+                    "print"
+                    )))
