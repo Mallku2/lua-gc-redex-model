@@ -49,30 +49,30 @@
   
   ;functioncall
   (check-equal? (parse-this "x ()"  #f (void))
-                (term ($statFunCall ($ENV  \[ "x" \]) ())))
+                (term ($statFunCall (_ENV  \[ "x" \]) ())))
   
   (check-equal? (parse-this "x () ()"  #f (void))
-                (term ($statFunCall (($ENV  \[ "x" \]) ()) ())))
+                (term ($statFunCall ((_ENV  \[ "x" \]) ()) ())))
   
   (check-equal? (parse-this "x (1, 2)"  #f (void))
-                (term ($statFunCall ($ENV  \[ "x" \]) (1.0 2.0))))
+                (term ($statFunCall (_ENV  \[ "x" \]) (1.0 2.0))))
   
   (check-equal? (parse-this "x {1}"  #f (void))
-                (term ($statFunCall ($ENV  \[ "x" \]) ((\{ 1.0 \})))))
+                (term ($statFunCall (_ENV  \[ "x" \]) ((\{ 1.0 \})))))
   
   (check-equal? (parse-this "(x) {1}" #f (void))
-                (term ($statFunCall (\( ($ENV  \[ "x" \]) \)) ((\{ 1.0 \})))))
+                (term ($statFunCall (\( (_ENV  \[ "x" \]) \)) ((\{ 1.0 \})))))
 
   ; method call
   (check-equal? (parse-this "x : method_name {1}" #f (void))
-                (term ($statFunCall ($ENV  \[ "x" \]) : method_name ((\{ 1.0 \})))))
+                (term ($statFunCall (_ENV  \[ "x" \]) : method_name ((\{ 1.0 \})))))
 
   (check-equal? (parse-this "y . component_1 : method_name_1 {2}" #f (void))
-                (term ($statFunCall (($ENV  \[ "y" \]) \[ "component_1" \])
+                (term ($statFunCall ((_ENV  \[ "y" \]) \[ "component_1" \])
                                     : method_name_1 ((\{ 2.0 \})))))
   
   (check-equal? (parse-this "y : method_name_1 {1} : method_name_2 {2}" #f (void))
-                (term ($statFunCall (($ENV  \[ "y" \]) : method_name_1 ((\{ 1.0 \})))
+                (term ($statFunCall ((_ENV  \[ "y" \]) : method_name_1 ((\{ 1.0 \})))
                                     : method_name_2 ((\{ 2.0 \})))))
   
   ; local var
@@ -88,13 +88,13 @@
   
   ; assignment
   (check-equal? (parse-this "c = 1" #f (void))
-                (term (($ENV  \[ "c" \]) = 1.0)))
+                (term ((_ENV  \[ "c" \]) = 1.0)))
 
   (check-equal? (parse-this "_c = 1" #f (void))
-                (term (($ENV  \[ "_c" \]) = 1.0)))
+                (term ((_ENV  \[ "_c" \]) = 1.0)))
   
   (check-equal? (parse-this "c[1] = 2" #f (void))
-                (term ((($ENV  \[ "c" \]) \[ 1.0 \]) = 2.0)))
+                (term (((_ENV  \[ "c" \]) \[ 1.0 \]) = 2.0)))
   
   ; do-end
   (check-equal? (parse-this "do end" #f (void))
@@ -112,26 +112,26 @@
                               assert(fact(5) == 120)
                              end
                              assert(fact == false)" #f (void))
-                (term ((($ENV |[| "fact" |]|) = false)
+                (term (((_ENV |[| "fact" |]|) = false)
                        (do (local res = 1.0
                              in
                              (|;| (local fact = nil
                                     in
                                     ((fact = (function $1 (n) (do \; end) end))
-                                     ($statFunCall ($ENV |[| "assert" |]|)
+                                     ($statFunCall (_ENV |[| "assert" |]|)
                                                    (((fact (5.0)) == 120.0))))
                                     end)
                                   )
                              end)
                          end)
-                       ($statFunCall ($ENV |[| "assert" |]|)
-                                     ((($ENV |[| "fact" |]|) == false))))))
+                       ($statFunCall (_ENV |[| "assert" |]|)
+                                     (((_ENV |[| "fact" |]|) == false))))))
   
   ; TODO: avoid unnecessary skips
   (check-equal? (parse-this "do local c = 1 ; c = 2 end ; c = 3" #f (void))
                 (term ((do (local c = 1.0 in (\; \; (c = 2.0)) end) end)
                        \;
-                       (($ENV  \[ "c" \]) = 3.0))))
+                       ((_ENV  \[ "c" \]) = 3.0))))
   
   ; while
   (check-equal? (parse-this "while true do end" #f (void))
@@ -142,7 +142,7 @@
   
   (check-equal? (parse-this "while true do local d = 1 end d = 2" #f (void))
                 (term ((while true do (local d = 1.0 in \; end) end)
-                       (($ENV  \[ "d" \]) = 2.0))))
+                       ((_ENV  \[ "d" \]) = 2.0))))
 
   ; repeat
   ; single repeat
@@ -167,10 +167,10 @@
                               ($dummyGuardVar < 1)
                               do
                               (($dummyGuardVar = 1)
-                               (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                               ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                |;|
-                               (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
-                               (if (not ($ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                               ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
+                               (if (not (_ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
                               end)
                              end)
                            end))
@@ -212,7 +212,7 @@
   (check-equal? (parse-this "do a = 1 end ;
                              repeat i = i + 1; u = i .. i until finish" #f
                                                                         (void))
-                (term ((do (($ENV |[| "a" |]|) = 1.0) end)
+                (term ((do ((_ENV |[| "a" |]|) = 1.0) end)
                        |;|
                        (local
                          $dummyVar
@@ -233,10 +233,10 @@
                                ($dummyGuardVar < 1)
                                do
                                (($dummyGuardVar = 1)
-                                (($ENV |[| "i" |]|) = (($ENV |[| "i" |]|) + 1.0))
+                                ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                 |;|
-                                (($ENV |[| "u" |]|) = (($ENV |[| "i" |]|) .. ($ENV |[| "i" |]|)))
-                                (if (not ($ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                                ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
+                                (if (not (_ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
                                end)
                               end)
                             end))
@@ -298,14 +298,14 @@
                                      end))
                              end)
                          end)
-                       (($ENV \[ "a" \]) = 2.0)
+                       ((_ENV \[ "a" \]) = 2.0)
                        \;
-                       (($ENV \[ "var" \]) = 3.0))))
+                       ((_ENV \[ "var" \]) = 3.0))))
   
   ; generic for
   (check-equal? (parse-this "for k,v in a do ; end" #f (void))
                 (term (do (local
-                            $f $s $var = ($ENV |[| "a" |]|)
+                            $f $s $var = (_ENV |[| "a" |]|)
                             in
                             (while true do
                                    (local k v = ($f ($s $var))
@@ -324,7 +324,7 @@
 
   (check-equal? (parse-this "for k,v in a do local b end b = 1" #f (void))
                 (term ((do (local
-                             $f $s $var = ($ENV |[| "a" |]|)
+                             $f $s $var = (_ENV |[| "a" |]|)
                              in
                              (while true do
                                     (local k v = ($f ($s $var))
@@ -340,11 +340,11 @@
                                     end)
                              end)
                          end)
-                       (($ENV \[ "b" \]) = 1.0))))
+                       ((_ENV \[ "b" \]) = 1.0))))
 
   (check-equal? (parse-this "for k,v in a do k = 1 end b = 1" #f (void))
                 (term ((do (local
-                             $f $s $var = ($ENV |[| "a" |]|)
+                             $f $s $var = (_ENV |[| "a" |]|)
                              in
                              (while true do
                                     (local k v = ($f ($s $var))
@@ -360,13 +360,13 @@
                                     end)
                              end)
                          end)
-                       (($ENV \[ "b" \]) = 1.0))))
+                       ((_ENV \[ "b" \]) = 1.0))))
 
   ; test concatenation of statements in the body of the loop
   (check-equal? (parse-this "for k,v in a do k = 1; k = 2; k = 3 end b = 1"
                             #f (void))
                 (term ((do (local
-                             $f $s $var = ($ENV |[| "a" |]|)
+                             $f $s $var = (_ENV |[| "a" |]|)
                              in
                              (while true do
                                     (local k v = ($f ($s $var))
@@ -386,7 +386,7 @@
                                     end)
                              end)
                          end)
-                       (($ENV \[ "b" \]) = 1.0))))
+                       ((_ENV \[ "b" \]) = 1.0))))
   ; conditional
   (check-equal? (parse-this "if true then ; end" #f (void))
                 (term (if true then \; else \; end)))
@@ -402,7 +402,7 @@
   
   (check-equal? (parse-this "if true then local e = 1 end e = 2" #f (void))
                 (term ((if true then (local e = 1.0 in \; end) else \; end)
-                       (($ENV  \[ "e" \]) = 2.0))))
+                       ((_ENV  \[ "e" \]) = 2.0))))
   
   (check-equal? (parse-this "if true then local e = 1
                              elseif false then e = 2 local f = 1
@@ -412,13 +412,13 @@
                            (local e = 1.0 in |;| end)
                            else
                            (if false then
-                               ((($ENV  |[| "e" |]|) = 2.0)
+                               (((_ENV  |[| "e" |]|) = 2.0)
                                 (local f = 1.0 in |;| end))
-                               else ((($ENV  |[| "f" |]|) = 2.0)
+                               else (((_ENV  |[| "f" |]|) = 2.0)
                                      (local g = 3.0 in |;| end))
                                end)
                            end)
-                       (($ENV  |[| "g" |]|) = 4.0))))
+                       ((_ENV  |[| "g" |]|) = 4.0))))
   
   (check-equal? (parse-this "local b
 
@@ -446,24 +446,24 @@
   
   ; Global function def
   (check-equal? (parse-this "function global() do end end" #f (void))
-                (term (($ENV  \[ "global" \]) = (function $1 () (do \; end) end))))
+                (term ((_ENV  \[ "global" \]) = (function $1 () (do \; end) end))))
   
   (check-equal? (parse-this "function global() local l l = 1 end l = 2" #f (void))
-                (term ((($ENV  \[ "global" \]) = (function $1 () (local l = nil in (\; (l = 1.0)) end) end))
-                       (($ENV  \[ "l" \]) = 2.0))))
+                (term (((_ENV  \[ "global" \]) = (function $1 () (local l = nil in (\; (l = 1.0)) end) end))
+                       ((_ENV  \[ "l" \]) = 2.0))))
 
   ; Method def
   (check-equal? (parse-this "function clase.metodo() do end end" #f (void))
-                (term ((($ENV  \[ "clase" \]) \[ "metodo" \]) = (function $1 () (do \; end) end))))
+                (term (((_ENV  \[ "clase" \]) \[ "metodo" \]) = (function $1 () (do \; end) end))))
   
   (check-equal? (parse-this "function clase.objeto_miembro.metodo() do end end" #f (void))
-                (term (((($ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo" \]) = (function $1 () (do \; end) end))))
+                (term ((((_ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo" \]) = (function $1 () (do \; end) end))))
   
   (check-equal? (parse-this "function clase.objeto_miembro:metodo() self = 1 end" #f (void))
-                (term (((($ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo" \]) = (function $1 (self) (self = 1.0) end))))
+                (term ((((_ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo" \]) = (function $1 (self) (self = 1.0) end))))
 
   (check-equal? (parse-this "function clase.objeto_miembro:metodo_2() self = 1 end" #f (void))
-                (term (((($ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo_2" \]) = (function $1 (self) (self = 1.0) end))))
+                (term ((((_ENV  \[ "clase" \]) \[ "objeto_miembro" \]) \[ "metodo_2" \]) = (function $1 (self) (self = 1.0) end))))
   
   ; Local function def
   (check-equal? (parse-this "local function fa()
@@ -475,7 +475,7 @@
                         ((fa = (function $1 ()
                                          (($statFunCall fa ())
                                           (local fb = 1.0 in \; end)) end))
-                         (($ENV  \[ "fb" \]) = 2.0)) end)))
+                         ((_ENV  \[ "fb" \]) = 2.0)) end)))
   
   (check-equal? (parse-this "local function fact (n)
                                     if n==0 then
@@ -489,12 +489,12 @@
                         in
                         ((fact = (function $1 (n)
                                            (if (n == 0.0) then
-                                               (return ($ENV |[| "res" |]|))
+                                               (return (_ENV |[| "res" |]|))
                                                else
                                                (return (n * (fact ((n - 1.0)))))
                                                end)
                                            end))
-                         ($statFunCall ($ENV |[| "assert" |]|)
+                         ($statFunCall (_ENV |[| "assert" |]|)
                                        (((fact (5.0)) == 120.0))))
                         end)))
   
@@ -514,159 +514,159 @@
   ;                   ;                                                                      
   ;                   ;                                                                      
   (check-equal? (parse-this "h = ..." #f (void))
-                (term (($ENV  |[| "h" |]|) = <<<)))
+                (term ((_ENV  |[| "h" |]|) = <<<)))
   
   (check-equal? (parse-this "h = \"string\"" #f (void))
-                (term (($ENV  |[| "h" |]|) = "string")))
+                (term ((_ENV  |[| "h" |]|) = "string")))
   
   (check-equal? (parse-this "h,str = \"string1\", \"string2\"" #f (void))
-                (term (($ENV  |[| "h" |]|) ($ENV  |[| "str" |]|) = "string1" "string2")))
+                (term ((_ENV  |[| "h" |]|) (_ENV  |[| "str" |]|) = "string1" "string2")))
   
   (check-equal? (parse-this "h = 'string'" #f (void))
-                (term (($ENV  |[| "h" |]|) = "string")))
+                (term ((_ENV  |[| "h" |]|) = "string")))
   
   (check-equal? (parse-this "h = [[string]]" #f (void))
-                (term (($ENV  |[| "h" |]|) = "string")))
+                (term ((_ENV  |[| "h" |]|) = "string")))
 
   (check-equal? (parse-this "f = load [[ ]]
                              f = [[ x[i] == select(i, ...) ]]" #f (void))
-                (term ((($ENV |[| "f" |]|) = (($ENV |[| "load" |]|) (" ")))
-                       (($ENV |[| "f" |]|) = " x[i] == select(i, ...) "))))
+                (term (((_ENV |[| "f" |]|) = ((_ENV |[| "load" |]|) (" ")))
+                       ((_ENV |[| "f" |]|) = " x[i] == select(i, ...) "))))
   
   (check-equal? (parse-this "h = _i" #f (void))
-                (term (($ENV  |[| "h" |]|) = ($ENV  |[| "_i" |]|))))
+                (term ((_ENV  |[| "h" |]|) = (_ENV  |[| "_i" |]|))))
   
   (check-equal? (parse-this "h = 1.1" #f (void))
-                (term (($ENV  |[| "h" |]|) = 1.1)))
+                (term ((_ENV  |[| "h" |]|) = 1.1)))
 
   (check-equal? (parse-this "h = 0XffP+1" #f (void))
-                (term (($ENV  |[| "h" |]|) = 510.0)))
+                (term ((_ENV  |[| "h" |]|) = 510.0)))
   
   (check-equal? (parse-this "h = nil" #f (void))
-                (term (($ENV  |[| "h" |]|) = nil)))
+                (term ((_ENV  |[| "h" |]|) = nil)))
   
   (check-equal? (parse-this "h = true" #f (void))
-                (term (($ENV  |[| "h" |]|) = true)))
+                (term ((_ENV  |[| "h" |]|) = true)))
   
   (check-equal? (parse-this "h = false" #f (void))
-                (term (($ENV  |[| "h" |]|) = false)))
+                (term ((_ENV  |[| "h" |]|) = false)))
   
   (check-equal? (parse-this "h = 1.1 + 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 + 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 + 0.5))))
   
   (check-equal? (parse-this "h = 1.1 - 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 - 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 - 0.5))))
   
   (check-equal? (parse-this "h = 1.1 * 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 * 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 * 0.5))))
   
   (check-equal? (parse-this "h = 1.1 / 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 / 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 / 0.5))))
   
   (check-equal? (parse-this "h = 1.1 % 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 % 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 % 0.5))))
   
   (check-equal? (parse-this "h = 1.1 ^ 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 ^ 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 ^ 0.5))))
   
   (check-equal? (parse-this "h = 1.1 < 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 < 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 < 0.5))))
   
   (check-equal? (parse-this "h = 1.1 <= 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 <= 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 <= 0.5))))
   
   (check-equal? (parse-this "h = 1.1 > 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 > 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 > 0.5))))
   
   (check-equal? (parse-this "h = 1.1 >= 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 >= 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 >= 0.5))))
   
   (check-equal? (parse-this "h = 1.1 == 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 == 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 == 0.5))))
   
   (check-equal? (parse-this "h = 1.1 ~= 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (not (1.1 == 0.5)))))
+                (term ((_ENV  |[| "h" |]|) = (not (1.1 == 0.5)))))
   
   (check-equal? (parse-this "h = 1.1 .. 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 .. 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 .. 0.5))))
   
   (check-equal? (parse-this "h = 1.1 and 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 and 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 and 0.5))))
   
   (check-equal? (parse-this "h = 1.1 or 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (1.1 or 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (1.1 or 0.5))))
   
   (check-equal? (parse-this "h = not 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (not 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (not 0.5))))
   
   (check-equal? (parse-this "h = # 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\# 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (\# 0.5))))
   
   (check-equal? (parse-this "h = - 0.5" #f (void))
-                (term (($ENV  |[| "h" |]|) = (- 0.5))))
+                (term ((_ENV  |[| "h" |]|) = (- 0.5))))
   
   
   ; tableconstructor
   (check-equal? (parse-this "h = {}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ \}))))
   
   (check-equal? (parse-this "h = {1}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ 1.0 \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ 1.0 \}))))
   
   (check-equal? (parse-this "h = {[1] = 2}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) \}))))
   
   (check-equal? (parse-this "h = {[ 1 ] = 2}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) \}))))
   
   (check-equal? (parse-this "h = {a = 2}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ "a" \] = 2.0) \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ "a" \] = 2.0) \}))))
   
   (check-equal? (parse-this "h = {[ 1 ] = 2 , 3}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) 3.0 \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) 3.0 \}))))
   
   (check-equal? (parse-this "h = {[ 1 ] = 2 , 3 ;}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) 3.0 \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ 1.0 \] = 2.0) 3.0 \}))))
 
   (check-equal? (parse-this "h = {_A = _G}" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\{ (\[ "_A" \] = ($ENV  |[| "_G" |]|)) \}))))
+                (term ((_ENV  |[| "h" |]|) = (\{ (\[ "_A" \] = (_ENV  |[| "_G" |]|)) \}))))
   
   ; parenthesized expressions
   (check-equal? (parse-this "h = (1)" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\( 1.0 \)))))
+                (term ((_ENV  |[| "h" |]|) = (\( 1.0 \)))))
   
   (check-equal? (parse-this "h = ({[ 1 ] = 2 , 3 ;})" #f (void))
-                (term (($ENV  |[| "h" |]|) = (\( (\{ (\[ 1.0 \] = 2.0) 3.0 \}) \)))))
+                (term ((_ENV  |[| "h" |]|) = (\( (\{ (\[ 1.0 \] = 2.0) 3.0 \}) \)))))
   
   ; var
   (check-equal? (parse-this "h = a" #f (void))
-                (term (($ENV  |[| "h" |]|) = ($ENV  |[| "a" |]|))))
+                (term ((_ENV  |[| "h" |]|) = (_ENV  |[| "a" |]|))))
   ; Global vars
   (check-equal? (parse-this "h = z" #f (void))
-                (term (($ENV  |[| "h" |]|) = ($ENV  |[| "z" |]|))))
+                (term ((_ENV  |[| "h" |]|) = (_ENV  |[| "z" |]|))))
   
   (check-equal? (parse-this "h = a [ 1 ]" #f (void))
-                (term (($ENV  |[| "h" |]|) = (($ENV  |[| "a" |]|) \[ 1.0 \]))))
+                (term ((_ENV  |[| "h" |]|) = ((_ENV  |[| "a" |]|) \[ 1.0 \]))))
   
   (check-equal? (parse-this "h = z [ 1 ]" #f (void))
-                (term (($ENV  |[| "h" |]|) = (($ENV  |[| "z" |]|) \[ 1.0 \]))))
+                (term ((_ENV  |[| "h" |]|) = ((_ENV  |[| "z" |]|) \[ 1.0 \]))))
   
   (check-equal? (parse-this "h = z . name" #f (void))
-                (term (($ENV  |[| "h" |]|) = (($ENV  |[| "z" |]|) \[ "name" \]))))
+                (term ((_ENV  |[| "h" |]|) = ((_ENV  |[| "z" |]|) \[ "name" \]))))
   
   ; functiondef
   (check-equal? (parse-this "h = function () do end end" #f (void))
-                (term (($ENV  |[| "h" |]|) = (function $1 () (do |;| end) end))))
+                (term ((_ENV  |[| "h" |]|) = (function $1 () (do |;| end) end))))
   
   (check-equal? (parse-this "h = function (x) do end end" #f (void))
-                (term (($ENV  |[| "h" |]|) = (function $1 (x) (do |;| end) end))))
+                (term ((_ENV  |[| "h" |]|) = (function $1 (x) (do |;| end) end))))
   
   (check-equal? (parse-this "h = function (x , ...) do end end" #f (void))
-                (term (($ENV  |[| "h" |]|) = (function $1 (x <<<) (do |;| end) end))))
+                (term ((_ENV  |[| "h" |]|) = (function $1 (x <<<) (do |;| end) end))))
   
   (check-equal? (parse-this "h = function (x) local u u = 1 end u = 2" #f (void))
-                (term ((($ENV  |[| "h" |]|) = (function $1 (x) (local u = nil in (\; (u = 1.0)) end) end))
-                       (($ENV  |[| "u" |]|) = 2.0))))
+                (term (((_ENV  |[| "h" |]|) = (function $1 (x) (local u = nil in (\; (u = 1.0)) end) end))
+                       ((_ENV  |[| "u" |]|) = 2.0))))
   
   
   ;                                  
@@ -686,12 +686,12 @@
   ;                                  
   (check-equal? (parse-this "--This is a single line comment
                             a = 1" #f (void))
-                (term (($ENV  |[| "a" |]|) = 1.0)))
+                (term ((_ENV  |[| "a" |]|) = 1.0)))
   
   (check-equal? (parse-this "--[[This is a multiple-lines
                                  comment]]--
                             a = 1" #f (void))
-                (term (($ENV  |[| "a" |]|) = 1.0)))
+                (term ((_ENV  |[| "a" |]|) = 1.0)))
   
   
   )

@@ -16,9 +16,9 @@
                  (list (string->symbol "_ENV"))))
 
 
-; replacement for $ENV, in case the parser is called in run-time
+; replacement for _ENV, in case the parser is called in run-time
 (define global-env-subst
-  (id-name '$ENV))
+  (id-name '_ENV))
 
 ; parser for Lua 5.2
 (define lua-parser
@@ -735,11 +735,11 @@
 ; > (parse-this "a = 1" #t (term (to-abstract (ref 1))))
 ; '(((ref 1) |[| "a" |]|) = 1.0)
 ; > (parse-this "a = 1" #f (void))
-; '(($ENV |[| "a" |]|) = 1.0)
+; '((_ENV |[| "a" |]|) = 1.0)
 (define (parse-this input runtime? ref)
   (if runtime?
       (set! global-env-subst ref)
-      (set! global-env-subst (id-name '$ENV)))
+      (set! global-env-subst (id-name '_ENV)))
   
   (concrete-grammar-s
    (lua-parser (lex-this lua-lexer (open-input-string input))))
