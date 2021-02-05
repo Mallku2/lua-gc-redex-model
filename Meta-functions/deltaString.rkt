@@ -101,14 +101,20 @@
   ;    ;       ;;;;   ;;;;;  
   ;                   ;      
   ;                   ;      
-  ;                   ;
-  ; default values
-  [(δstring string.rep v_1 v_2)
-   (δstring string.rep v_1 v_2 "")]
-
+  ;
+  ; discard extra parameters
   [(δstring string.rep v_1 v_2 v_3 v_4 v_5 ...)
    (δstring string.rep v_1 v_2 v_3)]
   
+  ; default values
+  ; ref. manual: "The default value for sep is the empty string (that is, no
+  ; separator). "
+  [(δstring string.rep v_1 v_2)
+   (δstring string.rep v_1 v_2 "")]
+
+  [(δstring string.rep String Number nil)
+   (δstring string.rep String Number "")]
+
   ; coercion
   [(δstring string.rep Number_1 Number_2 v)
    (δstring string.rep String Number_2 v)
@@ -137,23 +143,18 @@
   [(δstring string.rep String 1 any)
    String]
 
-  ; ref. manual: "The default value for sep is the empty string (that is, no
-  ; separator). "
-  [(δstring string.rep String Number nil)
-   (δstring string.rep String Number "")]
-
   ; {v_2 != nil}
-  [(δstring string.rep String_1 Number String_2)
+  [(δstring string.rep String_1 Number_1 String_2)
    (δbasic .. any String_1)
+
+   ; guarantee an integer number of reps
+   (where Number_2 ,(inexact->exact (term Number_1)))
    
    (where any ,(foldr (λ (str accum) (term (δbasic .. (δbasic .. String_1 String_2)
                                                   ,accum)))
                       (term (δbasic .. String_1 String_2))
-                      (build-list (- (term Number) 2)
+                      (build-list (- (term Number_2) 2)
                                   (λ (nmbr) (term String_1)))))]
-
-;  [(δstring string.rep v_1 v_2 v_3)
-;   (δbasic error "string.rep: arguments of the wrong type")]
   ;                                                          
   ;                                                          
   ;                                                          
