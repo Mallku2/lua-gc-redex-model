@@ -231,7 +231,7 @@
           ; rvalues
           (exps (map (lambda (exp) (built-in-call (id-name 'tonumber)
                                                   (exps (list exp
-                                                              (nmbr 10.0)))))
+                                                              (nil)))))
                                 (list-tail $1 1)))
           ; body
           (conc-stats
