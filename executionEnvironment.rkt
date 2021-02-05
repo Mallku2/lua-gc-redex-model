@@ -434,6 +434,13 @@
                             end))
                ))
 
+   (cons "table.insert"
+         (term (((_ENV \[ "table" \]) \[ "insert" \])
+                = (function $table.insert (<<<)
+                            (return ($builtIn table.insert (<<<)))
+                            end))
+               ))
+
    (cons "table.pack"
          (term (((_ENV \[ "table" \]) \[ "pack" \])
                 = (function $table.pack (<<<)
