@@ -875,7 +875,9 @@
                            (term (v_1 ...))))
 
    (where String_3, (string-append (term String_2)
-                                   "\n"))]
+                                   "\n"))
+
+   (side-condition (println (term String_3)))]
 
   
   
@@ -1202,6 +1204,24 @@
    ; however, lexer alone will not suffice: for example, in case of malformed
    ; strings beginning with a correct string representation of numbers.
    (where (any = Number) ,(with-handlers ([exn:fail?
+                                           (λ (e) #f)])
+                            ((λ ()
+                               ; to use the parser, we need to feed it with an
+                               ; statement...
+                               ; NOTE: we append String directly. Then, the
+                               ; conversion to a number is done by the lexer/parser.
+                               (parse-this (string-append "_ENV = " (term String))
+                                           #f
+                                           (void))))))]
+
+  [(δbasic tonumber String nil)
+   (δbasic - Number)
+   
+   ; though the manual does not specify this, in this case tonumber
+   ; converts String following the rules of the lexer, as said by the semantics;
+   ; however, lexer alone will not suffice: for example, in case of malformed
+   ; strings beginning with a correct string representation of numbers.
+   (where (any = (- Number)) ,(with-handlers ([exn:fail?
                                            (λ (e) #f)])
                             ((λ ()
                                ; to use the parser, we need to feed it with an
