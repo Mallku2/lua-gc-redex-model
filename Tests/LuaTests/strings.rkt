@@ -6,7 +6,7 @@
          "./tests_aux.rkt")
 
 (define (string-all)
-  (filter (lambda (x) (string-contains? x "string")) (dict-keys services)))
+  (services-from "string"))
 
 (define (test-strings_1)
   (test-suite "strings_1.lua"

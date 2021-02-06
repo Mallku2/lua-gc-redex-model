@@ -34,7 +34,7 @@
                     )))
 
 (define (math-all)
-  (filter (lambda (x) (string-contains? x "math")) (dict-keys services)))
+  (services-from "math"))
 
 (define (test-math_4)
   (test-suite "math_4.lua"

@@ -152,3 +152,7 @@
   (test-results))
 
 (provide test-suite)
+
+(define (services-from str)
+  (filter (lambda (x) (string-contains? x str)) (dict-keys services)))
+(provide services-from)
