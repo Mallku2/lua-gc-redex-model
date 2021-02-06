@@ -1,21 +1,36 @@
 #lang racket
 (require redex
-         "../../grammar.rkt"
          "../../executionEnvironment.rkt"
          "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt")
+         "../../Desugar/parser.rkt"
+         "./tests_aux.rkt")
 
-(define (ok? red)
-  (and (eq? (length red) 1)
+(define (test-vararg_1)
+  (test-suite "vararg_1.lua"
+              (list "print"
+                    "assert"
+                    "select"
+                    "type"
+                    "table"
+                    "table.unpack"
+                    "math"
+                    "math.max"
+                    "load"
+                    "pcall"
+                    "next"
+                    )))
 
-       (redex-match core-lang
-              (σ : θ : \;)
-              (first red))))
-
-(define (lua-vararg-test-suite)
-    (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment (parse-this (file->string "vararg.lua") #f (void)))))
-  (test-results))
-
-(provide lua-vararg-test-suite)
+(define (test-vararg_2)
+  (test-suite "vararg_2.lua"
+              (list "print"
+                    "assert"
+                    "select"
+                    "type"
+                    "table"
+                    "table.unpack"
+                    "math"
+                    "math.max"
+                    "load"
+                    "pcall"
+                    "next"
+                    )))
