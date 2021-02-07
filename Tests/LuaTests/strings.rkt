@@ -52,3 +52,5 @@
                     "table.concat"
                     )
               (string-all))))
+
+(provide test-strings_1 test-strings_2 test-strings_3)

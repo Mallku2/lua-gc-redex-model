@@ -50,3 +50,5 @@
                     "math"
                     "math.huge"
                     "pcall")))
+
+(provide test-math_1 test-math_2 test-math_3 test-math_4 test-math_5)

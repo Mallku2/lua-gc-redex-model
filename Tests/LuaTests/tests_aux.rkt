@@ -146,6 +146,7 @@
 (define (test-suite file services)
   ;(check-redundancy #t)
   ;(caching-enabled? #t)
+  (printf "Testing ~V\n" file)
   (test-predicate ok? (apply-reduction-relation*
                        full-progs-rel
                        (full_term file services)))

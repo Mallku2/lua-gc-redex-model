@@ -34,3 +34,5 @@
                     "pcall"
                     "next"
                     )))
+
+(provide test-vararg_1 test-vararg_2)

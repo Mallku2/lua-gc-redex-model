@@ -90,3 +90,5 @@
                     "debug"
                     "debug.setmetatable"
                     )))
+
+(provide test-events_1 test-events_2 test-events_3 test-events_4)

@@ -5,7 +5,7 @@
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
-(define (errors)
+(define (test-errors)
   (test-suite "errors.lua"
               (list "print"
                     "getmetatable"
@@ -29,3 +29,4 @@
                     "xpcall"
                     )))
 
+(provide test-errors)

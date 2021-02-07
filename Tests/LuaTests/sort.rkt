@@ -16,3 +16,4 @@
                     "select"
                     "pcall"
                     )))
+(provide test-sort)

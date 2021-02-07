@@ -74,3 +74,5 @@
                     "pairs"
                     "print"
                     )))
+
+(provide test-nextvar_1 test-nextvar_2 test-nextvar_3 test-nextvar_4 test-nextvar_5 test-nextvar_6)

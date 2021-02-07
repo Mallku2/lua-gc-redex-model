@@ -5,7 +5,7 @@
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
-(define (closure)
+(define (test-closure)
   (test-suite "closure.lua"
               (list "assert"
                     "collectgarbage"
@@ -16,3 +16,5 @@
                     "math.sin"
                     "setmetatable"
                     "getmetatable")))
+
+(provide test-closure)

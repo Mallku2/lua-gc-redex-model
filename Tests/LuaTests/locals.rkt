@@ -25,3 +25,5 @@
                     "load"
                     "print"
                     "type")))
+
+(provide test-locals_1 test-locals_2)
