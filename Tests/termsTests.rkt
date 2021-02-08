@@ -454,12 +454,12 @@
   (test-->> terms-rel
             (term ($builtIn tonumber (1 10)))
             
-            (term 1))
+            (term 1.0))
   
   (test-->> terms-rel
             (term ($builtIn tonumber ("1" 10)))
             
-            (term 1))
+            (term 1.0))
   
   (test-->> terms-rel
             (term ($builtIn tonumber ("0x1" 10)))

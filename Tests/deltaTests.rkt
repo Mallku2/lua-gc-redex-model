@@ -170,51 +170,55 @@
   ; load
   (test-equal (term (δ load "do end" nil nil nil))
               (term (function
-                     $loaded
-                     (<<<)
-                     (local
-                       $old_env
-                       $ret
-                       =
-                       (ref 1)
-                       nil
-                       in
-                       (((ref 1) = (objr 6))
-                        ($ret
-                         =
-                         ((|(| (function $aux (<<<) (do |;| end) end) |)|)
-                          (<<<)))
-                        ((ref 1) = $old_env)
-                        (return $ret))
-                       end)
-                     end)))
+    $loaded
+    (<<<)
+    (local
+     $old_env
+     $ret
+     =
+     (ref 1)
+     nil
+     in
+     (((ref 1) = (objr 6))
+      ($ret
+       =
+       (|{|
+        ((|(| (function $aux (<<<) (do |;| end) end) |)|)
+         (<<<))
+        |}|))
+      ((ref 1) = $old_env)
+      (return ($builtIn table.unpack ($ret))))
+     end)
+    end)))
   
   (test-equal (term (δ load "a = 1" nil nil nil))
               (term (function
-                     $loaded
-                     (<<<)
-                     (local
-                       $old_env
-                       $ret
-                       =
-                       (ref 1)
-                       nil
-                       in
-                       (((ref 1) = (objr 6))
-                        ($ret
-                         =
-                         ((|(|
-                           (function
-                            $aux
-                            (<<<)
-                            (((ref 1) |[| "a" |]|) = 1.0)
-                            end)
-                           |)|)
-                          (<<<)))
-                        ((ref 1) = $old_env)
-                        (return $ret))
-                       end)
-                     end)))
+    $loaded
+    (<<<)
+    (local
+     $old_env
+     $ret
+     =
+     (ref 1)
+     nil
+     in
+     (((ref 1) = (objr 6))
+      ($ret
+       =
+       (|{|
+        ((|(|
+          (function
+           $aux
+           (<<<)
+           (((ref 1) |[| "a" |]|) = 1.0)
+           end)
+          |)|)
+         (<<<))
+        |}|))
+      ((ref 1) = $old_env)
+      (return ($builtIn table.unpack ($ret))))
+     end)
+    end)))
   
   (test-equal (term (δ load "local a = 1; a = 2" nil nil nil))
               (term (function
@@ -230,32 +234,49 @@
      (((ref 1) = (objr 6))
       ($ret
        =
-       ((|(|
-         (function
-          $aux
-          (<<<)
-          (local a = 1.0 in (|;| |;| (a = 2.0)) end)
-          end)
-         |)|)
-        (<<<)))
+       (|{|
+        ((|(|
+          (function
+           $aux
+           (<<<)
+           (local a = 1.0 in (|;| |;| (a = 2.0)) end)
+           end)
+          |)|)
+         (<<<))
+        |}|))
       ((ref 1) = $old_env)
-      (return $ret))
+      (return ($builtIn table.unpack ($ret))))
      end)
     end)))
 
   (test-equal (term (δ load "local a" nil nil (objr 1)))
-              (term (function $loaded (<<<)
-                              (local $old_env $ret = (ref 1) nil in
-                                (((ref 1) = (objr 1))
-                                 ($ret = ((|(| (function $aux (<<<)
-                                                         (local a = nil in
-                                                           |;|
-                                                           end)
-                                                         end) |)|) (<<<)))
-                                 ((ref 1) = $old_env)
-                                 (return $ret))
-                                end)
-                              end)))
+              (term (function
+    $loaded
+    (<<<)
+    (local
+     $old_env
+     $ret
+     =
+     (ref 1)
+     nil
+     in
+     (((ref 1) = (objr 1))
+      ($ret
+       =
+       (|{|
+        ((|(|
+          (function
+           $aux
+           (<<<)
+           (local a = nil in |;| end)
+           end)
+          |)|)
+         (<<<))
+        |}|))
+      ((ref 1) = $old_env)
+      (return ($builtIn table.unpack ($ret))))
+     end)
+    end)))
   
   ; Ill-formed program's string
   (test-equal (term (δ load "a=" nil nil nil))
@@ -370,7 +391,7 @@
               6.0)
 
   (test-equal (term (δ tonumber 10 2))
-              2)
+              2.0)
   
   ; tostring
   (test-equal (term (δ tostring (objr 1) (((objr 1) ((\{ \}) (objr 2) 1))
