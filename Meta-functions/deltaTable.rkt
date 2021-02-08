@@ -130,30 +130,17 @@
    (δtable table.insert tid v_1 v_2 θ)]
 
   ; default value for pos is #list + 1
-  [(δtable table.insert tid_1 v ((tid_2 object_2) ...
+  [(δtable table.insert tid_1 v (osp_1 ...
                                  (tid_1 (evaluatedtable any_1 any_2))
-                                 (tid_3 object_3) ...))
-   (δtable table.concat tid_1 (δbasic + 1 (δbasic \# evaluatedtable)) v
-           ((tid_2 object_2) ...
+                                 osp_2 ...))
+   (δtable table.insert tid_1 (δbasic + 1 (δbasic \# evaluatedtable)) v
+           (osp_1 ...
             (tid_1 (evaluatedtable any_1 any_2))
-            (tid_3 object_3) ...))]
+            osp_2 ...))]
 
-  ; special case
+  ; special cases
   [(δtable table.insert tid Number nil θ)
    (θ (< >))]
-  
-;  ; no pos provided: insert v at the end of tid
-;  [(δtable table.insert tid v
-;                    (osp_1 ...
-;                     (tid ((\{ field ... \}) any ...))
-;                     osp_2 ...))
-;
-;   ((osp_1 ...
-;     (tid ((\{ field ... (\[  Number \] = v) \}) any ...))
-;     osp_2 ...) (< >))
-;
-;   ; default value for pos is #list+1
-;   (where Number (δbasic + 1 (δbasic \# (\{ field ... \}))))]
 
   ; pos provided
   [(δtable table.insert tid Number_1 v_1 (osp_1 ...
@@ -172,14 +159,35 @@
    ; obtain list length
    (where Number_2 (δbasic \# (\{ efield_1 ... \})))
    
+   ; position must be >= 1
+   (side-condition (<= 1 (term Number_1)))
+
+   ; side condition: list must have a sequence part, with keys in [1;Number_1 -1]
+   (where ((\[ v_6 \] = v_7) ...)
+    ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (and (is_number? (term v_2))
+                                                        (positive-integer? (term v_2))
+                                                        (<= 1.0
+                                                            (term v_2))
+                                                        (<= (term v_2)
+                                                            ( - (term Number_1) 1.0))
+                                                        ))
+                                   (term ,field)))
+             (term (efield_1 ...))))
+
+   (where (v_6 ...) ,(build-list (- (inexact->exact (term Number_1)) 1)
+                                 (lambda (nmbr) (+ nmbr
+                                                   1.0))))
+   
    ; extract fields in tid[Number_1: Number_2]
    (where ((\[ v_4 \] = v_5) ...)
     ,(filter (lambda (field)
                      (redex-match? ext-lang
                                    (side-condition (|[| v_2 |]| = v_3)
                                                    (and (is_number? (term v_2))
-                                                        (= (floor (term v_2))
-                                                           (term v_2))
+                                                        (positive-integer? (term v_2))
                                                         (>= (term v_2)
                                                             (term Number_1))
                                                         (<= (term v_2)
@@ -193,8 +201,7 @@
                      (redex-match? ext-lang
                                    (side-condition (|[| v_2 |]| = v_3)
                                                    (not (and (is_number? (term v_2))
-                                                             (= (floor (term v_2))
-                                                                (term v_2))
+                                                             (positive-integer? (term v_2))
                                                              (>= (term v_2)
                                                                  (term Number_1))
                                                              (<= (term v_2)
@@ -203,9 +210,9 @@
                    (term (efield_1 ...))))
 
    ; list of new numeric keys: v_1
-   (where (Number_3 ...) ,(build-list (length (term ((\[ v_4 \] = v_5) ...)))
+   (where (Number_3 ...) ,(build-list (length (term (v_5 ...)))
                                       (lambda (nmbr) (+ nmbr
-                                                        (+ 1 (term Number_1))))))]
+                                                        (+ 1.0 (term Number_1))))))]
   ;                                  
   ;                           ;      
   ;                           ;      
@@ -343,6 +350,9 @@
   [(δtable builtinserv v ...)
    (δbasic error any)
 
+   (side-condition (member (term builtinserv)
+                           (term (table.pack))))
+   
    (where any ,(string-append "erroneous actual parameters to "
                               (symbol->string (term builtinserv))))]
 
@@ -361,6 +371,10 @@
   ; services that modify theta
   [(δtable builtinserv v ... θ)
    (θ (δbasic error any))
+
+   (side-condition (member (term builtinserv)
+                           (term (; table
+                                  table.insert))))
    
    (where any ,(string-append "erroneous actual parameters to "
                               (symbol->string (term builtinserv))))]

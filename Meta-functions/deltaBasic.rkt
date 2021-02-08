@@ -130,37 +130,23 @@
   [(δbasic \# String)
    ,(bytes-length (string->bytes/utf-8 (term String)))]
   
-  ; Table length: just the max. numeric key
+  ; Table length: just the max. positive numeric key
   [(δbasic \# (\{ field ... \}))
    any
 
-   ; extract numeric keys
-   (where (Number_1 Number_2 ...) 
-          ,(map (λ (field)
-                  ; Extract the expression associated with the binding...
-                  (bind-exp
-                   ; number 2...
-                   (list-ref
-                    ; of the list of match-bindings...
-                    (match-bindings
-                     ; which should be of length 1.
-                     (list-ref
-                      
-                      (redex-match ext-lang
-                                   (\[ Number \] = any)
-                                   field) 
-                      0)) 
-                    1)))
-                ; Obtain the fields of the form (\[ Number \] = any)
-                (filter (λ (field)
-                          (redex-match ext-lang
-                                       (\[ Number \] = any)
-                                       field))
-                        (term (field ...)))))
+   ; extract positive numeric keys
+   (where ((\[ Number_1 \] = v_1) (\[ Number_2 \] = v_2) ...)
+    ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (and (is_number? (term v_2))
+                                                        (positive-integer? (term v_2))))
+                                   (term ,field)))
+             (term (field ...))))
    
    (where any ,(argmax (λ (number) number) (term (Number_1 Number_2 ...))))]
   
-  ; Table doesn't have numeric keys
+  ; Table doesn't have positive numeric keys
   [(δbasic \# evaluatedtable)
    0]
   
@@ -577,12 +563,21 @@
                                         (local $old_env $ret = (ref 1) nil
                                           in
                                           (((ref 1) = v_2)
-                                           ($ret = ((\( (function $aux (<<<)
+                                           ; first, we need to evaluate any_1 into
+                                           ; a modified environment;
+                                           ; note that any_1 could return an
+                                           ; arbitrary quantity of values: we
+                                           ; put returned values into a table
+                                           ($ret = (\{ ((\( (function $aux (<<<)
                                                                   any_1
                                                                   end) \))
-                                                    (<<<)))
+                                                        (<<<)) \}))
+                                           ; later, we need to restore
+                                           ; the environment
                                            ((ref 1) = $old_env)
-                                           (return $ret))
+                                           ; finally, we unpack the values in
+                                           ; $ret
+                                           (return ($builtIn table.unpack ($ret))))
                                           end)))
                                  
                                  (list (term any_1)))
@@ -1197,42 +1192,58 @@
 
   ; decimal number, no base specified
   [(δbasic tonumber String nil)
-   Number
+   v
    
    ; though the manual does not specify this, in this case tonumber
    ; converts String following the rules of the lexer, as said by the semantics;
    ; however, lexer alone will not suffice: for example, in case of malformed
    ; strings beginning with a correct string representation of numbers.
-   (where (any = Number) ,(with-handlers ([exn:fail?
-                                           (λ (e) #f)])
+   (where v ,(with-handlers ([exn:fail?
+                                           (λ (e) nil)])
                             ((λ ()
                                ; to use the parser, we need to feed it with an
                                ; statement...
                                ; NOTE: we append String directly. Then, the
                                ; conversion to a number is done by the lexer/parser.
-                               (parse-this (string-append "_ENV = " (term String))
-                                           #f
-                                           (void))))))]
+                               (number-parse-this (term String))))))]
 
-  [(δbasic tonumber String nil)
-   (δbasic - Number)
-   
-   ; though the manual does not specify this, in this case tonumber
-   ; converts String following the rules of the lexer, as said by the semantics;
-   ; however, lexer alone will not suffice: for example, in case of malformed
-   ; strings beginning with a correct string representation of numbers.
-   (where (any = (- Number)) ,(with-handlers ([exn:fail?
-                                           (λ (e) #f)])
-                            ((λ ()
-                               ; to use the parser, we need to feed it with an
-                               ; statement...
-                               ; NOTE: we append String directly. Then, the
-                               ; conversion to a number is done by the lexer/parser.
-                               (parse-this (string-append "_ENV = " (term String))
-                                           #f
-                                           (void))))))]
+;  [(δbasic tonumber String nil)
+;   Number
+;   
+;   ; though the manual does not specify this, in this case tonumber
+;   ; converts String following the rules of the lexer, as said by the semantics;
+;   ; however, lexer alone will not suffice: for example, in case of malformed
+;   ; strings beginning with a correct string representation of numbers.
+;   (where (any = (0.0 + Number)) ,(with-handlers ([exn:fail?
+;                                           (λ (e) #f)])
+;                            ((λ ()
+;                               ; to use the parser, we need to feed it with an
+;                               ; statement...
+;                               ; NOTE: we append String directly. Then, the
+;                               ; conversion to a number is done by the lexer/parser.
+;                               (parse-this (string-append "_ENV = 0" (term String))
+;                                           #f
+;                                           (void))))))]
 
-  ; {v ∉ String ∨ v cannot be coerced to a number}
+;  [(δbasic tonumber String nil)
+;   (δbasic - Number)
+;   
+;   ; though the manual does not specify this, in this case tonumber
+;   ; converts String following the rules of the lexer, as said by the semantics;
+;   ; however, lexer alone will not suffice: for example, in case of malformed
+;   ; strings beginning with a correct string representation of numbers.
+;   (where (any = (- Number)) ,(with-handlers ([exn:fail?
+;                                           (λ (e) #f)])
+;                            ((λ ()
+;                               ; to use the parser, we need to feed it with an
+;                               ; statement...
+;                               ; NOTE: we append String directly. Then, the
+;                               ; conversion to a number is done by the lexer/parser.
+;                               (parse-this (string-append "_ENV = " (term String))
+;                                           #f
+;                                           (void))))))]
+
+  ; {v ∉ String}
   [(δbasic tonumber v nil)
    nil]
 
