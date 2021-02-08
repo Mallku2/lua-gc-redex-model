@@ -94,13 +94,16 @@
                      (char-range "a" "f")))
   
   ; Decimal number, with optional fractional part
-  (simp-number-lit (re-or (concatenation (re-+ digits)
-                                         (re-? ".")
-                                         (re-* digits))
+  (simp-number-lit (re-or
+                    ; either no digit before . but at least one digit after
+                    (concatenation (re-* digits)
+                                   (re-? ".")
+                                   (re-+ digits))
 
-                          (concatenation (re-* digits)
-                                         (re-? ".")
-                                         (re-+ digits))))
+                    ; either no digit after . but at least one digit before
+                    (concatenation (re-+ digits)
+                                   (re-? ".")
+                                   (re-* digits))))
   
   ; Hexadecimal number, with optional fractional part
   (simp-hex-number-lit (concatenation (re-or "0x" "0X")

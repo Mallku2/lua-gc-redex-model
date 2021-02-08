@@ -247,9 +247,9 @@
   (check-equal? (parse-this "for var = 1 , 10 do var = 1 end" #f (void))
                 (term (do
                           (local $var $limit $step
-                            = ($builtIn tonumber (1.0 10.0))
-                            ($builtIn tonumber (10.0 10.0))
-                            ($builtIn tonumber (1.0 10.0))
+                            = ($builtIn tonumber (1.0 nil))
+                            ($builtIn tonumber (10.0 nil))
+                            ($builtIn tonumber (1.0 nil))
                             in
                             ((if (not (($var and $limit) and $step))
                                  then
@@ -273,9 +273,9 @@
                             #f (void))
                 (term ((do
                            (local $var $limit $step
-                             = ($builtIn tonumber (1.0 10.0))
-                             ($builtIn tonumber (10.0 10.0))
-                             ($builtIn tonumber (1.0 10.0))
+                             = ($builtIn tonumber (1.0 nil))
+                             ($builtIn tonumber (10.0 nil))
+                             ($builtIn tonumber (1.0 nil))
                              in
                              ((if (not (($var and $limit) and $step))
                                   then
