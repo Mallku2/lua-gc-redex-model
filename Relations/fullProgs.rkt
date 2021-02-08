@@ -14,7 +14,7 @@
 (define full-progs-rel
   (reduction-relation
    ext-lang
-   ;#:domain (σ : θ : s)
+   #:domain (σ : θ : t)
    #:arrow ↦
    
    ; terms
@@ -71,7 +71,7 @@
    [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid ...)))
       (σ_2 : θ_2 : (in-hole E (in-hole E_2 (t_2 label objid ...))))
 
-      ; same label
+      ; t_1 is labelled
       (where ((σ_2 : θ_2 : (in-hole E_2 (t_2 label))))
              ,(apply-reduction-relation full-progs-rel
                                         (term (σ_1 : θ_1 : t_1))))

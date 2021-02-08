@@ -144,7 +144,7 @@
 
    ; abnormal situations with primitive operators
    [-->s/e (v_1 binop v_2)
-           ((v_1 binop v_2)ArithWrongOps)
+           ((v_1 binop v_2) ArithWrongOps)
            E-ArithBinOpWrongOps
 
            ; arith op over non-numeric or non-string operands
@@ -153,12 +153,10 @@
            ; the operation was not successful
            (where any (δ binop v_1 v_2))
 
-           (side-condition (not (is_number? (term any))))
-
-           ]
+           (side-condition (not (is_number? (term any))))]
    
    [-->s/e (- v)
-           ((- v)NegWrongOp)
+           ((- v) NegWrongOp)
            E-AlertNegationWrongOperand
 
            ; the operation was not successful
@@ -167,7 +165,7 @@
            (side-condition (not (is_number? (term any))))]
    
    [-->s/e (v_1 .. v_2)
-           ((v_1 .. v_2)StrConcatWrongOps)
+           ((v_1 .. v_2) StrConcatWrongOps)
            E-AlertStringConcatWrongOperands
 
            ; concat only fails when applied to operands of unexpected type
@@ -176,14 +174,14 @@
            (side-condition (not (is_string? (term any))))]
    
    [-->s/e (\# v)
-           ((\# v)StrLenWrongOp)
+           ((\# v) StrLenWrongOp)
            E-AlertStringLengthWrongOperand
 
            ; no coercion here
            (side-condition (not (is_string? (term v))))]
    
    [-->s/e (v_1 == v_2)
-           ((v_1 == v_2)EqFail)
+           ((v_1 == v_2) EqFail)
         
            E-AlertEqualityFail
         
@@ -192,7 +190,7 @@
                                 (is_tid? (term v_2))))]
    
    [-->s/e (v_1 binop v_2)
-           ((v_1 binop v_2)OrdCompWrongOps)
+           ((v_1 binop v_2) OrdCompWrongOps)
            E-AlertOrdCompWrongOps
         
            (side-condition (and (term (isRelationalOperator binop))
@@ -278,7 +276,7 @@
    [-->s/e (v ProtMD)
            (< false v >)
            
-           E-XProtMDNoErrorInHandling]
+           E-ProtFalse]
    ;                                                                                  
    ;                                                                                  
    ;                                                                                  
