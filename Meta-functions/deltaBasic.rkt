@@ -140,7 +140,8 @@
                      (redex-match? ext-lang
                                    (side-condition (|[| v_2 |]| = v_3)
                                                    (and (is_number? (term v_2))
-                                                        (positive-integer? (term v_2))))
+                                                        (positive-integer? (term v_2))
+                                                        (not (is_nil? (term v_3)))))
                                    (term ,field)))
              (term (field ...))))
    
@@ -794,22 +795,12 @@
    
    (side-condition (not (is_nil? (term v))))]
 
-  ; Default iterator: next
+  ; default iterator: next
+  ; {(indexMetaTable tid "__pairs" θ) == nil}
   [(δbasic pairs tid θ)
    (< (function $next (<<<)
                 (return ($builtIn next (<<<)))
-                end) tid nil >)
-   
-   (where nil (indexMetaTable tid "__pairs" θ))]
-  
-;  [(δbasic pairs v θ)
-;   (δbasic error String_2)
-;   
-;   (where String_1 (δbasic type v))
-;   
-;   (where String_2 ,(string-append "bad argument #1 (table expected, got "
-;                                   (term String_1)
-;                                   ")"))]
+                end) tid nil >)]
   
   ;                                          
   ;                           ;;;     ;;;    
@@ -992,7 +983,7 @@
   ; delete field
   [(δbasic rawset tid v_1 nil θ)
    ((osp_1 ...
-     (tid ((\{ field_1 ... field_2 ... \}) any ...))
+     (tid ((\{ field_1 ... (\[ v_2 \] = nil) field_2 ... \}) any ...))
      osp_2 ...) tid)
 
    (where (side-condition

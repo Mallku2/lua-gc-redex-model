@@ -126,25 +126,29 @@
          (exps (list (id-name '$dummyVar)))
          (exps (list (nil)))
          (add-to-block
-          (var-assign (exps (list (id-name '$dummyVar)))
-                      (exps (list (func-def (id-name (new-label))
-                                            (params (exps '()))
-                                            (local-vars
-                                             (exps (list (id-name '$dummyGuardVar)))
-                                             (exps (list (nmbr 0)))
-                                             
-                                             (while (binop (lt)
-                                                           (id-name '$dummyGuardVar)
-                                                           (nmbr 1))
-                                                     (add-to-block (var-assign (exps (list (id-name '$dummyGuardVar)))
-                                                                               (exps (make-list 1 (nmbr 1))))
-                                                                   (add-to-block $2
-                                                                                 (conditional (unop (\\not) $4)
-                                                                                              (stat-fun-call (id-name '$dummyVar)
-                                                                                                             (exps '()))
-                                                                                              (skip)
-                                                                               ))))
-                                            )))))
+          (var-assign
+           (exps (list (id-name '$dummyVar)))
+           (exps (list (func-def
+                        (id-name (new-label))
+                        (params (exps '()))
+                        (local-vars
+                         (exps (list (id-name '$dummyGuardVar)))
+                         (exps (list (nmbr 0)))
+                         
+                         (while (binop (lt)
+                                       (id-name '$dummyGuardVar)
+                                       (nmbr 1))
+                                (add-to-block
+                                 (var-assign
+                                  (exps (list (id-name '$dummyGuardVar)))
+                                  (exps (make-list 1 (nmbr 1))))
+                                 (add-to-block $2
+                                               (conditional (unop (\\not) $4)
+                                                            (stat-fun-call
+                                                             (id-name '$dummyVar)
+                                                             (exps '()))
+                                                            (skip)))))
+                                  )))))
           (stat-fun-call (id-name '$dummyVar)
                          (exps '()))
           ))))
@@ -292,8 +296,7 @@
         (do-end
          (local-vars
           ; lvalues
-          (exps (list (id-name '$f) (id-name '$s)
-                                 (id-name '$var)))
+          (exps (list (id-name '$f) (id-name '$s) (id-name '$var)))
           ; rvalues
           (list-ref $1 1)
           ; body

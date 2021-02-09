@@ -245,6 +245,8 @@
                                           string.reverse
                                           string.sub
                                           ; table
+                                          table.concat
+                                          table.insert
                                           table.pack
                                           ))))
            E-BuiltInTerm]

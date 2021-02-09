@@ -84,7 +84,6 @@
                                        ; package
                                        require
                                        ; table
-                                       table.concat
                                        table.unpack
                                        ;string
                                        string.dump))))
@@ -99,9 +98,7 @@
                                        setmetatable
                                        rawset
                                        ; debug
-                                       debug.setmetatable
-                                       ;table
-                                       table.insert))))
+                                       debug.setmetatable))))
         
         (where (θ_2 any) (δ builtinserv v ... θ_1))
 
@@ -157,7 +154,7 @@
         (θ_2 : \;)
         E-AssignTable
         
-        ; This way of determining if v_1 is a key of objref, is mentioned in
+        ; this way of determining if v_1 is a key of objref is mentioned in
         ; Lua's reference manual.
         (where v_3 (δ rawget objref v_1 θ_1))
         
