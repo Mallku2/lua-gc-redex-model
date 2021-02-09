@@ -1471,6 +1471,137 @@
   [(toBool any)
    false])
 
+
+;                                                                                                                                         
+;                                                                                                                                         
+;                                                                                                                                         
+;                                                                  ;       ;;;;                                                           
+;                       ;                          ;               ;          ;                                                           
+;                       ;                          ;               ;          ;                                                           
+;   ;;;;;;     ;;;    ;;;;;;     ;;;;            ;;;;;;     ;;;;   ; ;;;      ;        ;;;     ;;;;;              ;;;;   ;     ;  ;;   ;; 
+;   ;  ;  ;   ;   ;     ;       ;    ;             ;       ;    ;  ;;   ;     ;       ;   ;   ;     ;            ;    ;  ;     ;   ;   ;  
+;   ;  ;  ;  ;     ;    ;            ;             ;            ;  ;     ;    ;      ;     ;  ;                       ;  ;     ;    ; ;   
+;   ;  ;  ;  ;     ;    ;       ;;;;;;    ;;;;     ;       ;;;;;;  ;     ;    ;      ;     ;  ;;;;               ;;;;;;  ;     ;     ;    
+;   ;  ;  ;  ;;;;;;;    ;      ;;    ;             ;      ;;    ;  ;     ;    ;      ;;;;;;;      ;;;           ;;    ;  ;     ;     ;    
+;   ;  ;  ;  ;          ;      ;     ;             ;      ;     ;  ;     ;    ;      ;              ;           ;     ;  ;     ;    ; ;   
+;   ;  ;  ;   ;    ;    ;      ;    ;;             ;      ;    ;;  ;;   ;     ;       ;    ;  ;     ;           ;    ;;  ;;   ;;   ;   ;  
+;   ;  ;  ;    ;;;;      ;;;    ;;;; ;              ;;;    ;;;; ;  ; ;;;       ;;;     ;;;;    ;;;;;             ;;;; ;   ;;;; ;  ;;   ;; 
+;                                                                                                                                         
+;                                                                                                                                         
+;                                                                                                                                         
+;                                                                                                                                         
+
+
+(define-metafunction ext-lang
+  
+  [(errmessage ArithWrongOps String_1 String_2)
+   ,(string-append "attempt to perform arithmetic on a "
+                   (term String_1)
+                   " value.")
+   
+   (side-condition (not (equal? (term String_1)
+                                "number")))]
+  
+  [(errmessage ArithWrongOps "number" String_2)
+   ,(string-append "attempt to perform arithmetic on a "
+                   (term String_2)
+                   " value.")]
+  
+  [(errmessage StrConcatWrongOps "string" String_2)
+   ,(string-append "attempt to concatenate a "
+                   (term String_2)
+                   " value.")]
+  
+  [(errmessage StrConcatWrongOps String_1 String_2)
+   ,(string-append "attempt to concatenate a "
+                   (term String_1)
+                   " value.")]
+  
+  [(errmessage OrdCompWrongOps String_1 String_2)
+   ,(string-append "attempt to compare "
+                   (term String_1)
+                   " with "
+                   (term String_2))]
+  
+  [(errmessage NegWrongOp String)
+   ,(string-append "attempt to perform arithmetic on a "
+                   (term String)
+                   " value.")]
+  
+  [(errmessage StrLenWrongOp String)
+   ,(string-append "attempt to get length of a "
+                   (term String)
+                   " value.")]
+  
+  [(errmessage WFunCall String)
+   ,(string-append "attempt to call a "
+                   (term String)
+                   " value.")]
+  
+  [(errmessage NonTable String)
+   ,(string-append "attempt to index a "
+                   (term String)
+                   " value.")]
+  )
+
+(provide errmessage)
+
+(define-metafunction ext-lang
+  
+  [(binopeventkey +)
+   "__add"]
+  
+  [(binopeventkey -)
+   "__sub"]
+  
+  [(binopeventkey *)
+   "__mul"]
+  
+  [(binopeventkey /)
+   "__div"]
+  
+  [(binopeventkey %)
+   "__mod"]
+  
+  [(binopeventkey ^)
+   "__pow"]
+  
+  [(binopeventkey ..)
+   "__concat"]
+  
+  [(binopeventkey <)
+   "__lt"]
+  
+  [(binopeventkey <=)
+   "__le"])
+
+(provide binopeventkey)
+
+(define-metafunction ext-lang
+  
+  [(unopeventkey \#)
+   "__len"]
+  
+  [(unopeventkey -)
+   "__unm"])
+
+(provide unopeventkey)
+
+(define-metafunction ext-lang
+  
+  [(eventkey (($statFunCall ... v_1 (v_2 ...)) WFunCall))
+   "__call"]
+
+  [(eventkey ((v_1 \[ v_2 \]) explabel))
+   "__index"]
+
+  [(eventkey (((v_1 \[ v_2 \]) = v_3) statlabel))
+   "__newindex"]
+)
+(provide eventkey)
+
+
+
 ; Returns the predefined location where a meta-table for an indicated type,
 ; different from type "table", must be stored
 (define-metafunction ext-lang

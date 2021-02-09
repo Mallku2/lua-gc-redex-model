@@ -12,103 +12,103 @@
    ;#:domain (θ : t)
 
    ; WFunCall
-   [-->meta (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall objid ...))
-            (θ_2 : t)
+   [-->meta (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall objid ...))
+            (θ : t)
         
             E-WFunCall
             
-            (where (θ_2 : t)
-                   (w_fun_call (θ_1 : (($statFunCall ..._1 v_1 (v_2 ...))
-                                       WFunCall
-                                       objid ...))))]
+            (where t
+                   (w_fun_call (θ : (($statFunCall ..._1 v_1 (v_2 ...))
+                                     WFunCall
+                                     objid ...))))]
 
    ; NonTable exp.
-   [-->meta (θ_1 : ((v_1 \[ v_2 \]) NonTable objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 \[ v_2 \]) NonTable objid ...))
+            (θ : e)
         
             E-NonTableExp
             
-            (where (θ_2 : e)
-                   (non_table_e (θ_1 : ((v_1 \[ v_2 \]) NonTable objid ...))))]
+            (where e
+                   (non_table_e (θ : ((v_1 \[ v_2 \]) NonTable objid ...))))]
 
    ; WrongKey exp.
-   [-->meta (θ_1 : ((v_1 \[ v_2 \]) WrongKey objid ... ))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 \[ v_2 \]) WrongKey objid ... ))
+            (θ : e)
         
             E-WrongKeyExp
             
-            (where (θ_2 : e)
-                   (wrong_key_e (θ_1 : ((v_1 \[ v_2 \]) WrongKey objid ...))))]
+            (where e
+                   (wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey objid ...))))]
 
    ; ArithWrongOps
-   [-->meta (θ_1 : ((v_1 binop v_2) ArithWrongOps objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 binop v_2) ArithWrongOps objid ...))
+            (θ : e)
         
             E-ArithWrongOps
             
-            (where (θ_2 : e)
-                   (arith_wrong_ops (θ_1 : ((v_1 binop v_2)
+            (where e
+                   (arith_wrong_ops (θ : ((v_1 binop v_2)
                                             ArithWrongOps
                                             objid ...))))]
 
    ; StrConcatWrongOps
-   [-->meta (θ_1 : ((v_1 .. v_2) StrConcatWrongOps objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 .. v_2) StrConcatWrongOps objid ...))
+            (θ : e)
         
             E-StrConcatWrongOps
             
-            (where (θ_2 : e)
-                   (str_concat_wrong_ops (θ_1 : ((v_1 .. v_2)
+            (where e
+                   (str_concat_wrong_ops (θ : ((v_1 .. v_2)
                                                  StrConcatWrongOps
                                                  objid ...))))] 
 
    ; NegWrongOp
-   [-->meta (θ_1 : ((- v) NegWrongOp objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((- v) NegWrongOp objid ...))
+            (θ : e)
         
             E-NegWrongOp
             
-            (where (θ_2 : e)
-                   (neg_wrong_op (θ_1 : ((- v) NegWrongOp objid ...))))]
+            (where e
+                   (neg_wrong_op (θ : ((- v) NegWrongOp objid ...))))]
 
    ; StrLenWrongOp
-   [-->meta (θ_1 : ((\# v) StrLenWrongOp objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((\# v) StrLenWrongOp objid ...))
+            (θ : e)
         
             E-StrLenWrongOp
             
-            (where (θ_2 : e)
-                   (str_len_wrong_op (θ_1 : ((\# v) StrLenWrongOp objid ...))))]
+            (where e
+                   (str_len_wrong_op (θ : ((\# v) StrLenWrongOp objid ...))))]
    
    
    ; abnormal expressions with relational operators
    ; EqFail
-   [-->meta (θ_1 : ((v_1 == v_2) EqFail objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 == v_2) EqFail objid ...))
+            (θ : e)
         
             E-EqFail
             
-            (where (θ_2 : e)
-                   (eq_fail (θ_1 : ((v_1 == v_2) EqFail objid ...))))]
+            (where e
+                   (eq_fail (θ : ((v_1 == v_2) EqFail objid ...))))]
 
    ; OrdCompWrongOps
-   [-->meta (θ_1 : ((v_1 < v_2) OrdCompWrongOps objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 < v_2) OrdCompWrongOps objid ...))
+            (θ : e)
         
             E-OrdCompWrongOpsLt
             
-            (where (θ_2 : e)
-                   (ord_comp_wrong_ops_lt (θ_1 : ((v_1 < v_2)
+            (where e
+                   (ord_comp_wrong_ops_lt (θ : ((v_1 < v_2)
                                                   OrdCompWrongOps
                                                   objid ...))))]
 
-   [-->meta (θ_1 : ((v_1 <= v_2) OrdCompWrongOps objid ...))
-            (θ_2 : e)
+   [-->meta (θ : ((v_1 <= v_2) OrdCompWrongOps objid ...))
+            (θ : e)
         
             E-OrdCompWrongOpsLe
             
-            (where (θ_2 : e)
-                   (ord_comp_wrong_ops_le (θ_1 : ((v_1 <= v_2)
+            (where e
+                   (ord_comp_wrong_ops_le (θ : ((v_1 <= v_2)
                                                   OrdCompWrongOps
                                                   objid ...))))] 
 
@@ -128,13 +128,13 @@
    ;                                                                                  
    ;                                                                                  
    ;
-   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) NonTable objid ...))
-            (θ_2 : s)
+   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) NonTable objid ...))
+            (θ : s)
         
             E-NonTableStat
             
-            (where (θ_2 : s)
-                   (non_table_s (θ_1 : (((v_1 \[ v_2 \]) = v_3)
+            (where s
+                   (non_table_s (θ : (((v_1 \[ v_2 \]) = v_3)
                                         NonTable
                                         objid ...))))]
 
