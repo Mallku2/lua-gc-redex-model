@@ -123,7 +123,7 @@
   [(δtable table.insert tid e v)
    ((\( (function $dummy ()
                   (local pos len = e (\# tid) in
-                    (if (pos > (1 + len)) then
+                    (if ((pos <= 0) or (pos > (1 + len))) then
                         (return ($builtIn error ("bad argument #2 to 'insert' (position out of bounds)")))
                         else
                         ; {pos <= (1 + len)}
@@ -146,58 +146,7 @@
                           end)
                         end)
                     end)
-                  end) \)) ())
-
-    ;   ((osp_1 ...
-    ;     (tid ((\{ efield_2 ...
-    ;               ; value inserted
-    ;               (\[ Number_1 \] = v_1) 
-    ;               ; fields in list[pos], list[pos+1], ···, list[#list]
-    ;               (\[ Number_3 \] = v_5) ... 
-    ;               \}) any ...))
-    ;     osp_2 ...) (< >))
-
-    ;   ; obtain list length
-    ;   (where Number_2 (δbasic \# (\{ efield_1 ... \})))
-    ;   
-    ;   ; position must be <= 1 + # tid
-    ;   ; from ref. manual: "table should be a proper sequence or have a __len
-    ;   ; metamethod"
-    ;   (side-condition (<= (term Number_1) (add1 (term Number_2))))
-   
-    ;   ; extract fields in tid[Number_1: Number_2]
-    ;   (where ((\[ v_4 \] = v_5) ...)
-    ;          ,(filter (lambda (field)
-    ;                     (redex-match? ext-lang
-    ;                                   (side-condition (|[| v_2 |]| = v_3)
-    ;                                                   (and (is_number? (term v_2))
-    ;                                                        (positive-integer? (term v_2))
-    ;                                                        (>= (term v_2)
-    ;                                                            (term Number_1))
-    ;                                                        (<= (term v_2)
-    ;                                                            (term Number_2))))
-    ;                                   (term ,field)))
-    ;                   (term (efield_1 ...))))
-
-    ;   ; extract remaining fields
-    ;   (where (efield_2 ...)
-    ;          ,(filter (lambda (field)
-    ;                     (redex-match? ext-lang
-    ;                                   (side-condition (|[| v_2 |]| = v_3)
-    ;                                                   (not (and (is_number? (term v_2))
-    ;                                                             (positive-integer? (term v_2))
-    ;                                                             (>= (term v_2)
-    ;                                                                 (term Number_1))
-    ;                                                             (<= (term v_2)
-    ;                                                                 (term Number_2)))))
-    ;                                   (term ,field)))
-    ;                   (term (efield_1 ...))))
-
-    ;   ; list of new numeric keys: v_1
-    ;   (where (Number_3 ...) ,(build-list (length (term (v_5 ...)))
-    ;                                      (lambda (nmbr) (+ nmbr
-    ;                                                        (+ 1.0 (term Number_1))))))
-    ]
+                  end) \)) ())]
 ;                                  
 ;                           ;      
 ;                           ;      

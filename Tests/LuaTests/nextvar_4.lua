@@ -62,7 +62,7 @@ assert(n == 5)
 
 
 ------------------------------------------
--- TODO: table.insert, table.remove
+-- TODO: table.remove
 ------------------------------------------
 local function test (a)
   assert(not pcall(table.insert, a, 2, 20));
