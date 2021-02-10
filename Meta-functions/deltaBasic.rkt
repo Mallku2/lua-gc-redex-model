@@ -731,6 +731,17 @@
   ; we use the order of occurrence of the fields in the int. rep. of the table 
 
   ; nil index, non empty table
+  ; next does not return nil-valued fields
+  ; by allowing just one nil-valued field it is possible to emulate the semantics
+  ; of next, where the user can delete a field during traversal
+  [(δbasic next tid nil (osp_1 ...
+                         (tid ((\{ (\[ v \] = nil) field ... \}) any ...))
+                         osp_2 ...))
+   (δbasic next tid nil (osp_1 ...
+                         (tid ((\{ field ... \}) any ...))
+                         osp_2 ...))]
+
+  ; {v_2 ≠ nil} 
   [(δbasic next tid nil (osp_1 ...
                          (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
                          osp_2 ...))
@@ -741,6 +752,22 @@
    (< nil >)]
   
   ; not the last index
+  ; next does not return nil-valued fields
+  [(δbasic next tid v_1 (osp_1 ...
+                         (tid
+                          ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = nil)
+                               field_2 ... \})
+                           any ...))
+                         osp_2 ...))
+   (δbasic next tid v_1 (osp_1 ...
+                         (tid
+                          ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
+                           any ...))
+                         osp_2 ...))
+   
+   (where true (δbasic == v_1 v_2))]
+
+  ; {v_5 ≠ nil}
   [(δbasic next tid v_1 (osp_1 ...
                          (tid
                           ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
@@ -751,7 +778,7 @@
    
    (where true (δbasic == v_1 v_2))]
   
-  ; Last index
+  ; last index
   [(δbasic next tid v_1 (osp_1 ...
                          (tid
                           ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
@@ -980,10 +1007,13 @@
    (where String_2 "table index is NaN")]
 
   ; {v_1 ∉ {nil, Nan}}
-  ; delete field
+  ; delete field: we do not remove the whole field, but rather set its value
+  ; to nil; this  is enough to emulate the semantics of the iterators of the
+  ; basic library, where the user can delete a field during traversal (see
+  ; function next)
   [(δbasic rawset tid v_1 nil θ)
    ((osp_1 ...
-     (tid ((\{ field_1 ... (\[ v_2 \] = nil) field_2 ... \}) any ...))
+     (tid ((\{ field_3 ... (\[ v_2 \] = nil) field_4 ... \}) any ...))
      osp_2 ...) tid)
 
    (where (side-condition
@@ -994,7 +1024,25 @@
                      osp_2 ...))
            (equal? (term (δbasic == v_1 v_2))
                    'true))
-          (tid v_1 θ))]
+          (tid v_1 θ))
+
+   ; clean previous nil-valued fields, but preserving order (needed for table
+   ; iterators)
+   (where (field_3 ...)
+          ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (not (is_nil? (term v_3))))
+                                   (term ,field)))
+             (term (field_1 ...))))
+
+   (where (field_4 ...)
+          ,(filter (lambda (field)
+                     (redex-match? ext-lang
+                                   (side-condition (|[| v_2 |]| = v_3)
+                                                   (not (is_nil? (term v_3))))
+                                   (term ,field)))
+             (term (field_2 ...))))]
 
   ; special case: v ∉ dom(θ(tid))
   [(δbasic rawset tid v nil θ)
