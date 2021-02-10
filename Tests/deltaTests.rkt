@@ -170,113 +170,113 @@
   ; load
   (test-equal (term (δ load "do end" nil nil nil))
               (term (function
-    $loaded
-    (<<<)
-    (local
-     $old_env
-     $ret
-     =
-     (ref 1)
-     nil
-     in
-     (((ref 1) = (objr 6))
-      ($ret
-       =
-       (|{|
-        ((|(| (function $aux (<<<) (do |;| end) end) |)|)
-         (<<<))
-        |}|))
-      ((ref 1) = $old_env)
-      (return ($builtIn table.unpack ($ret))))
-     end)
-    end)))
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 6))
+                        ($ret
+                         =
+                         (|{|
+                          ((|(| (function $aux (<<<) (do |;| end) end) |)|)
+                           (<<<))
+                          |}|))
+                        ((ref 1) = $old_env)
+                        (return ($builtIn table.unpack ($ret))))
+                       end)
+                     end)))
   
   (test-equal (term (δ load "a = 1" nil nil nil))
               (term (function
-    $loaded
-    (<<<)
-    (local
-     $old_env
-     $ret
-     =
-     (ref 1)
-     nil
-     in
-     (((ref 1) = (objr 6))
-      ($ret
-       =
-       (|{|
-        ((|(|
-          (function
-           $aux
-           (<<<)
-           (((ref 1) |[| "a" |]|) = 1.0)
-           end)
-          |)|)
-         (<<<))
-        |}|))
-      ((ref 1) = $old_env)
-      (return ($builtIn table.unpack ($ret))))
-     end)
-    end)))
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 6))
+                        ($ret
+                         =
+                         (|{|
+                          ((|(|
+                            (function
+                             $aux
+                             (<<<)
+                             (((ref 1) |[| "a" |]|) = 1.0)
+                             end)
+                            |)|)
+                           (<<<))
+                          |}|))
+                        ((ref 1) = $old_env)
+                        (return ($builtIn table.unpack ($ret))))
+                       end)
+                     end)))
   
   (test-equal (term (δ load "local a = 1; a = 2" nil nil nil))
               (term (function
-    $loaded
-    (<<<)
-    (local
-     $old_env
-     $ret
-     =
-     (ref 1)
-     nil
-     in
-     (((ref 1) = (objr 6))
-      ($ret
-       =
-       (|{|
-        ((|(|
-          (function
-           $aux
-           (<<<)
-           (local a = 1.0 in (|;| |;| (a = 2.0)) end)
-           end)
-          |)|)
-         (<<<))
-        |}|))
-      ((ref 1) = $old_env)
-      (return ($builtIn table.unpack ($ret))))
-     end)
-    end)))
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 6))
+                        ($ret
+                         =
+                         (|{|
+                          ((|(|
+                            (function
+                             $aux
+                             (<<<)
+                             (local a = 1.0 in (|;| |;| (a = 2.0)) end)
+                             end)
+                            |)|)
+                           (<<<))
+                          |}|))
+                        ((ref 1) = $old_env)
+                        (return ($builtIn table.unpack ($ret))))
+                       end)
+                     end)))
 
   (test-equal (term (δ load "local a" nil nil (objr 1)))
               (term (function
-    $loaded
-    (<<<)
-    (local
-     $old_env
-     $ret
-     =
-     (ref 1)
-     nil
-     in
-     (((ref 1) = (objr 1))
-      ($ret
-       =
-       (|{|
-        ((|(|
-          (function
-           $aux
-           (<<<)
-           (local a = nil in |;| end)
-           end)
-          |)|)
-         (<<<))
-        |}|))
-      ((ref 1) = $old_env)
-      (return ($builtIn table.unpack ($ret))))
-     end)
-    end)))
+                     $loaded
+                     (<<<)
+                     (local
+                       $old_env
+                       $ret
+                       =
+                       (ref 1)
+                       nil
+                       in
+                       (((ref 1) = (objr 1))
+                        ($ret
+                         =
+                         (|{|
+                          ((|(|
+                            (function
+                             $aux
+                             (<<<)
+                             (local a = nil in |;| end)
+                             end)
+                            |)|)
+                           (<<<))
+                          |}|))
+                        ((ref 1) = $old_env)
+                        (return ($builtIn table.unpack ($ret))))
+                       end)
+                     end)))
   
   ; Ill-formed program's string
   (test-equal (term (δ load "a=" nil nil nil))
@@ -356,7 +356,8 @@
                                        (\[ 3 \] = 4)
                                        (\[ 5 \] = 6)
                                        (\[ 7 \] = 8) \}) nil 1)))))
-              (term ((((objr 1) ((\{ (\[ 3 \] = 4)
+              (term ((((objr 1) ((\{ (\[ 1 \] = nil)
+                                     (\[ 3 \] = 4)
                                      (\[ 5 \] = 6)
                                      (\[ 7 \] = 8) \}) nil 1)))
                      (objr 1))))
@@ -547,7 +548,7 @@
   (test-equal (term (δ setmetatable 1 1 ()))
               (term (()
                      ($err
-                       "erroneous actual parameters to setmetatable"))))
+                      "erroneous actual parameters to setmetatable"))))
   
   (test-equal (term (δ setmetatable (objr 1) 1 (((objr 1) ((\{ \}) nil 1)))))
               (term ((((objr 1) ((\{ \}) nil 1)))
@@ -579,31 +580,31 @@
                      (objr 1))))
 
   
-;                                               
-;                                               
-;                                               
-;         ;           ;                         
-;         ;           ;                         
-;         ;           ;                         
-;     ;;; ;    ;;;    ; ;;;    ;     ;    ;;; ; 
-;    ;   ;;   ;   ;   ;;   ;   ;     ;   ;   ;; 
-;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
-;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
-;   ;     ;  ;;;;;;;  ;     ;  ;     ;  ;     ; 
-;   ;     ;  ;        ;     ;  ;     ;  ;     ; 
-;    ;   ;;   ;    ;  ;;   ;   ;;   ;;   ;   ;; 
-;     ;;; ;    ;;;;   ; ;;;     ;;;; ;    ;;; ; 
-;                                             ; 
-;                                        ;   ;; 
-;                                         ;;;;  
-;                                               
+  ;                                               
+  ;                                               
+  ;                                               
+  ;         ;           ;                         
+  ;         ;           ;                         
+  ;         ;           ;                         
+  ;     ;;; ;    ;;;    ; ;;;    ;     ;    ;;; ; 
+  ;    ;   ;;   ;   ;   ;;   ;   ;     ;   ;   ;; 
+  ;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+  ;   ;     ;  ;     ;  ;     ;  ;     ;  ;     ; 
+  ;   ;     ;  ;;;;;;;  ;     ;  ;     ;  ;     ; 
+  ;   ;     ;  ;        ;     ;  ;     ;  ;     ; 
+  ;    ;   ;;   ;    ;  ;;   ;   ;;   ;;   ;   ;; 
+  ;     ;;; ;    ;;;;   ; ;;;     ;;;; ;    ;;; ; 
+  ;                                             ; 
+  ;                                        ;   ;; 
+  ;                                         ;;;;  
+  ;                                               
 
   ; debug.setmetatable
   
   (test-equal (term (δ debug.setmetatable 1 1 ()))
               (term (()
                      ($err
-                       "erroneous actual parameters to debug.setmetatable"))))
+                      "erroneous actual parameters to debug.setmetatable"))))
   
   (test-equal (term (δ debug.setmetatable 1
                        (objr 3)
@@ -896,23 +897,210 @@
   ;                                          
   ;                                          
   ; table.concat
-  (test-equal (term (δ table.concat (objr 1) "a" 1 1 (((objr 1) ((\{ (\[ 1 \] = "b") \}) nil 1)))))
-              (term ((objr 1) \[ 1 \])))
+  (test-equal (term (δ table.concat (objr 1) "a" 1 1))
+              (term ((|(|
+                      (function
+                       $dummy
+                       ()
+                       (local
+                         i
+                         j
+                         accum
+                         value
+                         =
+                         1
+                         1
+                         ""
+                         nil
+                         in
+                         ((while
+                           (i <= j)
+                           do
+                           ((value = ((objr 1) |[| i |]|))
+                            (if value
+                                then
+                                (accum = (accum .. value))
+                                else
+                                (return
+                                 ($builtIn
+                                  error
+                                  ((("invalid value (nil) at index "
+                                     ..
+                                     ($builtIn tostring (i)))
+                                    ..
+                                    " in table for 'concat'"))))
+                                end)
+                            (i = (i + 1)))
+                           end)
+                          (return accum))
+                         end)
+                       end)
+                      |)|)
+                     ())))
 
-  (test-equal (term (δ table.concat (objr 1) "a" 1 2 (((objr 1) ((\{ (\[ 1 \] = "b")
-                                                                     (\[ 2 \] = "b") \}) nil 1)))))
-              (term (((objr 1) \[ 1 \]) .. ("a" .. ((objr 1) \[ 2 \])))))
+  (test-equal (term (δ table.concat (objr 1) "a" 1 2))
+              (term ((|(|
+                      (function
+                       $dummy
+                       ()
+                       (local
+                         i
+                         j
+                         accum
+                         value
+                         =
+                         1
+                         2
+                         ""
+                         nil
+                         in
+                         ((while
+                           (i <= j)
+                           do
+                           ((value = ((objr 1) |[| i |]|))
+                            (if value
+                                then
+                                (accum = (accum .. value))
+                                else
+                                (return
+                                 ($builtIn
+                                  error
+                                  ((("invalid value (nil) at index "
+                                     ..
+                                     ($builtIn tostring (i)))
+                                    ..
+                                    " in table for 'concat'"))))
+                                end)
+                            (i = (i + 1)))
+                           end)
+                          (return accum))
+                         end)
+                       end)
+                      |)|)
+                     ())))
 
-  (test-equal (term (δ table.concat (objr 1) "a" 1 3 (((objr 1) ((\{ (\[ 1 \] = "b")
-                                                                     (\[ 2 \] = "b")
-                                                                     (\[ 3 \] = "b")\}) nil 1)))))
-              (term ((((objr 1) \[ 1 \]) .. ("a" .. ((objr 1) \[ 2 \]))) .. ("a" .. ((objr 1) \[ 3 \])))))
+  (test-equal (term (δ table.concat (objr 1) "a" 1 3))
+              (term ((|(|
+                      (function
+                       $dummy
+                       ()
+                       (local
+                         i
+                         j
+                         accum
+                         value
+                         =
+                         1
+                         3
+                         ""
+                         nil
+                         in
+                         ((while
+                           (i <= j)
+                           do
+                           ((value = ((objr 1) |[| i |]|))
+                            (if value
+                                then
+                                (accum = (accum .. value))
+                                else
+                                (return
+                                 ($builtIn
+                                  error
+                                  ((("invalid value (nil) at index "
+                                     ..
+                                     ($builtIn tostring (i)))
+                                    ..
+                                    " in table for 'concat'"))))
+                                end)
+                            (i = (i + 1)))
+                           end)
+                          (return accum))
+                         end)
+                       end)
+                      |)|)
+                     ())))
 
-  (test-equal (term (δ table.concat (objr 1) "" nil nil (((objr 1) ((\{ \}) nil 1)))))
-              "")
+  (test-equal (term (δ table.concat (objr 1) "" nil nil))
+              (term ((|(|
+                      (function
+                       $dummy
+                       ()
+                       (local
+                         i
+                         j
+                         accum
+                         value
+                         =
+                         1
+                         (|#| (objr 1))
+                         ""
+                         nil
+                         in
+                         ((while
+                           (i <= j)
+                           do
+                           ((value = ((objr 1) |[| i |]|))
+                            (if value
+                                then
+                                (accum = (accum .. value))
+                                else
+                                (return
+                                 ($builtIn
+                                  error
+                                  ((("invalid value (nil) at index "
+                                     ..
+                                     ($builtIn tostring (i)))
+                                    ..
+                                    " in table for 'concat'"))))
+                                end)
+                            (i = (i + 1)))
+                           end)
+                          (return accum))
+                         end)
+                       end)
+                      |)|)
+                     ())))
 
-  (test-equal (term (δ table.concat (objr 1) nil nil nil (((objr 1) ((\{ \}) nil 1)))))
-              "")
+  (test-equal (term (δ table.concat (objr 1) nil nil nil))
+              (term ((|(|
+                      (function
+                       $dummy
+                       ()
+                       (local
+                         i
+                         j
+                         accum
+                         value
+                         =
+                         1
+                         (|#| (objr 1))
+                         ""
+                         nil
+                         in
+                         ((while
+                           (i <= j)
+                           do
+                           ((value = ((objr 1) |[| i |]|))
+                            (if value
+                                then
+                                (accum = (accum .. value))
+                                else
+                                (return
+                                 ($builtIn
+                                  error
+                                  ((("invalid value (nil) at index "
+                                     ..
+                                     ($builtIn tostring (i)))
+                                    ..
+                                    " in table for 'concat'"))))
+                                end)
+                            (i = (i + 1)))
+                           end)
+                          (return accum))
+                         end)
+                       end)
+                      |)|)
+                     ())))
   
   ; table.pack
   (test-equal (term (δ table.pack))
