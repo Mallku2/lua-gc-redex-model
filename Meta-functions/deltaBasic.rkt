@@ -502,10 +502,11 @@
                    (term v_3)
                    "bt"))
 
-   (where v_7 ,(if (is_tid? (term v_4))
-                   (term v_4)
+   ; any value is valid for _ENV
+   (where v_7 ,(if (is_nil? (term v_4))
                    ; tid of the global environment
-                   (term (objr ,objStoreFirstLocation))))]
+                   (term (objr ,objStoreFirstLocation))
+                   (term v_4)))]
   
   [(δbasic load String_1 v_1 "b" v_2)
    t
@@ -569,7 +570,7 @@
                                            ; note that any_1 could return an
                                            ; arbitrary quantity of values: we
                                            ; put returned values into a table
-                                           ($ret = (\{ ((\( (function $aux (<<<)
+                                           ($ret = (\{ ( (\( (function $aux (<<<)
                                                                   any_1
                                                                   end) \))
                                                         (<<<)) \}))
@@ -609,7 +610,8 @@
    (where any_2 ((\( (function $loaded ()
                            (local program nextPiece = "" ""
                              in
-                             ((nextPiece = (cid ()))
+                             (
+                              (nextPiece = (cid ()))
                               
                               (while (not ((nextPiece == "")
                                            or
@@ -630,7 +632,8 @@
                                      
                                      end)
                               
-                              (return ($builtIn load (program v_1 v_2 v_3))))
+                              (return ($builtIn load (program v_1 v_2 v_3)))
+                              )
                              
                              end)
                            end) \)) ()))]

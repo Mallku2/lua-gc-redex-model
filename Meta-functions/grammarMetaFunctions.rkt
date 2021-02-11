@@ -147,6 +147,10 @@
              (string-append "\\[" " " acum)]
             [(equal? elem '\])
              (string-append "\\]" " " acum)]
+            [(equal? elem '\()
+             (string-append "\\(" " " acum)]
+            [(equal? elem '\))
+             (string-append "\\)" " " acum)]
             [(equal? elem '\{)
              (string-append "\\{" " " acum)]
             [(equal? elem '\})

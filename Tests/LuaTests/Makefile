@@ -9,7 +9,7 @@ endef
 all: calls closure constructs errors events locals math nextvar sort strings vararg
 
 calls:
-	$(call test-file-parts,calls,(test-calls_1)(test_calls_2)(test-calls_3))
+	$(call test-file-parts,calls,(test-calls_1a)(test-calls_1b)(test-calls_1c)(test-calls_2a)(test-calls_2b)(test-calls_3a)(test-calls_3b)(test-calls_3c)(test-calls_4)(test-calls_5)(test-calls_6))
 
 closure:
 	$(call test-file,closure)

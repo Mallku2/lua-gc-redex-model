@@ -47,14 +47,6 @@
    
    (where String ,(str-flatten (term functiondef)))]
 
-  [(δstring string.dump v θ)
-   any
-   
-   (where any (δbasic error ,(string-append
-                         "bad argument #1 (function expected, got "
-                         (term (δbasic type v))
-                         ")")))]
-
   
   ;                          
   ;   ;;;                    

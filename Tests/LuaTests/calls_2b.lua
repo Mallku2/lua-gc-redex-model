@@ -18,43 +18,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 -- SOFTWARE. 
 
--- testing closures
-
--- fixed-point operator
-Z = function (le)
-      local function a (f)
-        return le(function (x) return f(f)(x) end)
-      end
-      return a(a)
-    end
-
-
--- non-recursive factorial
-
-F = function (f)
-      return function (n)
-               if n == 0 then return 1
-               else return n*f(n-1) end
-             end
-    end
-
-fat = Z(F)
-
-assert(fat(0) == 1 and fat(4) == 24 and Z(F)(5)==5*Z(F)(4))
-
-local function g (z)
-  local function f (a,b,c,d)
-    return function (x,y) return a+b+c+d+a+x+y+z end
-  end
-  return f(z,z+1,z+2,z+3)
-end
-
-f = g(10)
-assert(f(9, 16) == 10+11+12+13+10+9+16+10)
-
-Z, F, f = nil
-print('+')
-
 -- testing multiple returns
 
 function unlpack (t, i)
@@ -87,7 +50,7 @@ a,b,c,d = unlpack(pack(ret2(f()), ret2(f())))
 assert(a==1 and b==1 and c==2 and d==nil)
 a,b,c,d = unlpack(pack(ret2(f()), (ret2(f()))))
 assert(a==1 and b==1 and c==nil and d==nil)
-
+collectgarbage()
 a = ret2{ unlpack{1,2,3}, unlpack{3,2,1}, unlpack{"a", "b"}}
 assert(a[1] == 1 and a[2] == 3 and a[3] == "a" and a[4] == "b")
 
