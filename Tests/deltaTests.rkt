@@ -646,7 +646,7 @@
               (term "(function $1 () \\; end )"))
   
   (test-equal (term (δ string.dump 1 ()))
-              (term ($err "bad argument #1 (function expected, got number)")))
+              (term ($err "erroneous actual parameters to string.dump")))
 
   ; string.len
   (test-equal (term (δ string.len "a"))

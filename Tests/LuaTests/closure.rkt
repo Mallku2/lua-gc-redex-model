@@ -1,6 +1,6 @@
 #lang racket
-(require redex
-         "./tests_aux.rkt")
+(require "./tests_aux.rkt")
+
 ; gc
 ; equality
 (define (test-closure_1)
@@ -30,3 +30,5 @@
   (test-suite "closure_3.lua"
               (list "assert"
                     "print")))
+
+(provide test-closure_1 test-closure_2 test-closure_3)

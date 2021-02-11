@@ -12,7 +12,7 @@ calls:
 	$(call test-file-parts,calls,(test-calls_1a)(test-calls_1b)(test-calls_1c)(test-calls_2a)(test-calls_2b)(test-calls_3a)(test-calls_3b)(test-calls_3c)(test-calls_4)(test-calls_5)(test-calls_6))
 
 closure:
-	$(call test-file,closure)
+	$(call test-file-parts,closure,(test-closure_1)(test-closure_2)(test-closure_3))
 
 constructs:
 	$(call test-file-parts,constructs,(test-constructs_1)(test-constructs_2a)(test-constructs_2b)(test-constructs_2c)(test-constructs_2d)(test-constructs_3))
