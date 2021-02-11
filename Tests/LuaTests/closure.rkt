@@ -1,20 +1,32 @@
 #lang racket
 (require redex
-         "../../executionEnvironment.rkt"
-         "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
-
-(define (test-closure)
-  (test-suite "closure.lua"
+; gc
+; equality
+(define (test-closure_1)
+  (test-suite "closure_1.lua"
               (list "assert"
                     "collectgarbage"
-                    "error"
-                    "pcall"
-                    "print"
+                    "getmetatable"
                     "math"
                     "math.sin"
-                    "setmetatable"
-                    "getmetatable")))
+                    "print"
+                    "setmetatable")))
 
-(provide test-closure)
+; closures with 'for' control variable
+; closures with 'for' control variable x break
+; closure x break x return x errors
+(define (test-closure_2)
+  (test-suite "closure_2.lua"
+              (list "assert"
+                    "error"
+                    "pcall"
+                    "print")))
+
+; multi-level closure
+; closures x repeat-until
+; correctly closing upvalues in tail calls of vararg functions
+(define (test-closure_3)
+  (test-suite "closure_3.lua"
+              (list "assert"
+                    "print")))

@@ -606,7 +606,7 @@
    ; TODO: we don't impose a limit to the times the function is called:
    ; load(function() return "return true" end) is and endless loop in our
    ; mechanization, while it isn't the case for the Lua official interpreter.
-   (where any_2 ((function $loaded ()
+   (where any_2 ((\( (function $loaded ()
                            (local program nextPiece = "" ""
                              in
                              ((nextPiece = (cid ()))
@@ -633,7 +633,7 @@
                               (return ($builtIn load (program v_1 v_2 v_3))))
                              
                              end)
-                           end) ()))]
+                           end) \)) ()))]
 
   ; this service does not inform about errors processing String_1
   [(δbasic load String_1 String_2 String_3 tid)
