@@ -18,7 +18,7 @@ constructs:
 	$(call test-file-parts,constructs,(test-constructs_1)(test-constructs_2a)(test-constructs_2b)(test-constructs_2c)(test-constructs_2d)(test-constructs_3))
 
 errors:
-	$(call test-file,errors)
+	$(call test-file-parts,errors,(test-errors_1a)(test-errors_1b)(test-errors_2)(test-errors_3))
 
 events:
 	$(call test-file-parts,events,(test-events_1)(test-events_2)(test-events_3a)(test-events_3b)(test-events_3c)(test-events_4))
