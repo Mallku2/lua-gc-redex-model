@@ -21,7 +21,7 @@ errors:
 	$(call test-file,errors)
 
 events:
-	$(call test-file-parts,events,(test-events_1)(test-events_2)(test-events_3)(test-events_4))
+	$(call test-file-parts,events,(test-events_1)(test-events_2)(test-events_3a)(test-events_3b)(test-events_3c)(test-events_4))
 
 locals:
 	$(call test-file-parts,locals,(test-locals_1)(test-locals_2))
