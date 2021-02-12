@@ -272,9 +272,27 @@
   ;                                                                ;                                       ;         
   ;                                                            ;   ;                                   ;   ;         
   ;                                                             ;;;                                     ;;;          
+  ; TODO: while we do not model the internal state of the garbage collector,
+  ; some tests (e.g. in errors.lua) verify calls to collectgarbage with
+  ; parameters of unexpected type
+  [(δbasic collectgarbage v_1 v_2 v_3 v_4 ... σ_1 θ_1 s)
+   (δbasic collectgarbage v_1 v_2 σ_1 θ_1 s)]
+  
+  ; default parameters
   [(δbasic collectgarbage σ_1 θ_1 s)
-   (gcFinWeak s σ_1 θ_1)
-   ]
+   (δbasic collectgarbage "collect" σ_1 θ_1 s)]
+
+  ;  performs a full garbage-collection cycle
+  [(δbasic collectgarbage "collect" σ_1 θ_1 s)
+   (gcFinWeak s σ_1 θ_1)]
+
+  ; TODO: we ignore step
+  [(δbasic collectgarbage "step" Number σ_1 θ_1 s)
+   (gcFinWeak s σ_1 θ_1)]
+
+  ; error
+  [(δbasic collectgarbage v ... σ θ s)
+   (σ θ (δbasic error "erroneous actual parameters to collectgarbage"))]
   
   ;                                          
   ;                                          
@@ -893,7 +911,7 @@
    (where String_3, (string-append (term String_2)
                                    "\n"))
 
-   (side-condition (println (term String_3)))]
+   (side-condition (println (term (v_1 ...))))]
 
   
   

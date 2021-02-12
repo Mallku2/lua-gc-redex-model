@@ -106,6 +106,7 @@
 
       (where (σ_2 θ_2 t)
              (δ collectgarbage
+                v ...
                 σ_1
                 θ_1
                 (in-hole E ($builtIn collectgarbage (v ...)))))
