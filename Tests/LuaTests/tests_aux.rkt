@@ -150,7 +150,7 @@
   (test-predicate ok? (apply-reduction-relation*
                        full-progs-rel
                        (full_term file services)))
-  (test-results))
+  (printf "File ~V passed\n" file))
 
 (provide test-suite)
 
