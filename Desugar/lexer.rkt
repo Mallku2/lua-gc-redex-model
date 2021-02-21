@@ -70,20 +70,38 @@
 
 (define-lex-abbrevs
   ; TODO: fix re for strings
-  (double-quoted-string-lit (re-: "\""
-                                  (re-* (char-complement #\"))
-                                  "\""))
+  (double-quoted-str (re-: "\""
+                           (re-* (char-complement #\"))
+                           "\""))
+
+  ; strings in long brackets
+  (long-bracket-str-beg (re-: "["
+                              (re-* "=")
+                              "["
+                              ))
+
+  ; from ref. manual: "For convenience, when the opening long bracket is
+  ; immediately followed by a newline, the newline is not included in the string"
+  ; we discard the newline char with this abbrev.
+  (long-bracket-str-beg-newline (re-: "["
+                                      (re-* "=")
+                                      "["
+                                      "\n"))
+
+  (long-bracket-str-end (re-: "]"
+                              (re-* "=")
+                              "]"))
+
+  (not-long-bracket-str-end (re-or (re-~ "]")
+
+                                   (re-: "]"
+                                         (re-* "="))
+                                          
+                                   (re-: "]"
+                                         (re-* "=")
+                                         (re-~ "]"))))
   
-  (mult-lines-string-lit (re-: "[["
-                               ; TODO: ugly way of saying "anything different than ]]".
-                               ; Simpler patterns like "(complement "]]")" and the like,
-                               ; don't work in certain cases
-                               (re-* (re-or (re-~ #\])
-                                            (re-: #\]
-                                                  (re-~ #\]))))
-                               "]]"))
-  
-  (single-quoted-string-lit (re-: "'"
+  (single-quoted-str (re-: "'"
                                   (re-* (char-complement #\'))
                                   "'"))
   
@@ -167,14 +185,7 @@
             (expt 2 (string->number (list-ref hex-split 1))))))))
     )
    
-   (double-quoted-string-lit (token-STRING
-                              ; Remove unprintable characters
-                              ; (embedded zeros)
-                              (clean (substring lexeme
-                                                1
-                                                (- (string-length lexeme) 1)))))
-   
-   (single-quoted-string-lit
+   (double-quoted-str
     (token-STRING
      ; Remove unprintable characters
      ; (embedded zeros)
@@ -182,12 +193,33 @@
                        1
                        (- (string-length lexeme) 1)))))
    
-   (mult-lines-string-lit
-    (token-STRING (clean
-                   ; Delete [[ and ]]
-                   (substring lexeme
-                              2
-                              (- (string-length lexeme) 2)))))
+   (single-quoted-str
+    (token-STRING
+     ; Remove unprintable characters
+     ; (embedded zeros)
+     (clean (substring lexeme
+                       1
+                       (- (string-length lexeme) 1)))))
+
+   (long-bracket-str-beg
+    (begin
+      (define res
+        ((lua-long-bracket-str (- (string-length lexeme) 2)) input-port))
+      (if (token? res)
+          ; Remove unprintable characters
+          ; (embedded zeros)
+          (token-STRING (clean (token-value res)))
+          res)))
+
+   (long-bracket-str-beg-newline
+    (begin
+      (define res
+        ((lua-long-bracket-str (- (string-length lexeme) 3)) input-port))
+      (if (token? res)
+          ; Remove unprintable characters
+          ; (embedded zeros)
+          (token-STRING (clean (token-value res)))
+          res)))
    
    
    ("..." (token-VARARG))
@@ -255,7 +287,7 @@
    
    [any-char (lua-sing-line-comment-lexer input-port)]))
 
-; Multiple-lines comments
+; multiple-lines comments
 (define lua-mult-line-comment-lexer 
   (lexer
    ["]]--" (lua-lexer input-port)]
@@ -263,12 +295,43 @@
    [any-char
     (lua-mult-line-comment-lexer input-port)]))
 
+; strings in long brackets
+(define (lua-long-bracket-str eq_quant)
+  (lexer
+    ; consume as much chars as possible, between long brackets
+   [not-long-bracket-str-end
+    (begin
+      (define res ((lua-long-bracket-str eq_quant) input-port))
+      (if (token? res)
+          ; res is a token: append lexeme to its value
+          (token-STRING (string-append lexeme (token-value res)))
+          ; res is an error
+          res)
+      )]
+   
+   ; TODO: Any kind of end-of-line sequence (carriage return, newline, carriage
+   ; return followed by newline, or newline
+   ; followed by carriage return) is converted to a simple newline.
+   [long-bracket-str-end
+    (if (= (- (string-length lexeme) 2) eq_quant)
+        ; we found the end of the string
+        (token-STRING "")
+        ; not the expected long bracket: we need to append it to the result
+        ((lambda (res)
+           (if (token? res)
+               ; res is a token: append lexeme to its value; this way of
+               ; defining the lexer helps to avoid some errors
+               (token-STRING (string-append lexeme (token-value res)))
+               ; res is an error
+               res)) ((lua-long-bracket-str eq_quant) input-port))
+        )]
+   ))
 
-; Racket's strings "prints using doublequotes, where doublequote and backslash
+; racket's strings "prints using doublequotes, where doublequote and backslash
 ; characters within the string are escaped with backslashes"
-; (from https://docs.racket-lang.org/guide/strings.html). Which is not the case
-; with Lua's string. We implement this procedure to eliminate redundant escape
-; characters.
+; (from https://docs.racket-lang.org/guide/strings.html), which is not the case
+; with Lua's string
+; we implement this procedure to eliminate redundant escape characters
 (define (clean string)
   (define aux string)
   

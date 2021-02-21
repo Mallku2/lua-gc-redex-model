@@ -1,7 +1,5 @@
 #lang racket
-(require parser-tools/lex
-         rackunit
-         rackunit/text-ui
+(require rackunit
          "./lexer.rkt")
 
 ; TODO: no está claro por qué necesito esto...
@@ -68,6 +66,21 @@
   ; have the first ones.
   (check-equal? (lua-lexer (open-input-string "'string'"))
                 (token-STRING "string"))
+
+  (check-equal? (lua-lexer (open-input-string "[=[]=]"))
+                (token-STRING ""))
+
+  (check-equal? (lua-lexer (open-input-string "[[1]]"))
+                (token-STRING "1"))
+
+  (check-equal? (lua-lexer (open-input-string "[=[1]=]"))
+                (token-STRING "1"))
+
+  (check-equal? (lua-lexer (open-input-string "[==[1]==]"))
+                (token-STRING "1"))
+
+  (check-equal? (lua-lexer (open-input-string "[=[1 [==[2]==]]=]"))
+                (token-STRING "1 [==[2]==]"))
   
   (check-equal? (lua-lexer (open-input-string "..."))
                 'VARARG)
