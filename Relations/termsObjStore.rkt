@@ -3,7 +3,6 @@
          "../grammar.rkt"
          "../Meta-functions/objStoreMetaFunctions.rkt"
          "../Meta-functions/delta.rkt"
-         ;"../Meta-functions/misc.scm"
          "../Meta-functions/tablesMetaFunctions.rkt")
 
 ; Expressions that interact with the objects' store
@@ -59,13 +58,13 @@
         (where nil (δ rawget objref v θ))]
    
    [-->θ (θ : (v_1 \[ v_2 \]))
-        (θ : ((v_1 \[ v_2 \])NonTable))
+        (θ : ((v_1 \[ v_2 \]) NonTable))
         
         E-AlertNonTableIndexed
         
         ; v_1 is not a reference to a table
-        (side-condition (not (eq? (term (δ type v_1))
-                                  (term "table"))))]
+        (side-condition (not (equal? (term (δ type v_1))
+                                     (term "table"))))]
 
    ; built-in services
    [-->θ (θ : ($builtIn builtinserv (v ...)))
@@ -173,12 +172,12 @@
         (where nil (δ rawget objref v_1 θ))]
    
    [-->θ (θ : ((v_1 \[ v_2 \]) = v_3))
-        (θ : (((v_1 \[ v_2 \]) = v_3)NonTable))
+        (θ : (((v_1 \[ v_2 \]) = v_3) NonTable))
         
         E-AlertFieldAssignOverNonTable
         ; Determine if simplevalue is not an reference pointing to a table
-        (side-condition (not (eq? (term (δ type v_1))
-                                  (term "table"))))]
+        (side-condition (not (equal? (term (δ type v_1))
+                                     (term "table"))))]
    ))
 
 (provide terms-obj-store)

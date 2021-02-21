@@ -209,6 +209,7 @@
           ; Remove unprintable characters
           ; (embedded zeros)
           (token-STRING (clean (token-value res)))
+          ; res is an error
           res)))
 
    (long-bracket-str-beg-newline
@@ -287,6 +288,7 @@
    
    [any-char (lua-sing-line-comment-lexer input-port)]))
 
+; another lexer, specific for skipping comments' content
 ; multiple-lines comments
 (define lua-mult-line-comment-lexer 
   (lexer
@@ -295,33 +297,38 @@
    [any-char
     (lua-mult-line-comment-lexer input-port)]))
 
-; strings in long brackets
+; strings in long brackets; receives the quantity eq_quant of = that
+; the closing brackets must contain
+; for simplicity, the function ends returning a token-STRING or an error, without
+; passing explicit control to lua-lexer 
 (define (lua-long-bracket-str eq_quant)
   (lexer
-    ; consume as much chars as possible, between long brackets
+    ; consume as much chars as possible, before closing long brackets
    [not-long-bracket-str-end
     (begin
       (define res ((lua-long-bracket-str eq_quant) input-port))
       (if (token? res)
           ; res is a token: append lexeme to its value
-          (token-STRING (string-append lexeme (token-value res)))
+          (token-STRING
+           ; TODO: "Any kind of end-of-line sequence (carriage return,
+           ; newline, carriage return followed by newline, or newline followed
+           ; by carriage return) is converted to a simple newline"
+           (clean (string-append lexeme (token-value res))))
           ; res is an error
           res)
       )]
    
-   ; TODO: Any kind of end-of-line sequence (carriage return, newline, carriage
-   ; return followed by newline, or newline
-   ; followed by carriage return) is converted to a simple newline.
    [long-bracket-str-end
     (if (= (- (string-length lexeme) 2) eq_quant)
-        ; we found the end of the string
+        ; we found the end of the string: we return the empty string to handle
+        ; the case of an empty string: [[]]
         (token-STRING "")
         ; not the expected long bracket: we need to append it to the result
         ((lambda (res)
            (if (token? res)
-               ; res is a token: append lexeme to its value; this way of
-               ; defining the lexer helps to avoid some errors
-               (token-STRING (string-append lexeme (token-value res)))
+               ; res is a token: append lexeme to its value
+               (token-STRING
+                (clean (string-append lexeme (token-value res))))
                ; res is an error
                res)) ((lua-long-bracket-str eq_quant) input-port))
         )]
@@ -341,15 +348,15 @@
   ; Unescape backslashs from \0
   (set! aux (string-replace aux "\\0" "\0"))
   (set! aux (string-replace aux "\\\0" "\0"))
+  ; Unescape backslashs from \r
+  (set! aux (string-replace aux "\\r" "\r"))
+  (set! aux (string-replace aux "\\\r" "\r"))
     
   (if (equal? aux string)
       string ; Nothing left to be cleaned
       (clean aux))
   )
 
-; Translate to Racket's hexadecimal numbers' notation
-(define (2-racket-hex number)
-  (string-replace number (regexp "0x|0X") "#x"))
 
 
 (provide lua-lexer)
