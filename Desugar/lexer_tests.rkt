@@ -59,6 +59,7 @@
   (check-equal? (lua-lexer (open-input-string "0X1.921FB54442D18P+1"))
                 (token-NUMBER 3.141592653589793))
 
+  ; string
   (check-equal? (lua-lexer (open-input-string "\"string\""))
                 (token-STRING "string"))
 
@@ -67,6 +68,7 @@
   (check-equal? (lua-lexer (open-input-string "'string'"))
                 (token-STRING "string"))
 
+  ; long-brackets strings
   (check-equal? (lua-lexer (open-input-string "[=[]=]"))
                 (token-STRING ""))
 
@@ -81,6 +83,30 @@
 
   (check-equal? (lua-lexer (open-input-string "[=[1 [==[2]==]]=]"))
                 (token-STRING "1 [==[2]==]"))
+
+  (check-equal? (lua-lexer (open-input-string "[==[]=]==]"))
+                (token-STRING "]="))
+
+  (check-equal? (lua-lexer (open-input-string "[==[1]=2]==]"))
+                (token-STRING "1]=2"))
+
+  (check-equal? (lua-lexer (open-input-string "[==[[===[[=[]]=][====[]]===]===]==]"))
+                (token-STRING "[===[[=[]]=][====[]]===]==="))
+
+  (check-equal? (lua-lexer (open-input-string "[==[[===[[=[1]]=][====[2]]===]===]==]"))
+                (token-STRING "[===[[=[1]]=][====[2]]===]==="))
+
+  (check-equal? (lua-lexer (open-input-string "[====[[===[[=[]]=][====[]]===]===]====]"))
+                (token-STRING "[===[[=[]]=][====[]]===]==="))
+
+  (check-equal? (lua-lexer (open-input-string "[====[[===[[=[1]]=][====[2]]===]===]====]"))
+                (token-STRING "[===[[=[1]]=][====[2]]===]==="))
+
+  (check-equal? (lua-lexer (open-input-string "[=[]]]]]]]]]=]"))
+                (token-STRING "]]]]]]]]"))
+
+  (check-equal? (lua-lexer (open-input-string "[=[1]]]]]]]]2]=]"))
+                (token-STRING "1]]]]]]]]2"))
   
   (check-equal? (lua-lexer (open-input-string "..."))
                 'VARARG)

@@ -92,14 +92,8 @@
                               (re-* "=")
                               "]"))
 
-  (not-long-bracket-str-end (re-or (re-~ "]")
-
-                                   (re-: "]"
-                                         (re-* "="))
-                                          
-                                   (re-: "]"
-                                         (re-* "=")
-                                         (re-~ "]"))))
+  (not-long-bracket-str-end (re-& (re-~ "]")
+                                  (re-~ "=")))
   
   (single-quoted-str (re-: "'"
                                   (re-* (char-complement #\'))
@@ -203,6 +197,8 @@
 
    (long-bracket-str-beg
     (begin
+      (set! cons-long-bracket-end #f)
+      (set! long-bracket-end "")
       (define res
         ((lua-long-bracket-str (- (string-length lexeme) 2)) input-port))
       (if (token? res)
@@ -214,6 +210,8 @@
 
    (long-bracket-str-beg-newline
     (begin
+      (set! cons-long-bracket-end #f)
+      (set! long-bracket-end "")
       (define res
         ((lua-long-bracket-str (- (string-length lexeme) 3)) input-port))
       (if (token? res)
@@ -297,41 +295,81 @@
    [any-char
     (lua-mult-line-comment-lexer input-port)]))
 
+; flags the beginning of a possible closing bracket
+(define cons-long-bracket-end #f)
+; the possible closing bracket
+(define long-bracket-end "")
 ; strings in long brackets; receives the quantity eq_quant of = that
-; the closing brackets must contain
+; the closing brackets must contain;
 ; for simplicity, the function ends returning a token-STRING or an error, without
-; passing explicit control to lua-lexer 
+; passing explicit control to lua-lexer
 (define (lua-long-bracket-str eq_quant)
   (lexer
-    ; consume as much chars as possible, before closing long brackets
+   ; consume as much chars as possible, before closing long brackets
    [not-long-bracket-str-end
     (begin
+      (set! cons-long-bracket-end #f)
+      (define aux long-bracket-end)
+      (set! long-bracket-end "")
       (define res ((lua-long-bracket-str eq_quant) input-port))
       (if (token? res)
-          ; res is a token: append lexeme to its value
+          ; res is a token: append previous closing long bracket candidate and
+          ; lexeme, to its value
           (token-STRING
            ; TODO: "Any kind of end-of-line sequence (carriage return,
            ; newline, carriage return followed by newline, or newline followed
            ; by carriage return) is converted to a simple newline"
-           (clean (string-append lexeme (token-value res))))
+           (clean (string-append aux lexeme (token-value res))))
           ; res is an error
           res)
       )]
-   
-   [long-bracket-str-end
-    (if (= (- (string-length lexeme) 2) eq_quant)
-        ; we found the end of the string: we return the empty string to handle
-        ; the case of an empty string: [[]]
-        (token-STRING "")
-        ; not the expected long bracket: we need to append it to the result
-        ((lambda (res)
-           (if (token? res)
-               ; res is a token: append lexeme to its value
-               (token-STRING
-                (clean (string-append lexeme (token-value res))))
-               ; res is an error
-               res)) ((lua-long-bracket-str eq_quant) input-port))
-        )]
+
+   ["]"
+    (if cons-long-bracket-end
+        ; we are consuming a closing long bracket
+        (if (= (- (string-length long-bracket-end) 1) eq_quant)
+            ; we found the end of the string: we return the empty string to handle
+            ; the case of an empty string: [[]]
+            (begin
+              (token-STRING ""))
+            ; not the expected long bracket: we need to append it to the result
+            (begin
+              ; we continue searching the correct ending long-bracket
+              ((lambda (long-bracket-end-old dummy res)
+                 (if (token? res)
+                     ; res is a token: append long-bracket-end to its value
+                     (token-STRING
+                      (clean (string-append long-bracket-end-old
+                                            (token-value res))))
+                   ; res is an error
+                     res)) long-bracket-end
+                           (set! long-bracket-end "]")
+                           ((lua-long-bracket-str eq_quant) input-port))))
+        ; {not cons-long-bracket-end}
+        ; first closing bracket found
+        (begin
+          ; set flags, save input and continue
+          (set! cons-long-bracket-end #t)
+          (set! long-bracket-end "]")
+          ((lua-long-bracket-str eq_quant) input-port)))]
+
+   ["="
+    (if cons-long-bracket-end
+        ; we are consuming a closing long bracket
+        (begin
+          (set! long-bracket-end (string-append long-bracket-end "="))
+          ((lua-long-bracket-str eq_quant) input-port))
+        ; {not cons-long-bracket-end}
+        ; just append =
+        (begin
+          ((lambda (res)
+             (if (token? res)
+                 ; res is a token: append = to its value
+                 (token-STRING
+                  (clean (string-append "="
+                                        (token-value res))))
+                 ; res is an error
+                 res)) ((lua-long-bracket-str eq_quant) input-port))))]
    ))
 
 ; racket's strings "prints using doublequotes, where doublequote and backslash
