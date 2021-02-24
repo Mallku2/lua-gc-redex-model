@@ -1,29 +1,20 @@
 #lang racket
-(require redex
-         "../../executionEnvironment.rkt"
-         "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt"
-         "./tests_aux.rkt")
+(require "./tests_aux.rkt")
 
+; local variables and environments
 (define (test-locals_1)
   (test-suite "locals_1.lua"
               (list "assert"
-                    "select"
-                    "load"
-                    "collectgarbage"
                     "load"
                     "print"
+                    "select"
                     "type")))
 
 (define (test-locals_2)
   (test-suite "locals_2.lua"
               (list "_G"
                     "assert"
-                    "select"
                     "load"
-                    "collectgarbage"
-                    "load"
-                    "print"
-                    "type")))
+                    "print")))
 
 (provide test-locals_1 test-locals_2)
