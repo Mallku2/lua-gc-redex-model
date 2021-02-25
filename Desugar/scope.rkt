@@ -34,15 +34,12 @@
 (define (reset-symbol-table)
   (set! func-defs 0))
 
-; Close every local variables' scope, that were opened into a block that is
-; being closed. Returns the scope external to the block being closed.
+; closes the innermost scope
 (define (close-scopes-in-block actual-block)
   (match actual-block
-    ((block scopes previous-block)
-     previous-block)
-    ; TODO: corregir este casi 
-    (#f
-     (new-empty-block))
+    ((block scopes previous-block) previous-block)
+    
+    (#f (new-empty-block))
 
     (- (error "close-scopes-in-block, unexpected values: " actual-block))))
 
@@ -83,20 +80,33 @@
 ; Determine if a given symbol is defined in the actual block
 (define (is-in-block actual-block symbol)
   (match actual-block
-    ((block scopes #f)
-     (if (is-in-scope scopes symbol)
-         #t
-         #f
-         ))
-     
     ((block scopes previous-block)
      (if (is-in-scope scopes symbol)
          #t
          (is-in-block previous-block symbol)
          ))
     
-    ; TODO: corregir este caso
     (#f
      #f)
     
     (- (error "is-in-block, unexpected values: " actual-block symbol))))
+
+(define (print-scope s)
+  (match s
+   ((scope symbols previous-scope)
+     (begin
+       (println symbols)
+       (print-scope previous-scope)))
+
+     (- (void))))
+
+(define (print-block b)
+  (match b
+    ((block scopes previous-block)
+     (begin
+       (print-scope scopes)
+       (print-block previous-block)))
+
+     (- (void))))
+
+(provide print-scope print-block)

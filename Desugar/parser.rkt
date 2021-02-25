@@ -30,7 +30,12 @@
    (end EOF)
    
    (error (lambda (tok-ok? tok-name tok-value)
-            (error "Parser error. Token name:" tok-name)))
+            (begin
+              ; the presence of an error while parsing could let the symbol table
+              ; with information that must be cleaned before a possible new
+              ; call of the parser (eg. during run-time, while using load)
+              (set! actual-block (new-empty-block))
+              (error "Parser error. Token name:" tok-name))))
 
    ; Uncomment for debug
    ;(debug "log")
@@ -364,11 +369,6 @@
       (begin
         (set! actual-block (new-block actual-block))
         (set! actual-block (new-scope actual-block (list 'self)))
-        ; The lexer, when tokenizing names, replaces the occurrences of _ for ~ (to avoid
-        ; problems in Racket). However, the occurrences of names in dotsepnamelist : NAME
-        ; will be translated to dotsepnamelist["NAME"] => there is no problem => we
-        ; replace ~ for _.
-        ;(var-table-field $1 (str (string-replace (symbol->string $3) "~" "_"))))))
         (var-table-field $1 (str (symbol->string $3))))))
     
     (local_function
@@ -687,38 +687,13 @@
      ))
   )
 
-;(define (add-to-block block stat)
-;  (match block
-;    ((conc-stats stats)
-;     ; Check if the last stat is local var decl. In which case,
-;     ; the new stat belongs to its scope
-;     (match (last stats)
-;       ((local-vars ids exps scope)
-;        (conc-stats
-;         (append (take stats (- (length stats) 1))
-;                 (list (local-vars ids
-;                                   exps
-;                                   (add-to-block scope stat))))))
-;       
-;       (_
-;        (conc-stats (append stats
-;                              (list stat))))))
-;    
-;    ((local-vars ids exps scope)
-;     (local-vars ids
-;                 exps
-;                 (add-to-block scope stat)))
-;    
-;    ; single statement
-;    (_ (conc-stats (list block stat))))
-;  )
-
 (define (translate-var var)
   (if (is-in-block actual-block var)
       ; it's a local variable
-      (if (equal? var (string->symbol "_ENV"))
+      (begin
+        (if (equal? var (string->symbol "_ENV"))
           global-env-subst
-          (id-name var))
+          (id-name var)))
       
       ; it's a global variable
       ; Replace ~ for _.
@@ -743,9 +718,14 @@
   (if runtime?
       (set! global-env-subst ref)
       (set! global-env-subst (id-name '_ENV)))
+
+  (define res
+        (concrete-grammar-s
+         (lua-parser (lex-this lua-lexer (open-input-string input)))))
+
+  ; cleaning symbol table
+  (set! actual-block (new-empty-block))
   
-  (concrete-grammar-s
-   (lua-parser (lex-this lua-lexer (open-input-string input))))
-  )
+  res)
 
 (provide parse-this)

@@ -82,7 +82,6 @@
   (check-equal? (parse-this "local a,b" #f (void))
                 (term (local a b = nil nil in \; end)))
   
-  ; TODO: eliminar el skip del comienzo del scope
   (check-equal? (parse-this "local a a = 1" #f (void))
                 (term (local a = nil in (\; (a = 1.0)) end)))
   
@@ -667,6 +666,14 @@
   (check-equal? (parse-this "h = function (x) local u u = 1 end u = 2" #f (void))
                 (term (((_ENV  |[| "h" |]|) = (function $1 (x) (local u = nil in (\; (u = 1.0)) end) end))
                        ((_ENV  |[| "u" |]|) = 2.0))))
+  ; scoping
+  (check-equal? (parse-this "h = function (x) end x()" #f (void))
+                (term (((_ENV |[| "h" |]|) = (function $1 (x) |;| end))
+                       ($statFunCall (_ENV |[| "x" |]|) ()))))
+
+  (check-equal? (parse-this "function h (x) end x()" #f (void))
+                (term (((_ENV |[| "h" |]|) = (function $1 (x) |;| end))
+                       ($statFunCall (_ENV |[| "x" |]|) ()))))
   
   
   ;                                  
