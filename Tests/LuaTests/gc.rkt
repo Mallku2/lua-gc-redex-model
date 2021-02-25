@@ -1,45 +1,74 @@
 #lang racket
+(require "./tests_aux.rkt")
 
-(require redex
-         "../../grammar.rkt"
-         "../../executionEnvironment.rkt"
-         "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt"
-         "./tests_aux.rkt")
+; testing garbage collection
+; functions with errors
+(define (test-gc_1)
+  (test-suite "gc_1.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "load"
+                    "pcall"
+                    "print"
+                    "string"
+                    "string.len"
+                    "string.sub"
+                    )))
 
-(define (lua-gc-test-suite)
-  (check-redundancy #t)
-  (caching-enabled? #t)
-  (test-predicate ok? (apply-reduction-relation*
-                       full-progs-rel
-                       (plugIntoExecutionEnvironment
-                        services
-                        ; TODO: let's make the parser fill this list
-                        (list "assert"
-                              "collectgarbage"
-                              "load"
-                              "next"
-                              "pairs"
-                              "pcall"
-                              "print"
-                              "setmetatable"
-                              "type"
-                              "string"
-                              "string.len"
-                              "string.rep"
-                              "string.sub")
-                        (parse-this (file->string "gc.lua") #f (void))))))
+; long strings
+; clearing tables
+(define (test-gc_2)
+  (test-suite "gc_2.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "error"
+                    "next"
+                    "pairs"
+                    "print"
+                    "string"
+                    "string.len"
+                    "tostring"
+                    "type"
+                    )))
 
-(define (lua-gc-partial-test n)
-  (partial_test n "gc"
-                (plugIntoExecutionEnvironment
-                 services
-                 (list "assert"
-                       "collectgarbage"
-                       "next"
-                       "pairs"
-                       "setmetatable"
-                       "type"
-                       "string"
-                       "string.rep")
-                 (parse-this (file->string "gc.lua") #f (void)))))
+; weak tables
+(define (test-gc_3a)
+  (test-suite "gc_3a.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "pairs"
+                    "print"
+                    "setmetatable"
+                    "string"
+                    "string.rep"
+                    )))
+
+(define (test-gc_3b)
+  (test-suite "gc_3b.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "pairs"
+                    "setmetatable"
+                    "string"
+                    "string.rep"
+                    )))
+
+(define (test-gc_3c)
+  (test-suite "gc_3c.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "next"
+                    "pairs"
+                    "setmetatable"
+                    "string"
+                    "string.rep"
+                    )))
+
+(define (test-gc_3d)
+  (test-suite "gc_3d.lua"
+              (list "assert"
+                    "collectgarbage"
+                    "next"
+                    "setmetatable"
+                    "type"
+                    )))

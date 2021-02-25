@@ -57,33 +57,39 @@ collectgarbage()
 
 -- limit = 5000
 
-  ----------------------------------------------------------------
-  -- TODO: internal state of garbage collector not included in model
-  ------------------------------------------ ---------------------
--- local function GC1 ()
---   local u
---   local b     -- must be declared after 'u' (to be above it in the stack)
---   local finish = false
---   u = setmetatable({}, {__gc = function () finish = true end})
---   b = {34}
---   repeat u = {} until finish
---   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
+----------------------------------------------------------------
+-- TODO: internal state of garbage collector not included in model
+------------------------------------------ ---------------------
+local function GC1 ()
+  local u
+  local b     -- must be declared after 'u' (to be above it in the stack)
+  local finish = false
+  u = setmetatable({}, {__gc = function () finish = true end})
+  b = {34}
+  -- WAS: nothing, we add an explicit call to the garbage collector to end the
+  -- loop
+  repeat u = {}; collectgarbage() until finish
+  assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
 
---   finish = false; local i = 1
---   u = setmetatable({}, {__gc = function () finish = true end})
---   repeat i = i + 1; u = i .. i until finish
---   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
+  finish = false; local i = 1
+  u = setmetatable({}, {__gc = function () finish = true end})
+  -- WAS: nothing, we add an explicit call to the garbage collector to end the
+  -- loop
+  repeat i = i + 1; u = i .. i; collectgarbage() until finish
+  assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
 
---   finish = false
---   u = setmetatable({}, {__gc = function () finish = true end})
---   repeat local i; u = function () return i end until finish
---   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
--- end
+  finish = false
+  u = setmetatable({}, {__gc = function () finish = true end})
+  -- WAS: nothing, we add an explicit call to the garbage collector to end the
+  -- loop
+  repeat local i; u = function () return i end; collectgarbage() until finish
+  assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
+end
 
--- local function GC()  GC1(); GC1() end
+local function GC()  GC1(); GC1() end
 
 ------------------------------------------
--- TODO: performance: limit = 5000
+-- TODO: performance: limit = 5000, string.gsub
 ------------------------------------------
 
 -- contCreate = 0
@@ -154,14 +160,12 @@ print('long strings')
 x = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
 assert(string.len(x)==80)
 
-------------------------------------------
--- TODO: performance
-------------------------------------------
--- s = ''
--- n = 0
--- k = 300
--- while n < k do s = s..x; n=n+1; j=tostring(n)  end
--- assert(string.len(s) == k*80)
+
+s = ''
+n = 0
+k = 10 -- WAS: 300, changed for performance reasons
+while n < k do s = s..x; n=n+1; j=tostring(n)  end
+assert(string.len(s) == k*80)
 
 ------------------------------------------
 -- TODO: string.gsub
@@ -324,7 +328,10 @@ a.x = t  -- this should not prevent 't' from being removed from
 
 setmetatable(a, {__gc = function (u)
                           assert(C.key == nil)
-                          assert(type(next(C1)) == 'table')
+                          -- TODO: our mechanization of GC behaves as a 
+                          -- stop-the-world garbage collector: at this point
+                          -- C1's content is already cleaned
+                          --assert(type(next(C1)) == 'table')
                           end})
 
 a, t = nil
@@ -333,41 +340,42 @@ collectgarbage()
 assert(next(C) == nil and next(C1) == nil)
 C, C1 = nil
 
-----------------------------------------------------------------
--- TODO: performance and call to GC
------------------------------------------- ---------------------
----- ephemerons
--- local mt = {__mode = 'k'}
--- a = {10,20,30,40}; setmetatable(a, mt)
--- x = nil
--- for i = 1, 100 do local n = {}; a[n] = {k = {x}}; x = n end
--- GC()
--- local n = x
--- local i = 0
--- while n do n = a[n].k[1]; i = i + 1 end
--- assert(i == 100)
--- x = nil
--- GC()
--- for i = 1, 4 do assert(a[i] == i * 10); a[i] = nil end
--- assert(next(a) == nil)
+-- ephemerons
+local mt = {__mode = 'k'}
+a = {10,20,30,40}; setmetatable(a, mt)
+x = nil
+-- WAS: i = 1, 100, changed for performance reasons
+for i = 1, 10 do local n = {}; a[n] = {k = {x}}; x = n end
+GC()
+local n = x
+local i = 0
+while n do n = a[n].k[1]; i = i + 1 end
+-- WAS: assert(i == 100), changed for performance reasons
+assert(i == 10)
+x = nil
+GC()
+for i = 1, 4 do assert(a[i] == i * 10); a[i] = nil end
+assert(next(a) == nil)
 
--- local K = {}
--- a[K] = {}
--- for i=1,10 do a[K][i] = {}; a[a[K][i]] = setmetatable({}, mt) end
--- x = nil
--- local k = 1
--- for j = 1,100 do
---   local n = {}; local nk = k%10 + 1
---   a[a[K][nk]][n] = {x, k = k}; x = n; k = nk
--- end
--- GC()
--- local n = x
--- local i = 0
--- while n do local t = a[a[K][k]][n]; n = t[1]; k = t.k; i = i + 1 end
--- assert(i == 100)
--- K = nil
--- GC()
--- assert(next(a) == nil)
+local K = {}
+a[K] = {}
+for i=1,10 do a[K][i] = {}; a[a[K][i]] = setmetatable({}, mt) end
+x = nil
+local k = 1
+-- WAS: for j = 1,100, changed for performance reasons
+for j = 1,10 do
+  local n = {}; local nk = k%10 + 1
+  a[a[K][nk]][n] = {x, k = k}; x = n; k = nk
+end
+GC()
+local n = x
+local i = 0
+while n do local t = a[a[K][k]][n]; n = t[1]; k = t.k; i = i + 1 end
+-- WAS: assert(i == 100), changed for performance reasons
+assert(i == 10)
+K = nil
+GC()
+assert(next(a) == nil)
 
 
 -- testing errors during GC

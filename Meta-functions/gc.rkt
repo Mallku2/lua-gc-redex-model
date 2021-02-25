@@ -146,8 +146,8 @@
    (maxPosAux (osp ...) number)]
 
   ; discard fdef
-  [(maxPosAux (osp ... (cid _)) max)
-   (maxPosAux (osp ...) max)]
+  [(maxPosAux (osp ... (cid _)) number)
+   (maxPosAux (osp ...) number)]
   )
 
 (define-metafunction ext-lang

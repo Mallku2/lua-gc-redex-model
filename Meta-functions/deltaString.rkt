@@ -132,8 +132,10 @@
    (where Number_2 ,(floor (term Number_1)))
    (side-condition (not (= (term Number_1) (term Number_2))))]
   
-  [(δstring string.rep String 1 any)
-   String]
+  [(δstring string.rep String Number any)
+   String
+
+   (side-condition (= (term Number) 1))]
 
   ; {v_2 != nil}
   [(δstring string.rep String_1 Number_1 String_2)
@@ -232,7 +234,7 @@
                         (< (term Number_2) 0)))
    ; if j < 0 => it is not referring directly to the length of the substring to
    ; be extracted but, rather, to how much we should substract to the total
-   ; length of the original string: #String + j + 1 (j < 0)
+   ; length of the original string: #String + j + 1
    (where Number_4 ,(add1 (+ (term Number_3)
                              (ceiling (term Number_2)))))]
 
