@@ -24,7 +24,8 @@
 ;                              ;                                         ;          
 ;                              ;                                    ;   ;;          
 ;                              ;                                     ;;;;           
-;                                                                                   
+;
+; definition 3.1 (Reachability for Simple GC)
 ; domain is (e t σ θ) instead of e x σ x θ, to put the whole tuple into the
 ; pattern in side-condition
 (define-metafunction ext-lang
@@ -85,7 +86,8 @@
 ;                                                                                                              
 ;                                                                                                              
 ;                                                                                                              
-; Codifies the logic behind marking an object for finalization
+; definition of setFin, figure 6: codifies the logic behind marking an object
+; for finalization
 ; PRE : {tid_1, tid_2 ∈ dom(θ)}
 (define-metafunction ext-lang
   setFin : tid v θ -> pos
@@ -123,6 +125,8 @@
 
 (provide setFin)
 
+; auxiliary function of setFin: returns the max. priority for finalization among
+; tables marked
 (define-metafunction ext-lang
   maxPos : θ -> number
   
@@ -150,6 +154,7 @@
    (maxPosAux (osp ...) number)]
   )
 
+; determines if a given tid is marked for finalization
 (define-metafunction ext-lang
   marked : tid θ -> any
 
@@ -163,7 +168,7 @@
 
 (provide marked)
 
-; Checks if a given location is reachable from table marked for finalization
+; checks if a given location is reachable from a table marked for finalization
 (define-metafunction ext-lang
   notReachFin : (e σ θ) -> any
   ; domain is (e σ θ) instead of e x σ x θ, to put the whole tuple into the
@@ -186,6 +191,8 @@
 
 (provide notReachFin)
 
+; predicate fin, figure 8: determines if a given tid is in condition to be
+; finalized: not reachable and marked for finalization
 (define-metafunction ext-lang
   fin : tid s σ θ -> any
 
@@ -215,8 +222,10 @@
   [(getPos _ _)
    0])
 
-; compares a given tid finalization pos, with any other table marked for
-; finalization (regardless the value of fin(tid))
+; predicate next_fin, figure 8
+; compares a given tid's finalization pos, with any other table marked for
+; finalization (regardless the value of fin(tid)); returns #t if it's the next
+; table to be finalized
 (define-metafunction ext-lang
   nextFin : (tid s σ θ) -> any
 
@@ -259,7 +268,7 @@
   [(cleanSigmaAux σ θ s ())
    ()]
 
-  ; Hack to maintain stdout in σ
+  ; hack to maintain stdout in σ
   [(cleanSigmaAux σ θ s ((refStdout v) vsp ...))
    ,(append (term ((refStdout v)))
             (term (cleanSigmaAux σ θ s (vsp ...))))]
@@ -277,14 +286,13 @@
    (cleanSigmaAux σ θ s (vsp_2 ...))]
   )
 
-; Stop-the-world gc algorithm that cleans the given θ store and returns the
+; stop-the-world gc algorithm that cleans the given θ store and returns the
 ; next object to be finalized, if any. Garbage is defined in terms of reach
-
 (define-metafunction ext-lang
   cleanTheta : σ θ s -> any
 
   [(cleanTheta σ θ s)
-   (cleanThetaAux σ θ s θ 0 0)]
+   (cleanThetaAux σ θ s θ 0 nil)]
   )
 
 (provide cleanTheta)
@@ -349,6 +357,7 @@
    (cleanThetaAux σ θ s (osp_2 ... ) Number v)]
   )
 
+; garbage collection aware of the finalization
 (define-metafunction ext-lang
   gcFin : s σ θ -> (σ θ e)
 
@@ -452,7 +461,7 @@
 
 (provide wv?)
 
-; members of tid referenced by strong references
+; function SO, figure 10: members of tid referenced by strong references
 (define-metafunction ext-lang
   SO : tid θ -> (any ...)
 
@@ -499,6 +508,8 @@
 
 (provide SO)
 
+; auxiliary function of SO: returns ctes in keys (case weak table with weak
+; values)
 (define-metafunction ext-lang
   cteKeys : (field ...) -> (e ...)
 
@@ -513,25 +524,8 @@
    (cteKeys (field ...))]
   )
 
-(provide cteKeys)
-
-(define-metafunction ext-lang
-  cteValues : (field ...) -> (e ...)
-
-  [(cteValues ())
-   ()]
-  
-  [(cteValues ((\[ _ \] = cte) field ...))
-   ,(append (term (cte))
-            (term (cteValues (field ...))))]
-
-  [(cteValues (_ field ...))
-   (cteValues (field ...))]
-  )
-
-(provide cteValues)
-
-; extracts 
+; auxiliary function of SO: returns ctes in values and keys (case non weak
+; table)
 (define-metafunction ext-lang
   cteFields : (field ...) -> (e ...)
 
@@ -550,13 +544,13 @@
    ,(append (term (cte))
             (term (cteFields (field ...))))]
 
-  ; Default case: no CTEs in field
+  ; default case: no CTEs in field
   [(cteFields (_ field ...))
    (cteFields (field ...))]
   )
 
-(provide cteFields)
-
+; auxiliary function of SO: returns ctes according to the semantics of
+; ephemerons
 (define-metafunction ext-lang
   cteEphemeron : (field ...) -> ((e e) ...)
 
@@ -567,13 +561,16 @@
    ,(append (term ((v cte)))
             (term (cteEphemeron (field ...))))]
 
-  ; Default case: no CTEs in field
+  ; default case: no CTEs in field
   [(cteEphemeron (_ field ...))
    (cteEphemeron (field ...))]
   )
 
 (provide cteEphemeron)
 
+; predicate eph from figure 11: determines if a given objid is reachable from
+; a given (k,v) pair from an ephemeron tid (it only takes into account
+; reachablity from v, provided k is reachable)
 ; PRE : {(v cte) ∈ π_1(θ(tid))}
 (define-metafunction ext-lang
   eph : objid (v cte) tid (side-condition any (is_term? (term any))) σ θ -> any
@@ -630,11 +627,12 @@
    #f]
   )
 
+; auxiliary predicate of reachTable, figure 11
 ; performs iteration over the elements from SO (tid)
 (define-metafunction ext-lang
   reachTableAux : (objid tid σ θ any (any ...)) -> any
 
-  ; Cannot delete table tid: we still need to look for its keys, in case
+  ; cannot delete table tid: we still need to look for its keys, in case
   ; the reachability of some key comes from another value of the same table
   [(reachTableAux (side-condition (objid tid σ θ any 
                                          (any_1 ... (e_1 e_2) any_2 ...))
@@ -642,7 +640,7 @@
    #t
    ]
 
-  ; We can delete the binding of tid
+  ; we can delete the binding of tid
   [(reachTableAux (side-condition (objid tid σ (osp_1 ... (tid _) osp_2 ...)
                                          any
                                          (e_1 ... e e_2 ...))
@@ -658,6 +656,8 @@
    ]
   )
 
+; predicate reachTable, figure 11: determines if a given objid is reachable
+; from a table tid, taking into account the semantics of weak tables
 (define-metafunction ext-lang
   reachTable : objid tid σ θ (side-condition any (is_term? (term any))) -> any
 
@@ -685,38 +685,47 @@
 
 (provide reachTable)
 
+; predicate reachCte, figure 11: determines if a given cte is reachable, from
+; a given term that defines the root set, and taking into account the semantics
+; of weak tables
 (define-metafunction ext-lang
-  reachCte : (objid (side-condition any (is_term? (term any))) σ θ
-                    (side-condition any (is_term? (term any)))) -> any
+  ; domain:
+  ; id of cte x
+  ; term t from which the reachability path must pass x
+  ; original σ x
+  ; original θ x
+  ; term t from which the original root set is computed (needed for predicate
+  ; eph in reachTable)
+  reachCte : (objid t σ θ t) -> any
 
-  ; objid ∈ any
+  ; objid ∈ root set
   [(reachCte (objid (in-hole C objid) _ _ _))
    #t
    ]
 
   ; path through a r ∈ dom(σ)
   [(reachCte (side-condition
-              (objid (in-hole C r) (vsp_1 ... (r v) vsp_2 ...) θ any_2)
-              (term (reachCte (objid v (vsp_1 ... vsp_2 ...) θ any_2)))))
+              (objid (in-hole C r) (vsp_1 ... (r v) vsp_2 ...) θ t)
+              (term (reachCte (objid v (vsp_1 ... vsp_2 ...) θ t)))))
    #t
    ]
 
   ; path through a tid ∈ dom(θ)
   [(reachCte (side-condition
-              (objid (in-hole C tid) σ (osp_1 ... (tid any_2) osp_2 ...) any_3)
+              (objid (in-hole C tid) σ (osp_1 ... (tid any_2) osp_2 ...) t)
               (term (reachTable objid tid σ
                                 (osp_1 ... (tid any_2) osp_2 ...)
-                                any_3))))
+                                t))))
    #t
    ]
 
   ; path through a cid ∈ dom(θ)
   [(reachCte (side-condition
               (objid (in-hole C cid) σ (osp_1 ... (cid functiondef) osp_2 ...)
-                     any_3)
+                     t)
               (term (reachCte (objid functiondef σ
                                      (osp_1 ... osp_2 ...)
-                                     any_3)))))
+                                     t)))))
    #t
    ]
 
@@ -728,6 +737,8 @@
 
 (provide reachCte)
 
+; implements the removal of fields of a given weak table, as specified in
+; figure 12
 ; PRE : {(field ...) belongs to a weak table (condition "weakness")}
 (define-metafunction ext-lang
   cleanWeakTable : σ θ s tid (field ...) -> (field ...)
@@ -754,7 +765,8 @@
    ; {key or value not reachable}
    (field_2 ...)
 
-   ; fin key
+   ; condition fin_key: if v_1 is a table marked for finalization, it should not
+   ; be removed from weak keys before being finalized
    (side-condition (or (not (and (is_tid? (term v_1))
                                  (term (wk? tid θ))))
                        (not (term (marked v_1 θ)))))
@@ -834,25 +846,32 @@
 (define-metafunction ext-lang
   notFinVal : tid θ -> any
 
-  ; ∃ tid_2/ tid_2 is a weak table ∧ tid_1 appears as value of tid_2
+  ; ∃ tid_2/ tid_1 appears as a weak value in tid_2
   [(notFinVal tid_1 (side-condition
                      (osp_1 ...
                       (tid_2 ((\{ efield_1 ... (\[ v_1 \] = tid_1)
                                   efield_2 ... \})
                               v_2 pos))
                       osp_2 ...)
-                     (or (term (wk? tid_2 (osp_1 ...
+                     (term (wv? tid_2 (osp_1 ...
                                            (tid_2 ((\{ efield_1 ...
                                                        (\[ v_1 \] = tid_1)
                                                        efield_2 ... \})
                                                    v_2 pos))
-                                           osp_2 ...)))
-                         (term (wv? tid_2 (osp_1 ...
-                                           (tid_2 ((\{ efield_1 ...
-                                                       (\[ v_1 \] = tid_1)
-                                                       efield_2 ... \})
-                                                   v_2 pos))
-                                           osp_2 ...))))))
+                                           osp_2 ...)))))
+;                     (or (term (wk? tid_2 (osp_1 ...
+;                                           (tid_2 ((\{ efield_1 ...
+;                                                       (\[ v_1 \] = tid_1)
+;                                                       efield_2 ... \})
+;                                                   v_2 pos))
+;                                           osp_2 ...)))
+;                         (term (wv? tid_2 (osp_1 ...
+;                                           (tid_2 ((\{ efield_1 ...
+;                                                       (\[ v_1 \] = tid_1)
+;                                                       efield_2 ... \})
+;                                                   v_2 pos))
+;                                           osp_2 ...))))
+;                     ))
    #f
    ]
 
@@ -863,22 +882,40 @@
   )
 (provide notFinVal)
 
-; Redefinition of finalization, now including semantics of weak tables
-; Stop-the-world gc algorithm that cleans the given θ store and returns the
-; next object to be finalized, if any. Garbage is defined in terms of reach
-; and reachCte
+; redefinition of finalization, now including semantics of weak tables
 
+; stop-the-world gc algorithm that cleans the given θ store and returns the
+; new θ store and the next object to be finalized, if any; garbage is defined
+; in terms of reach and reachCte
 (define-metafunction ext-lang
+  ; domain:
+  ; original σ x
+  ; original θ x
+  ; term s from which the root set is computed
+  
+  ; returns:
+  ; new θ store
+  ; tid of next table to be finalized or nil
   cleanThetaWeak : σ θ s -> any
 
   [(cleanThetaWeak σ θ s)
-   (cleanThetaWeakAux σ θ s θ 0 0)]
+   (cleanThetaWeakAux σ θ s θ 0 nil)]
   )
 
 (provide cleanThetaWeak)
 
 (define-metafunction ext-lang
-  ; σ x θ x s x θ x highest priority found x tid of table marked for fin 
+  ; domain:
+  ; original σ x
+  ; original θ x
+  ; term s from which the root set is computed x
+  ; instance of θ upon which recursion is done x
+  ; highest priority for finalization found so far x
+  ; tid of table marked for finalization or nil
+  
+  ; returns:
+  ; new θ store
+  ; tid of next table to be finalized or nil
   cleanThetaWeakAux : σ θ s θ Number v -> (θ v)
   
   ; base case
@@ -887,65 +924,65 @@
 
   ; objid is reachable
   [(cleanThetaWeakAux σ θ s ((objid any_1) osp_1 ... )
-                      Number v)
-   (((objid any_1) osp_2 ...) any_2)
+                      Number v_1)
+   (((objid any_1) osp_2 ...) v_2)
 
    (side-condition (term (reachCte (objid s σ θ s))))
 
    ; clean the tail of the store
-   (where ((osp_2 ...) any_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number v))]
+   (where ((osp_2 ...) v_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number v_1))]
 
   ; {objid is not reachable}
-  ; check if it is a table, marked for finalization
-  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...)
-                      Number_2 v)
-   
-   (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
-   ; finalizer set, is not the highest priority found so far
-   (side-condition (<= (term Number_1)
-                       (term Number_2)))
 
-   ; clean the tail of the store
-   (where ((osp_2 ...) any_3) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number_2
-                                                 v))]
+  ; check if objid is a table, marked for finalization, with the highest
+  ; priority found so far and if it does not appear as a weak value
+  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v_1)
+   (((tid (any_1 any_2 Number_1)) osp_2 ...) v_2)
 
-  ; {(it is non reachable table tid => tid is not set for finalization ∨ has the
-  ; highest priority found so far) ∨ it's a non-reachable closure}
-  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v)
-   (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
-
-   ; tid is set for finalization: must be the next one
+   ; tid is set for finalization, check if its priority is the highest found so
+   ; far
    (side-condition (> (term Number_1)
                       (term Number_2)))
 
    (side-condition (term (notFinVal tid θ)))
-   ; {tid does not appear as a value from a weak table}
    
-   ; clean the tail of the store
-   (where ((osp_2 ...) any_3) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number_1
-                                                 tid))
-   ]
+   ; {tid does not appear as a value from a weak table} => it can be finalized
 
-  ; {(it is a non reachable table tid => (tid is not set for finalization ∨ has
-  ; the highest priority found so far ∨ appears as a value of a weak table)) ∨
-  ; it's a non-reachable closure}
-  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v)
-   (((tid (any_1 any_2 Number_1)) osp_2 ...) any_3)
+   ; clean the tail of the store; take tid into account for finalization
+   (where ((osp_2 ...) v_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number_1 tid))]
 
-   (side-condition (> (term Number_1)
-                      (term Number_2)))
-   ; {tid is set for finalization and has the highest priority =>
-   ; tid appears as a value from a weak table}: should not be taken into
+  ; {(objid is a non-rechable table ∧
+  ;   (objid is not set for finalization ∨
+  ;    it does not have the highest priority found so far ∨
+  ;    tid appears as a weak value of another table (and, hence, cannot be finalized))
+  ;
+  ;   ∨
+  ;
+  ;   it's a non-reachable closure}
+  
+  ; check if objid is a table, marked for finalization, with the highest
+  ; priority found so far
+  [(cleanThetaWeakAux σ θ s ((tid (any_1 any_2 Number_1)) osp_1 ...) Number_2 v_1)
+   (((tid (any_1 any_2 Number_1)) osp_2 ...) v_2)
+
+   ; {tid is set for finalization  =>
+   ; it does not have the highest priority found so far ∨
+   ; tid appears as a weak value from a weak table}: should not be taken into
    ; account for finalization, nor cleaned
    
    ; clean the tail of the store
-   (where ((osp_2 ...) any_3) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number_2 v))
+   (where ((osp_2 ...) v_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number_2 v_1))
    ]
 
-  ; {(it is a non reachable table tid => tid is not set for finalization ∨
-  ;  it's a non-reachable closure}
-  [(cleanThetaWeakAux σ θ s ((objid any_1) osp_1 ...) Number v)
-   (((objid any_1) osp_2 ...) any_2)
+  ; {(objid is a non-rechable table ∧ objid is not set for finalization)
+  ;
+  ;   ∨
+  ;
+  ;   it's a non-reachable closure}
+
+  ; check if it is reachable from a table marked for finalization
+  [(cleanThetaWeakAux σ θ s ((objid any_1) osp_1 ...) Number v_1)
+   (((objid any_1) osp_2 ...) v_2)
 
    ; if it is reachable from a table marked for finalization, it cannot be
    ; removed
@@ -953,11 +990,15 @@
 
    ; {objid is reachable from a table (or its metatable) marked for
    ; finalization}
-   (where ((osp_2 ...) any_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number v))]
+   (where ((osp_2 ...) v_2) (cleanThetaWeakAux σ θ s (osp_1 ... ) Number v_1))]
 
-  ; {(it is a non reachable table tid => tid is not set for finalization ∨
-  ;  it's a non-reachable closure) ∧ is not reachable from a table marked for
-  ; finalization} : it can be removed
+  ; {((objid is a non-rechable table ∧ objid is not set for finalization)
+  ;   ∨
+  ;   it's a non-reachable closure)
+  ;   ∧
+  ;   it is not reachable from a table marked for finalization}
+  
+  ; osp_1 can be removed
   [(cleanThetaWeakAux σ θ s (osp_1 osp_2 ... ) Number v)
    (cleanThetaWeakAux σ θ s (osp_2 ... ) Number v)]
   )
@@ -992,7 +1033,7 @@
 
    (where σ_2 (cleanSigma σ_1 θ_1 s))
 
-   (where (θ_2 0) (cleanThetaWeak σ_1 θ_1 s))
+   (where (θ_2 nil) (cleanThetaWeak σ_1 θ_1 s))
    ]
 
   ; finalization: setting the table's pos to ⊘ should be done after cleaning
