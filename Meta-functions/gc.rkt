@@ -739,6 +739,14 @@
 
 ; implements the removal of fields of a given weak table, as specified in
 ; figure 12
+
+; PARAMS:
+; original σ store
+; original θ store
+; term s from which the original root set is compued
+; tid of the table being cleaned
+; fields of the table being cleaned
+
 ; PRE : {(field ...) belongs to a weak table (condition "weakness")}
 (define-metafunction ext-lang
   cleanWeakTable : σ θ s tid (field ...) -> (field ...)
@@ -746,6 +754,7 @@
   [(cleanWeakTable σ θ s tid ())
    ()]
 
+  ; field not cleaned
   [(cleanWeakTable σ θ s tid ((\[ v_1 \] = v_2) field_1 ...))
    ((\[ v_1 \] = v_2) field_2 ...)
 
@@ -760,16 +769,15 @@
    (where (field_2 ...) (cleanWeakTable σ θ s tid (field_1 ...)))
    ]
 
-  ; {key or value not reachable}
+  ; {field element not reachable or cte}
   [(cleanWeakTable σ θ s tid ((\[ v_1 \] = v_2) field_1 ...))
-   ; {key or value not reachable}
    (field_2 ...)
 
    ; condition fin_key: if v_1 is a table marked for finalization, it should not
    ; be removed from weak keys before being finalized
-   (side-condition (or (not (and (is_tid? (term v_1))
-                                 (term (wk? tid θ))))
-                       (not (term (marked v_1 θ)))))
+   (side-condition (or (not (and (term (wk? tid θ))
+                                 (is_tid? (term v_1))))
+                        (term (notResWeakKey (v_1 σ θ s)))))
    
    (where (field_2 ...) (cleanWeakTable σ θ s tid (field_1 ...)))
    ]
@@ -840,9 +848,9 @@
 
 (provide finWeak)
 
-; predicate that ensures that a table is not finalized if it appears as value
-; of a weak table (such values are removed from weak tables before running their
-; finalizers)
+; predicate used to ensure that a table is not finalized if it appears as a weak
+; value of a weak table: such values are removed from weak tables before running
+; their finalizers
 (define-metafunction ext-lang
   notFinVal : tid θ -> any
 
@@ -859,28 +867,53 @@
                                                        efield_2 ... \})
                                                    v_2 pos))
                                            osp_2 ...)))))
-;                     (or (term (wk? tid_2 (osp_1 ...
-;                                           (tid_2 ((\{ efield_1 ...
-;                                                       (\[ v_1 \] = tid_1)
-;                                                       efield_2 ... \})
-;                                                   v_2 pos))
-;                                           osp_2 ...)))
-;                         (term (wv? tid_2 (osp_1 ...
-;                                           (tid_2 ((\{ efield_1 ...
-;                                                       (\[ v_1 \] = tid_1)
-;                                                       efield_2 ... \})
-;                                                   v_2 pos))
-;                                           osp_2 ...))))
-;                     ))
-   #f
-   ]
+   #f]
 
   ; default
   [(notFinVal _ _)
-   #t
-   ]
+   #t]
   )
+
+; to test notFinVal in another module
 (provide notFinVal)
+
+
+; predicate used to ensure that a resurrected weak key is not cleaned before running
+; its finalizer: such keys are removed from weak tables only after running their
+; finalizers
+(define-metafunction ext-lang
+  ; domain:
+  ; tid for which we want to determine notCleanWeakKey x
+  ; original σ store x
+  ; original θ store x
+  ; term t from which the original root set of references is computed
+  notResWeakKey : (tid σ θ t) -> any
+
+  ; ∃ tid_2 / tid_2 is marked for finalization and tid_1 is reachable from tid_2
+  [(notResWeakKey (side-condition
+                     (tid_1
+                      σ
+                      (osp_1 ...
+                      ; tid_2 has a number in pos: it is marked for finalization
+                      (tid_2 (evaluatedtable v number))
+                      osp_2 ...)
+                      t)
+                     ; this also contemplates the case were tid_1 = tid_2
+                     (term (reachCte (tid_1
+                                      tid_2
+                                      σ
+                                      (osp_1 ...
+                                       (tid_2 (evaluatedtable v number))
+                                       osp_2 ...) t)))))
+   #f]
+
+  ; default
+  [(notResWeakKey _)
+   #t]
+  )
+
+; to test notResWeakKey in another module
+(provide notResWeakKey)
 
 ; redefinition of finalization, now including semantics of weak tables
 
