@@ -30,6 +30,9 @@
                     "select"
                     )))
 
+; hexadecimal numerals
+; floating hexas
+; order operators
 (define (test-math_3)
   (test-suite "math_3.lua"
               (list "assert"
@@ -39,15 +42,16 @@
                     "math.abs"
                     )))
 
-(define (math-all)
-  (services-from "math"))
-
+; mod operator
+; trigonometric functions
+; constant limits
 (define (test-math_4)
   (test-suite "math_4.lua"
               (append (list "assert"
                     "print"
                     "tonumber") (math-all))))
 
+; implicit convertions
 (define (test-math_5)
   (test-suite "math_5.lua"
               (list "assert"
@@ -56,5 +60,9 @@
                     "math"
                     "math.huge"
                     "pcall")))
+
+
+(define (math-all)
+  (services-from "math"))
 
 (provide test-math_1 test-math_2 test-math_3 test-math_4 test-math_5)

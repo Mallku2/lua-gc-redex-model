@@ -6,7 +6,7 @@ define test-file-parts
 	echo '(require "$(1).rkt") $(2)' | racket -i
 endef
 
-all: calls closure constructs errors events locals math nextvar sort strings vararg
+all: calls closure constructs errors events gc locals math nextvar sort strings vararg
 
 calls:
 	$(call test-file-parts,calls,(test-calls_1a)(test-calls_1b)(test-calls_1c)(test-calls_2a)(test-calls_2b)(test-calls_3a)(test-calls_3b)(test-calls_3c)(test-calls_4)(test-calls_5)(test-calls_6))
@@ -22,6 +22,9 @@ errors:
 
 events:
 	$(call test-file-parts,events,(test-events_1)(test-events_2)(test-events_3a)(test-events_3b)(test-events_3c)(test-events_4))
+
+gc:
+        $(call test-file-parts,events,(test-gc_1)(test-gc_2)(test-gc_3a)(test-gc_3b)(test-gc_3c)(test-gc_3d))
 
 locals:
 	$(call test-file-parts,locals,(test-locals_1)(test-locals_2))
