@@ -327,9 +327,12 @@
    
    (simp-hex-number-lit
       (token-NUMBER (real->double-flonum
-                     ; translate to Racket's hexadecimal numbers' notation
-                     (string->number (string-replace lexeme
-                                                     (regexp "0x|0X") "#x")))))
+                     ; translate to Racket's hexadecimal numbers' notation,
+                     ; remove + sign
+                     (string->number (string-replace
+                                      (string-replace lexeme
+                                                     (regexp "0x|0X") "#x")
+                                      (regexp "\\+") "")))))
 
    (neg-simp-hex-number-lit
       (token-NUMBER 
@@ -340,7 +343,7 @@
              (string->number (string-replace
                               (string-replace lexeme
                                               (regexp "0x|0X") "#x")
-                              (regexp "-") ""))))))
+                              (regexp "\\-") ""))))))
    
    ; hex. with binary exp.
    (hex-number-bin-exp-lit
@@ -349,8 +352,12 @@
                                
                      (exact->inexact
                       (fl* (real->double-flonum
-                            (string->number (string-replace (list-ref hex-split 0)
-                                                            (regexp "0x|0X") "#x")))
+                            (string->number
+                             (string-replace
+                              (string-replace (list-ref hex-split 0)
+                                              (regexp "0x|0X") "#x")
+                              (regexp "\\+") "")))
+                           
                          (flexpt 2.0
                                  (real->double-flonum
                                   (string->number (list-ref hex-split 1))))))))))
@@ -368,7 +375,7 @@
                             (string->number (string-replace
                                              (string-replace (list-ref hex-split 0)
                                                              (regexp "0x|0X") "#x")
-                                             (regexp "-") "")))
+                                             (regexp "\\-") "")))
                            
                          (flexpt 2.0
                                  (real->double-flonum
