@@ -2,7 +2,8 @@
 
 (require redex
          (only-in parser-tools/lex lexer define-lex-abbrevs input-port
-                  whitespace define-tokens define-empty-tokens lexeme)
+                  whitespace define-tokens define-empty-tokens lexeme
+                  token-value)
          parser-tools/yacc
          (prefix-in re- parser-tools/lex-sre)
          math/flonum ; operations over flonums
@@ -183,7 +184,7 @@
   ; negative number
   [(convert_string String_1 Number_1)
    ; Number_3 is guarantee to be a flonum
-   ,(fl* (term Number_3) -1)
+   ,(fl* (term Number_3) -1.0)
 
    ; it is a negative number
    (side-condition (equal? "-"
@@ -199,13 +200,29 @@
    ; reconstruct number in decimal form, according to base Number_1
    (where Number_3 (reconstruct_number (Number_2 ...) Number_1))]
 
+  ; not negative number, beginning with +
+  [(convert_string String_1 Number_1)
+   ; Number_3 is guarantee to be a flonum
+   Number_3
+
+   ; it is a negative number
+   (side-condition (equal? "+"
+                           ; {length String_1 >= 1}
+                           ; no need for exception catch
+                           (substring (term String_1) 0 1)))
+   ; get remaining characters
+   (where String_2 ,(substring (term String_1) 1
+                               (string-length (term String_1))))
+   ; transform String into a list of decimal numbers, according to
+   ; base Number_1
+   (where (Number_2 ...) (string_to_digits String_2 Number_1))
+   ; reconstruct number in decimal form, according to base Number_1
+   (where Number_3 (reconstruct_number (Number_2 ...) Number_1))]
+  
   ; not negative number
   [(convert_string String Number_1)
    Number_3
 
-   ; it is a negative number
-   (side-condition (not (equal? "-"
-                                (substring (term String) 0 1))))
    ; transform String into a list of decimal numbers, according to
    ; base Number_1
    (where (Number_2 ...) (string_to_digits String Number_1))
@@ -231,42 +248,66 @@
   (hex-digits (re-or (char-range "0" "9")
                      (char-range "A" "F")
                      (char-range "a" "f")))
-  
-  ; Decimal number, with optional fractional part
+
+  (sign (re-? (re-or "+" "-")))
+  ; decimal number, with optional fractional part
   (simp-number-lit (re-or
                     ; either no digit before . but at least one digit after
-                    (concatenation (re-* digits)
+                    (concatenation sign
+                                   (re-* digits)
                                    (re-? ".")
                                    (re-+ digits))
 
                     ; either no digit after . but at least one digit before
-                    (concatenation (re-+ digits)
+                    (concatenation sign
+                                   (re-+ digits)
                                    (re-? ".")
                                    (re-* digits))))
   
-  ; Hexadecimal number, with optional fractional part
-  (simp-hex-number-lit (re-or (concatenation (re-or "0x" "0X")
-                                             (re-* hex-digits)
+  ; hexadecimal number, with optional fractional part
+  (simp-hex-number-lit (re-or (concatenation (re-? "+")
+                                             (re-or "0x" "0X")
+                                             (re-+ hex-digits)
                                              (re-? ".")
                                              (re-* hex-digits))
-                              (concatenation (re-or "0x" "0X")
+                              (concatenation (re-? "+")
+                                             (re-or "0x" "0X")
                                              (re-* hex-digits)
                                              (re-? ".")
-                                             (re-* hex-digits))))
+                                             (re-+ hex-digits))))
+  ; negative hexadecimal number, with optional fractional part, specified
+  ; here to be able to give special treament to this case in the lexe
+  (neg-simp-hex-number-lit (re-or (concatenation "-"
+                                             (re-or "0x" "0X")
+                                             (re-+ hex-digits)
+                                             (re-? ".")
+                                             (re-* hex-digits))
+                              (concatenation "-"
+                                             (re-or "0x" "0X")
+                                             (re-* hex-digits)
+                                             (re-? ".")
+                                             (re-+ hex-digits))))
   
-  ; Decimal number, with optional fractional part and decimal exponent
+  ; decimal number, with optional fractional part and decimal exponent
   (scient-number-lit (concatenation simp-number-lit
                                     (re-or "e" "E")
                                     (re-or (concatenation (re-or "-" "+")
                                                           (re-+ digits))
                                            (re-+ digits))))
   
-  ; Hexadecimal number, with optional fractional part and binary exponent
+  ; hexadecimal number, with optional fractional part and binary exponent
   (hex-number-bin-exp-lit (concatenation simp-hex-number-lit
                                          (re-or "p" "P")
                                          (re-or (concatenation (re-or "-" "+")
                                                                (re-+ digits))
                                                 (re-+ digits))))
+
+  (neg-hex-number-bin-exp-lit (concatenation neg-simp-hex-number-lit
+                                             (re-or "p" "P")
+                                             (re-or (concatenation (re-or "-"
+                                                                          "+")
+                                                                   (re-+ digits))
+                                                    (re-+ digits))))
   
   (number-lit (re-or simp-number-lit
                      scient-number-lit))
@@ -285,10 +326,21 @@
    
    
    (simp-hex-number-lit
-    (token-NUMBER (real->double-flonum
-                   ; Translate to Racket's hexadecimal numbers' notation
-                   (string->number (string-replace lexeme
-                                                   (regexp "0x|0X") "#x")))))
+      (token-NUMBER (real->double-flonum
+                     ; translate to Racket's hexadecimal numbers' notation
+                     (string->number (string-replace lexeme
+                                                     (regexp "0x|0X") "#x")))))
+
+   (neg-simp-hex-number-lit
+      (token-NUMBER 
+       (fl* -1.0
+            (real->double-flonum
+             ; translate to Racket's hexadecimal numbers' notation, and
+             ; remove the leading - (not allowed in racket)
+             (string->number (string-replace
+                              (string-replace lexeme
+                                              (regexp "0x|0X") "#x")
+                              (regexp "-") ""))))))
    
    ; hex. with binary exp.
    (hex-number-bin-exp-lit
@@ -301,12 +353,28 @@
                                                             (regexp "0x|0X") "#x")))
                          (flexpt 2.0
                                  (real->double-flonum
-                                  (string->number (list-ref hex-split 1))))))))
-    ))
+                                  (string->number (list-ref hex-split 1))))))))))
 
-   ("-" (token--))
-   ("+" (token-+))
-   
+  (neg-hex-number-bin-exp-lit
+    (token-NUMBER ((lambda ()
+                     (define hex-split (string-split lexeme (regexp "p|P")))
+                               
+                     (exact->inexact
+                      (fl* -1.0
+
+                           (real->double-flonum
+                            ; convert into racket's hexadecimal notation, remove
+                            ; leading sign
+                            (string->number (string-replace
+                                             (string-replace (list-ref hex-split 0)
+                                                             (regexp "0x|0X") "#x")
+                                             (regexp "-") "")))
+                           
+                         (flexpt 2.0
+                                 (real->double-flonum
+                                  (string->number (list-ref hex-split 1))))))))))
+    
+
    ; skip whitespaces
    (whitespace (number-lexer input-port))
    
@@ -332,48 +400,44 @@
    (tokens empty-tokens
            non-empty-tokens)
    
-   ; Lua's grammar
-   ; TODO:
-   ; 1 shift/reduce conflict: -> prefixexp . ( (yacc shifts, which is OK)
-   ; 2 reduce/reduce conflicts: both, because of fcalls as stat or exp (we put
-   ; rules of fcall as exp first, so yacc favours fcalls as exps over stats)
    (grammar
     
-    (e ((NUMBER) $1)
-       ((- e) (fl- $2))
-       ((+ e) $2))
-    )
+    (e ((NUMBER) $1)))
    
    ))
 
 (provide number-parser)
 
 (define (number-lex-this lexer input) (lambda () (lexer input)))
+
 (define (number-parse-this input)
   (number-parser (number-lex-this number-lexer (open-input-string input))))
 
 (provide number-parse-this)
 
-; simple lexer to clean strings for conversion purposes
+; abbrevs for ext-number-lexer
 (define-lex-abbrevs
+  ; from ref. manual:
+  ; the base may be any integer between 2 and 36, inclusive
+  ; in bases above 10, the letter 'A' (in either upper or lower case)
+  ; represents 10, 'B' represents 11, and so forth, with 'Z' representing 35
   (ext-digits (re-or (char-range "0" "9")
                  (char-range "A" "Z")
                  (char-range "a" "z")))
   
-  ; Decimal number, with optional fractional part
+  ; decimal number, with optional fractional part
   (ext-number (concatenation (re-? (re-or "-" "+"))
                              (re-+ ext-digits))))
   
-
-; Lexer for Lua
+; simple lexer to clean strings for conversion purposes
 (define ext-number-lexer
-  (lexer ; literals
-   ; exact->inexact, to use IEEE floating-point representation of a number,
-   ; same as Lua
+  (lexer
+   ; we just return the token
    (ext-number (token-STRING lexeme))
    
    ; skip whitespaces
    (whitespace (ext-number-lexer input-port))
+   ;("\t" (ext-number-lexer input-port))
    
    ((eof) (token-EOF))))
 
@@ -397,23 +461,22 @@
    (tokens empty-tokens
            non-empty-tokens)
    
-   ; Lua's grammar
-   ; TODO:
-   ; 1 shift/reduce conflict: -> prefixexp . ( (yacc shifts, which is OK)
-   ; 2 reduce/reduce conflicts: both, because of fcalls as stat or exp (we put
-   ; rules of fcall as exp first, so yacc favours fcalls as exps over stats)
    (grammar
     
-    (e ((STRING) $1))
-
-    )
+    (e ((STRING) $1)))
    
    ))
 
 (provide ext-number-parser)
 
 (define (ext-number-lex-this lexer input) (lambda () (lexer input)))
-(define (ext-number-parse-this input)
-  (ext-number-parser (ext-number-lex-this ext-number-lexer (open-input-string input))))
+(define (ext-number-parse-this input base)
+  (term
+   ; first, we use the previous parser to verify that we received just a string
+   ; with ext-digits and, possible, whitespaces, then we use convert_string over
+   ; the resulting string
+   (convert_string ,(ext-number-parser (ext-number-lex-this ext-number-lexer (open-input-string input)))
+                   ,base))
+  )
 
 (provide ext-number-parse-this)

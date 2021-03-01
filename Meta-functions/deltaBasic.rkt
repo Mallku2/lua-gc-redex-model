@@ -10,11 +10,11 @@
          "../Desugar/phrases_constructors.rkt")
 
 
-; We define the semantics of the binary and unary operators of our language
-; in terms of operations of PLT Racket. The "," symbol is treated as an escape
-; to PLT Racket code. So, in general, the semantics of an expression
-; (◇ op_1 op_2) is defined as the PLT Racket code (◇ (term op_1) (term op_2))
-; when ◇ is also an operator of PLT Racket.
+; we define the semantics of the binary and unary operators of our language
+; in terms of operations of PLT Racket
+; the "," symbol is treated as an escape to PLT Racket code, so, in general,
+; the semantics of an expression (◇ op_1 op_2) is defined as the PLT Racket
+; code (◇ (term op_1) (term op_2)), when ◇ is also an operator of PLT Racket.
 (define-metafunction ext-lang
   ; arithmetic operations
   ; coercion
@@ -69,7 +69,7 @@
    (where Number_4 ,(real->double-flonum (term Number_2)))]
   
   [(δbasic % Number_1 Number_2)
-   ;from ref. manual: "it is the remainder of a division that rounds the
+   ; from ref. manual: "it is the remainder of a division that rounds the
    ; quotient towards minus infinity": a - math.floor(a/b)*b
    (δbasic - Number_3
            (δbasic *
@@ -1254,54 +1254,13 @@
   [(δbasic tonumber String nil)
    v
    
-   ; though the manual does not specify this, in this case tonumber
-   ; converts String following the rules of the lexer, as said by the semantics;
-   ; however, lexer alone will not suffice: for example, in case of malformed
-   ; strings beginning with a correct string representation of numbers.
-   (where v ,(with-handlers ([exn:fail?
-                                           (λ (e) nil)])
+   ; in this case tonumber converts String following the rules of the lexer,
+   ; as said by the semantics; however, lexer alone will not suffice: for example,
+   ; in cases of malformed strings beginning with a correct string representation
+   ; of number we need to resort to parsing
+   (where v ,(with-handlers ([exn:fail? (λ (e) (term nil))])
                             ((λ ()
-                               ; to use the parser, we need to feed it with an
-                               ; statement...
-                               ; NOTE: we append String directly. Then, the
-                               ; conversion to a number is done by the lexer/parser.
                                (number-parse-this (term String))))))]
-
-;  [(δbasic tonumber String nil)
-;   Number
-;   
-;   ; though the manual does not specify this, in this case tonumber
-;   ; converts String following the rules of the lexer, as said by the semantics;
-;   ; however, lexer alone will not suffice: for example, in case of malformed
-;   ; strings beginning with a correct string representation of numbers.
-;   (where (any = (0.0 + Number)) ,(with-handlers ([exn:fail?
-;                                           (λ (e) #f)])
-;                            ((λ ()
-;                               ; to use the parser, we need to feed it with an
-;                               ; statement...
-;                               ; NOTE: we append String directly. Then, the
-;                               ; conversion to a number is done by the lexer/parser.
-;                               (parse-this (string-append "_ENV = 0" (term String))
-;                                           #f
-;                                           (void))))))]
-
-;  [(δbasic tonumber String nil)
-;   (δbasic - Number)
-;   
-;   ; though the manual does not specify this, in this case tonumber
-;   ; converts String following the rules of the lexer, as said by the semantics;
-;   ; however, lexer alone will not suffice: for example, in case of malformed
-;   ; strings beginning with a correct string representation of numbers.
-;   (where (any = (- Number)) ,(with-handlers ([exn:fail?
-;                                           (λ (e) #f)])
-;                            ((λ ()
-;                               ; to use the parser, we need to feed it with an
-;                               ; statement...
-;                               ; NOTE: we append String directly. Then, the
-;                               ; conversion to a number is done by the lexer/parser.
-;                               (parse-this (string-append "_ENV = " (term String))
-;                                           #f
-;                                           (void))))))]
 
   ; {v ∉ String}
   [(δbasic tonumber v nil)
@@ -1317,7 +1276,12 @@
   ; when called with a base (Number), then the first argument should be a string
   ; to be interpreted as an integer numeral in that base
   [(δbasic tonumber String Number)
-   (convert_string String Number)]
+   v
+
+   (where v ,(with-handlers ([exn:fail? (λ (e) (term nil))])
+                            ((λ ()
+                               (ext-number-parse-this (term String)
+                                                      (term Number))))))]
   
   ;                                                                  
   ;                                             ;                    
@@ -1488,6 +1452,7 @@
   [(δbasic builtinserv v ...)
    (δbasic error any)
 
+   (side-condition (println (term (v ...))))
    (where any ,(string-append "erroneous actual parameters to "
                               (symbol->string (term builtinserv))))]
   

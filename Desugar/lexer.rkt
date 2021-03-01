@@ -389,6 +389,9 @@
   ; Unescape backslashs from \r
   (set! aux (string-replace aux "\\r" "\r"))
   (set! aux (string-replace aux "\\\r" "\r"))
+  ; Unescape backslashs from \t
+  (set! aux (string-replace aux "\\t" "\t"))
+  (set! aux (string-replace aux "\\\t" "\t"))
     
   (if (equal? aux string)
       string ; Nothing left to be cleaned
