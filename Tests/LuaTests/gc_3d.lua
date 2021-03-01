@@ -28,10 +28,7 @@ a.x = t  -- this should not prevent 't' from being removed from
 
 setmetatable(a, {__gc = function (u)
                           assert(C.key == nil)
-                          -- TODO: our mechanization of GC behaves as a 
-                          -- stop-the-world garbage collector: at this point
-                          -- C1's content is already cleaned
-                          --assert(type(next(C1)) == 'table')
+                          assert(type(next(C1)) == 'table')
                           end})
 
 a, t = nil
