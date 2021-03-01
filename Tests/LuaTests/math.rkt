@@ -5,6 +5,8 @@
          "../../Desugar/parser.rkt"
          "./tests_aux.rkt")
 
+; basic float notation
+; numeric strings
 (define (test-math_1)
   (test-suite "math_1.lua"
               (list "assert"
@@ -14,6 +16,10 @@
                     "math.modf"
                     "math.huge")))
 
+; tonumber
+; 'tonumber' with base
+; 'tonumber' fo invalid formats
+; 'tonumber' for invalid hexadecimal formats
 (define (test-math_2)
   (test-suite "math_2.lua"
               (list "assert"
