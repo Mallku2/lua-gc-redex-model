@@ -1,70 +1,72 @@
 #lang racket
-(require redex
-         "../../executionEnvironment.rkt"
-         "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt"
-         "./tests_aux.rkt")
+(require "./tests_aux.rkt")
 
+; tables, next, and for
+; ipairs
 (define (test-nextvar_1)
   (test-suite "nextvar_1.lua"
-              (list "print"
-                    "assert"
+              (list "assert"
                     "ipairs"
+                    "print"
                     "type"
                     )))
 
+; size operation on empty tables
+; next uses always the same iteraction function
 (define (test-nextvar_2)
   (test-suite "nextvar_2.lua"
               (list "_G"
-                    "print"
-                    "next"
                     "assert"
-                    "pairs"
                     "math"
                     "math.fmod"
+                    "next"
+                    "pairs"
+                    "print"
                     )))
 
+; next
 (define (test-nextvar_3)
   (test-suite "nextvar_3.lua"
-              (list "_G"
-                    "print"
+              (list "assert"
                     "next"
-                    "assert"
                     "pairs"
                     )))
 
+; pairs
+; erasing values in tables during iteration
+; table.insert
 (define (test-nextvar_4)
   (test-suite "nextvar_4.lua"
-              (list "_G"
-                    "print"
-                    "next"
-                    "assert"
-                    "pairs"
+              (list "assert"
+                    "collectgarbage"
                     "math"
                     "math.max"
                     "math.pi"
+                    "pairs"
+                    "pcall"
+                    "print"
                     "string"
                     "string.rep"
-                    "collectgarbage"
-                    "table"
-                    "pcall"
-                    "type"
                     "table"
                     "table.insert"
+                    "type"
                     )))
 
+; next
+; testing precision in numeric for
 (define (test-nextvar_5)
   (test-suite "nextvar_5.lua"
-              (list "next"
-                    "assert"
+              (list "assert"
                     "error"
+                    "collectgarbage"
+                    "next"
                     "pairs"
                     "print"
-                    "collectgarbage"
                     "table"
                     "table.unpack"
                     )))
 
+; __pairs and __ipairs metamethod
 (define (test-nextvar_6)
   (test-suite "nextvar_6.lua"
               (list "assert"
