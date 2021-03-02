@@ -147,170 +147,180 @@
                         end)
                     end)
                   end) \)) ())]
-;                                  
-;                           ;      
-;                           ;      
-;                           ;      
-;                           ;      
-;   ;;;;;     ;;;     ;;;   ;   ;  
-;   ;;  ;;   ;   ;   ;   ;  ;  ;   
-;   ;    ;       ;  ;       ; ;    
-;   ;    ;   ;;;;;  ;       ;;;    
-;   ;    ;  ;    ;  ;       ;  ;   
-;   ;;  ;;  ;   ;;   ;   ;  ;   ;  
-;   ;;;;;    ;;; ;    ;;;   ;    ; 
-;   ;                              
-;   ;                              
-;   ;                              
+  ;                                  
+  ;                           ;      
+  ;                           ;      
+  ;                           ;      
+  ;                           ;      
+  ;   ;;;;;     ;;;     ;;;   ;   ;  
+  ;   ;;  ;;   ;   ;   ;   ;  ;  ;   
+  ;   ;    ;       ;  ;       ; ;    
+  ;   ;    ;   ;;;;;  ;       ;;;    
+  ;   ;    ;  ;    ;  ;       ;  ;   
+  ;   ;;  ;;  ;   ;;   ;   ;  ;   ;  
+  ;   ;;;;;    ;;; ;    ;;;   ;    ; 
+  ;   ;                              
+  ;   ;                              
+  ;   ;                              
   
   
-[(δtable table.pack v ...)
- any_3
+  [(δtable table.pack v ...)
+   any_3
    
- (where Number ,(length (term (v ...))))
+   (where Number ,(length (term (v ...))))
    
- ; take the list of keys (naturals starting from 1),
- ; the list of values received, and construct
- ; table fields taking 2 elements, one from each list.
- (where any ,(map (λ (number value)
-                    (append (term (\[ ))
-                            (list number)
-                            (term (\] = ))
-                            (list value)))
-                  ; build the list of keys
-                  (build-list (term Number) (λ (nmbr) (+ nmbr 1)))
-                  ; and pass the values
-                  (term (v ...))))
+   ; take the list of keys (naturals starting from 1),
+   ; the list of values received, and construct
+   ; table fields taking 2 elements, one from each list.
+   (where any ,(map (λ (number value)
+                      (append (term (\[ ))
+                              (list number)
+                              (term (\] = ))
+                              (list value)))
+                    ; build the list of keys
+                    (build-list (term Number) (λ (nmbr) (+ nmbr 1)))
+                    ; and pass the values
+                    (term (v ...))))
    
- ; filter nil-valued fields
- (where ((\[ v_1 \] = v_2) ...) ,(filter (λ (field)
-                                           (not (redex-match? ext-lang
-                                                              (\[ v \] = nil)
-                                                              field)))
-                                         (term any)))
+   ; filter nil-valued fields
+   (where ((\[ v_1 \] = v_2) ...) ,(filter (λ (field)
+                                             (not (redex-match? ext-lang
+                                                                (\[ v \] = nil)
+                                                                field)))
+                                           (term any)))
    
- ; add the parenthesis and the field "n"
- ; NOTE: it seems that the implementation counts even the nil-valued
- ; fields.
- (where any_3 (\{ (\[ v_1 \] = v_2) ... (\[ "n" \] = Number) \}))]
+   ; add the parenthesis and the field "n"
+   ; NOTE: it seems that the implementation counts even the nil-valued
+   ; fields.
+   (where any_3 (\{ (\[ v_1 \] = v_2) ... (\[ "n" \] = Number) \}))]
   
   
-;                                                  
-;                                           ;      
-;                                           ;      
-;                                           ;      
-;                                           ;      
-;   ;    ;  ; ;;;   ;;;;;     ;;;     ;;;   ;   ;  
-;   ;    ;  ;;   ;  ;;  ;;   ;   ;   ;   ;  ;  ;   
-;   ;    ;  ;    ;  ;    ;       ;  ;       ; ;    
-;   ;    ;  ;    ;  ;    ;   ;;;;;  ;       ;;;    
-;   ;    ;  ;    ;  ;    ;  ;    ;  ;       ;  ;   
-;   ;   ;;  ;    ;  ;;  ;;  ;   ;;   ;   ;  ;   ;  
-;    ;;; ;  ;    ;  ;;;;;    ;;; ;    ;;;   ;    ; 
-;                   ;                              
-;                   ;                              
-;                   ;
-[(δtable table.unpack tid v_1 v_2 v_3 v_4 ... θ)
- (δtable table.unpack tid v_1 v_2 θ)]
+  ;                                                  
+  ;                                           ;      
+  ;                                           ;      
+  ;                                           ;      
+  ;                                           ;      
+  ;   ;    ;  ; ;;;   ;;;;;     ;;;     ;;;   ;   ;  
+  ;   ;    ;  ;;   ;  ;;  ;;   ;   ;   ;   ;  ;  ;   
+  ;   ;    ;  ;    ;  ;    ;       ;  ;       ; ;    
+  ;   ;    ;  ;    ;  ;    ;   ;;;;;  ;       ;;;    
+  ;   ;    ;  ;    ;  ;    ;  ;    ;  ;       ;  ;   
+  ;   ;   ;;  ;    ;  ;;  ;;  ;   ;;   ;   ;  ;   ;  
+  ;    ;;; ;  ;    ;  ;;;;;    ;;; ;    ;;;   ;    ; 
+  ;                   ;                              
+  ;                   ;                              
+  ;                   ;
+  [(δtable table.unpack tid v_1 v_2 v_3 v_4 ... θ)
+   (δtable table.unpack tid v_1 v_2 θ)]
   
-; default values
-[(δtable table.unpack tid (osp_1 ...
-                           (tid (evaluatedtable any ...))
-                           osp_2 ...))
- (δtable table.unpack tid 1 (δbasic \# evaluatedtable)
-         (osp_1 ...
-          (tid (evaluatedtable any ...))
-          osp_2 ...))]
-
-[(δtable table.unpack tid v (osp_1 ...
+  ; default values
+  [(δtable table.unpack tid (osp_1 ...
                              (tid (evaluatedtable any ...))
                              osp_2 ...))
- (δtable table.unpack tid v (δbasic \# evaluatedtable)
-         (osp_1 ...
-          (tid (evaluatedtable any ...))
-          osp_2 ...))]
+   (δtable table.unpack tid 1 (δbasic \# evaluatedtable)
+           (osp_1 ...
+            (tid (evaluatedtable any ...))
+            osp_2 ...))]
 
-; last check
-[(δtable table.unpack tid v_1 v_2 (osp_1 ...
-                                   (tid (evaluatedtable any ...))
-                                   osp_2 ...))
- (δtable table.unpack tid Number_1 Number_2 (osp_1 ...
-                                             (tid (evaluatedtable any ...))
-                                             osp_2 ...))
+  [(δtable table.unpack tid v (osp_1 ...
+                               (tid (evaluatedtable any ...))
+                               osp_2 ...))
+   (δtable table.unpack tid v (δbasic \# evaluatedtable)
+           (osp_1 ...
+            (tid (evaluatedtable any ...))
+            osp_2 ...))]
 
- (side-condition (or (is_nil? (term v_1))
-                     (is_nil? (term v_2))))
+  ; last check
+  [(δtable table.unpack tid v_1 v_2 (osp_1 ...
+                                     (tid (evaluatedtable any ...))
+                                     osp_2 ...))
+   (δtable table.unpack tid Number_1 Number_2 (osp_1 ...
+                                               (tid (evaluatedtable any ...))
+                                               osp_2 ...))
 
- (where Number_1 ,(if (is_nil? (term v_1))
-                      1
-                      (term v_1)))
+   (side-condition (or (is_nil? (term v_1))
+                       (is_nil? (term v_2))))
+
+   (where Number_1 ,(if (is_nil? (term v_1))
+                        1
+                        (term v_1)))
    
- (where Number_2 ,(if (is_nil? (term v_2))
-                      (term (δbasic \# evaluatedtable))
-                      (term v_2)))]
+   (where Number_2 ,(if (is_nil? (term v_2))
+                        (term (δbasic \# evaluatedtable))
+                        (term v_2)))]
 
-; coercion
-[(δtable table.unpack tid_1 String v θ)
- (δtable table.unpack tid_1 Number v θ)
+  ; coercion
+  [(δtable table.unpack tid_1 String v θ)
+   (δtable table.unpack tid_1 Number v θ)
 
- (where Number (δbasic tonumber String ()))]
+   (where Number (δbasic tonumber String ()))]
 
-[(δtable table.unpack tid_1 Number_1 String θ)
- (δtable table.unpack tid_1 Number_1 Number_2 θ)
+  [(δtable table.unpack tid_1 Number_1 String θ)
+   (δtable table.unpack tid_1 Number_1 Number_2 θ)
 
- (where Number_2 (δbasic tonumber String ()))]
+   (where Number_2 (δbasic tonumber String ()))]
 
-; normal case
-[(δtable table.unpack tid Number_1 Number_2 θ)
- any_2
+  ; normal case
+  [(δtable table.unpack tid Number_1 Number_2 θ)
+   any_2
 
- ; construct a tuple of table indexing expressions
- (where any_2 ,(append (term (< ))
+   ; limit check, something the actually is part of table.unpack's semantics,
+   ; but added mostly for testing and performance reasons
+   (side-condition (<= (+ (- (term Number_2) (term Number_1)) 1)
+                       ; TODO: artificial limit
+                       20))
+ 
+   ; construct a tuple of table indexing expressions
+   (where any_2 ,(append (term (< ))
 
-                       (map (λ (index)
-                              (append (term (tid \[ ))
-                                      (term (,index))
-                                      (term (\]))))
+                         (map (λ (index)
+                                (append (term (tid \[ ))
+                                        (term (,index))
+                                        (term (\]))))
                               
-                            (range (exact-floor (term Number_1))
-                                   (+ (exact-floor (term Number_2)) 1)))
+                              (range (exact-floor (term Number_1))
+                                     (+ (exact-floor (term Number_2)) 1)))
 
-                       (term ( >))))]
+                         (term ( >))))]
+
+  ; too many results to unpack
+  [(δtable table.unpack tid Number_1 Number_2 θ)
+   (δbasic error "too many results to unpack")]
 
 
 
 
-; to capture the "no value" error for every builtinserv 
-[(δtable builtinserv v ...)
- (δbasic error any)
+  ; to capture the "no value" error for every builtinserv 
+  [(δtable builtinserv v ...)
+   (δbasic error any)
 
- (side-condition (member (term builtinserv)
-                         (term (table.pack
-                                table.concat))))
+   (side-condition (member (term builtinserv)
+                           (term (table.pack
+                                  table.concat))))
    
- (where any ,(string-append "erroneous actual parameters to "
-                            (symbol->string (term builtinserv))))]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
 
-; services that don't modify theta
-[(δtable builtinserv v ... θ)
- (δbasic error any)
+  ; services that don't modify theta
+  [(δtable builtinserv v ... θ)
+   (δbasic error any)
 
- (side-condition (member (term builtinserv)
-                         (term (; table
-                                table.unpack))))
+   (side-condition (member (term builtinserv)
+                           (term (; table
+                                  table.unpack))))
    
- (where any ,(string-append "erroneous actual parameters to "
-                            (symbol->string (term builtinserv))))]
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
 
-; services that modify theta
-[(δtable builtinserv v ... θ)
- (θ (δbasic error any))
+  ; services that modify theta
+  [(δtable builtinserv v ... θ)
+   (θ (δbasic error any))
 
- (side-condition (member (term builtinserv)
-                         (term (; table
-                                table.insert))))
+   (side-condition (member (term builtinserv)
+                           (term (; table
+                                  table.insert))))
    
- (where any ,(string-append "erroneous actual parameters to "
-                            (symbol->string (term builtinserv))))]
-)
+   (where any ,(string-append "erroneous actual parameters to "
+                              (symbol->string (term builtinserv))))]
+  )
 (provide δtable)

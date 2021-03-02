@@ -1,19 +1,18 @@
 #lang racket
-(require redex
-         "../../executionEnvironment.rkt"
-         "../../Relations/fullProgs.rkt"
-         "../../Desugar/parser.rkt"
-         "./tests_aux.rkt")
+(require "./tests_aux.rkt")
 
+; testing (parts of) table library
+; table.unpack
+; table.pack
 (define (test-sort)
   (test-suite "sort.lua"
-              (list "print"
-                    "assert"
+              (list "assert"
+                    "next"
+                    "pcall"
+                    "print"
+                    "select"
                     "table"
                     "table.unpack"
                     "table.pack"
-                    "next"
-                    "select"
-                    "pcall"
                     )))
 (provide test-sort)
