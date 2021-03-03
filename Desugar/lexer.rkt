@@ -69,10 +69,25 @@
 (define-tokens non-empty-tokens (STRING NUMBER NAME))
 
 (define-lex-abbrevs
-  ; TODO: fix re for strings
-  (double-quoted-str (re-: "\""
-                           (re-* (char-complement #\"))
-                           "\""))
+
+  ; some lexical conventions of strings:
+  ; ref. manual: "\ddd, where ddd is a sequence of up to three decimal digits"
+  (byte-decimal (re-or (re-: "\\"
+                             digits
+                             digits
+                             digits)
+                       
+                       (re-: "\\"
+                             digits
+                             digits)
+                       
+                       (re-: "\\"
+                             digits)))
+
+  ; ref. manual: "\xXX, where XX is a sequence of exactly two hexadecimal digits"
+  (byte-hexadecimal (re-: "\\x"
+                          hex-digits
+                          hex-digits))
 
   ; strings in long brackets
   (long-bracket-str-beg (re-: "["
@@ -94,10 +109,6 @@
 
   (not-long-bracket-str-end (re-& (re-~ "]")
                                   (re-~ "=")))
-  
-  (single-quoted-str (re-: "'"
-                                  (re-* (char-complement #\'))
-                                  "'"))
   
   (digits (char-range "0" "9"))
   
@@ -178,22 +189,16 @@
                                             (regexp "0x|0X") "#x"))
             (expt 2 (string->number (list-ref hex-split 1))))))))
     )
-   
-   (double-quoted-str
-    (token-STRING
-     ; Remove unprintable characters
-     ; (embedded zeros)
-     (clean (substring lexeme
-                       1
-                       (- (string-length lexeme) 1)))))
-   
-   (single-quoted-str
-    (token-STRING
-     ; Remove unprintable characters
-     ; (embedded zeros)
-     (clean (substring lexeme
-                       1
-                       (- (string-length lexeme) 1)))))
+
+   ; from ref. manual: "String represents immutable sequences of bytes."
+   ; however, in order to maintain the same syntax as in Lua, we preserve
+   ; racket's strings until the moment of operations on them, where we
+   ; translate them to bytes/utf-8
+   ("\""
+    ((lua-strings #\") input-port))
+
+   ("'"
+      ((lua-strings #\') input-port))
 
    (long-bracket-str-beg
     (begin
@@ -202,9 +207,8 @@
       (define res
         ((lua-long-bracket-str (- (string-length lexeme) 2)) input-port))
       (if (token? res)
-          ; Remove unprintable characters
-          ; (embedded zeros)
-          (token-STRING (clean (token-value res)))
+          (token-STRING
+            (clean (token-value res)))
           ; res is an error
           res)))
 
@@ -215,8 +219,6 @@
       (define res
         ((lua-long-bracket-str (- (string-length lexeme) 3)) input-port))
       (if (token? res)
-          ; Remove unprintable characters
-          ; (embedded zeros)
           (token-STRING (clean (token-value res)))
           res)))
    
@@ -295,6 +297,99 @@
    [any-char
     (lua-mult-line-comment-lexer input-port)]))
 
+; lexer that implements Lua's strings lexical conventions
+; PARAM:
+; closing_char: the single or double quote char that delimits the string
+; RETURNS:
+; a token-STRING or error
+(define (lua-strings closing_char)
+  (lexer
+   [byte-decimal
+
+    (begin
+      (define res ((lua-strings closing_char) input-port))
+      (if (token? res)
+          (token-STRING
+          (string-append (bytes->string/utf-8
+                          ; we interpret the lexeme as a byte
+                          (bytes (string->number
+                                  (substring lexeme
+                                             1
+                                             ;(- (string-length lexeme) 1)
+                                             (string-length lexeme)
+                                             ))))
+                         (token-value res)))
+          res
+          ))]
+
+   [byte-hexadecimal
+
+    (begin
+      (define res ((lua-strings closing_char) input-port))
+      (if (token? res)
+          (token-STRING
+          (string-append (bytes->string/utf-8
+                          ; we interpret the lexeme as a byte
+                          (bytes (string->number
+                                  ; we convert it into an hexa in racket
+                                  (string-append "#x"
+                                                 (substring
+                                                  lexeme
+                                                  2
+                                                  ;(- (string-length lexeme) 2)
+                                                  (string-length lexeme)
+                                                  )))))
+                         (token-value res)))
+          res))]
+
+   ; from ref. manual: "The escape sequence '\z' skips the following span of
+   ; white-space characters, including line breaks;"
+   [(re-: "\\z"
+          (re-* whitespace))
+    
+    ; we just discard the lexeme
+    ((lua-strings closing_char) input-port)]
+   
+   ; ending
+   ["\""
+    
+    (if (equal? closing_char #\")
+        ; ending
+        (token-STRING "")
+        ; lexeme must be appended to the rest of the string
+        ((lambda (res)
+           (if (token? res)
+               (token-STRING
+                (string-append lexeme
+                               (token-value res)))
+               res
+               )) ((lua-strings closing_char) input-port)))]
+
+   ["'"
+    
+    (if (equal? closing_char #\')
+        ; ending
+        (token-STRING "")
+        ; lexeme must be appended to the rest of the string
+        ((lambda (res)
+           (if (token? res)
+               (token-STRING
+                (string-append lexeme
+                               (token-value res)))
+               res
+               )) ((lua-strings closing_char) input-port)))]
+   
+   [any-char
+    
+    (begin
+      (define res ((lua-strings closing_char) input-port))
+      (if (token? res)
+          (token-STRING
+           (string-append lexeme
+                          (token-value res)))
+          res
+          ))]))
+
 ; flags the beginning of a possible closing bracket
 (define cons-long-bracket-end #f)
 ; the possible closing bracket
@@ -339,8 +434,8 @@
                  (if (token? res)
                      ; res is a token: append long-bracket-end to its value
                      (token-STRING
-                      (clean (string-append long-bracket-end-old
-                                            (token-value res))))
+                       (clean (string-append long-bracket-end-old
+                                             (token-value res))))
                    ; res is an error
                      res)) long-bracket-end
                            (set! long-bracket-end "]")
@@ -366,8 +461,8 @@
              (if (token? res)
                  ; res is a token: append = to its value
                  (token-STRING
-                  (clean (string-append "="
-                                        (token-value res))))
+                   (clean (string-append "="
+                                         (token-value res))))
                  ; res is an error
                  res)) ((lua-long-bracket-str eq_quant) input-port))))]
    ))
@@ -383,9 +478,6 @@
   ; Unescape backslashs from \n
   (set! aux (string-replace aux "\\n" "\n"))
   (set! aux (string-replace aux "\\\n" "\n"))
-  ; Unescape backslashs from \0
-  (set! aux (string-replace aux "\\0" "\0"))
-  (set! aux (string-replace aux "\\\0" "\0"))
   ; Unescape backslashs from \r
   (set! aux (string-replace aux "\\r" "\r"))
   (set! aux (string-replace aux "\\\r" "\r"))
@@ -397,7 +489,6 @@
       string ; Nothing left to be cleaned
       (clean aux))
   )
-
 
 
 (provide lua-lexer)

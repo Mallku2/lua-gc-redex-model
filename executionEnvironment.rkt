@@ -1,7 +1,9 @@
 #lang racket
 (require redex
          "./grammar.rkt"
-         "./Relations/fullProgs.rkt")
+         "./Relations/fullProgs.rkt"
+         ; getMetaTableRef for strings
+         "./Meta-functions/deltaBasic.rkt")
 ; dictionary as a list of pairs of the form (service's name, code), for easy
 ; construction of a suitable execution environment.
 (define services
@@ -463,13 +465,17 @@
 ; Definition of the execution environment as an evaluation context.
 (define (create_exec_ENV avail_servs servs_selected)
   (append
-   (term (() : () : ))
+   ; ref. manual: "(the string library) sets a metatable for strings where the
+   ; __index field points to the string table"
+   (if (member "string" servs_selected)
+       ; we add the meta-table for strings
+       (term (() : (((getMetaTableRef "") ((\{ \}) nil ⊥))) : ))
+       (term (() : () : )))
 
    (if (> (length servs_selected) 0)
        
        (list 
         (append
-         ;(term (local _ENV = (\{ \}) in))
          (term (local _ENV = (\{ \}) in))
 
          (list (append (foldl (lambda (serv_name accum) (append accum
@@ -480,12 +486,18 @@
                        ; NOTE: this is done in order to manage, in a simple way, the cases where
                        ; we plug into the hole a concatenation of statements, and not some other
                        ; kind of statement. This could lead to some errors, like when the concatenated
-                       ; statements are function calls. An the resulting phrase could be incorrectly
+                       ; statements are function calls, and the resulting phrase could be incorrectly
                        ; interpreted as a function call: the previous assignment to the _ENV table
                        ; result in a tuple value, and the whole phrase could be seen as a function call.
                        (list (term ((_ENV \[ "_G" \]) = _ENV)))
+                       
+                       (if (member "string" servs_selected)
+                           ; __index field of strings' meta-table must point to
+                           ; the string table
+                           (list (term (((getMetaTableRef "") \[ "__index" \]) = (_ENV \[ "string" \]))))
+                           (list (term \;)))
+                       
                        (list (term (local $dummyVar = nil in hole end)))
-                       ;(list (term hole))
                        ))
          (term (end))))
 

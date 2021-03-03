@@ -721,7 +721,9 @@
 
   (define res
         (concrete-grammar-s
-         (lua-parser (lex-this lua-lexer (open-input-string input)))))
+         (lua-parser (lex-this lua-lexer
+                               (open-input-string
+                                (clean input))))))
 
   ; cleaning symbol table
   (set! actual-block (new-empty-block))
