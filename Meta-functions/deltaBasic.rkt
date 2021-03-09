@@ -7,6 +7,7 @@
          "./coercion.rkt"
          "./gc.rkt"
          "../Desugar/parser.rkt"
+         "../Desugar/lexer.rkt"
          "../Desugar/phrases_constructors.rkt")
 
 
@@ -538,14 +539,14 @@
                    (λ (e) (term (< nil
                                    "attempt to load a text chunk (mode is 'b')"
                                    >)))])
-                   
+               
                (read (open-input-string (term String_1)))
                ))]
  
   ; Lua program expressed into a string, either syntactically correct or not 
   [(δbasic load String v_1 "t" v_2)
    any_2
-   
+
    (where any_1 ,(with-handlers
                      ([exn:fail?
                        ; the string cannot be parsed
@@ -560,8 +561,11 @@
                                                                (term v_1)
                                                                "]")))
                                       (term ( >))))])
-                   
-                   (parse-this (term String)
+
+                   ; if we are going to parse a Lua program from a string we
+                   ; need to unescape backslashes to be able to correclty detect
+                   ; whitespaces
+                   (parse-this (clean (term String))
                                #t
                                ; TODO: the reference to _G is hardcoded here...
                                ; abstract grammar representation of (ref 1)
@@ -1452,7 +1456,6 @@
   [(δbasic builtinserv v ...)
    (δbasic error any)
 
-   (side-condition (println (term (v ...))))
    (where any ,(string-append "erroneous actual parameters to "
                               (symbol->string (term builtinserv))))]
   

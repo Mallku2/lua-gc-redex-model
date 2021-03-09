@@ -206,16 +206,28 @@
   
   ; Number_1 < 0
   [(δstring string.sub String Number_1 Number_2)
-   (δstring string.sub String Number_3 Number_2)
+   (δstring string.sub String Number_4 Number_2)
 
-   (side-condition (< (term Number_1) 0))
+   (where Number_3 (δbasic \# String))
+   
+   (side-condition (and (<= (* -1 (term Number_3)) (term Number_1))
+                        (< (term Number_1) 0)))
+   
+   ;(side-condition (< (term Number_1) 0))
 
    ; Number_1 refers to a position in String, counting backwards from its
    ; last character
-   (where Number_3 ,(add1 (+ (term (δbasic \# String))
+   (where Number_4 ,(add1 (+ (term Number_3)
                              (term Number_1))))]
 
-  ; {Number_1 >= 0}
+  ; ref. man: "if, after the translation of negative indices, i is less than 1,
+  ; it is corrected to 1"
+  [(δstring string.sub String Number_1 Number_2)
+   (δstring string.sub String 1 Number_2)
+
+   (side-condition (< (term Number_1) 1))]
+
+  ; {Number_1 >= 1}
   ; if Number_2 is greater than # String, then, it is corrected to that length
   [(δstring string.sub String Number_1 Number_2)
    (δstring string.sub String Number_1 (δbasic \# String))
@@ -223,7 +235,7 @@
    (side-condition (< (term (δbasic \# String))
                       (exact-floor (term Number_2))))]
 
-  ; {0 <= Number_1 ∧ Number_2 <= #String}
+  ; {1 <= Number_1 ∧ Number_2 <= #String}
   ; Number_2 < 0
   [(δstring string.sub String Number_1 Number_2)
    (δstring string.sub String Number_1 Number_4)
@@ -238,15 +250,7 @@
    (where Number_4 ,(add1 (+ (term Number_3)
                              (ceiling (term Number_2)))))]
 
-  ; {0 <= Number_1 ∧ Number_2 <= #String}
-  ; ref. man: "if, after the translation of negative indices, i is less than 1,
-  ; it is corrected to 1"
-  [(δstring string.sub String Number_1 Number_2)
-   (δstring string.sub String 1 Number_2)
-
-   (side-condition (< (term Number_1) 1))]
-
-  ; {1 <= Number_1 ∧ Number_2 <= #String}
+  ; {1 <= Number_1 ∧ 0 <= Number_2 <= #String}
   ; if, after these corrections, Number_1 is greater than Number_2, the function
   ; returns the empty string. 
   [(δstring string.sub String Number_1 Number_2)

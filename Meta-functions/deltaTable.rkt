@@ -41,17 +41,17 @@
   [(δtable table.concat tid)
    (δtable table.concat tid "")]
 
-  [(δtable table.concat tid String)
-   (δtable table.concat tid String 1)]
+  [(δtable table.concat tid v)
+   (δtable table.concat tid v 1)]
 
   ; default value for j is #tid
   ; internally, table length is computed without resorting to just rawlen:
   ; its semantics involves the whole complexity of Lua's # op
-  [(δtable table.concat tid String Number_1)
-   (δtable table.concat tid String Number_1 (\# tid))]
+  [(δtable table.concat tid v_1 v_2)
+   (δtable table.concat tid v_1 v_2 (\# tid))]
 
   ; last check
-  [(δtable table.concat tid v_1 v_2 v_3)
+   [(δtable table.concat tid v_1 v_2 v_3)
    (δtable table.concat tid v_4 v_5 e)
 
    (side-condition (or (is_nil? (term v_1))
@@ -77,18 +77,40 @@
   [(δtable table.concat tid String Number e)
    ((\( (function $dummy ()
                   (local i j accum value = Number e "" nil in
-                    ((while (i <= j) do
-                            ((value = (tid \[ i \]))
-                             (if value then
-                                 (accum = (accum .. value))
-                                 else
-                                 (return ($builtIn error
-                                                   ((("invalid value (nil) at index "
-                                                      .. ($builtIn tostring (i)))
-                                                     .. " in table for 'concat'"))))
-                                 end)
-                             (i = (i + 1)))
-                            end)
+                    ((if (i <= j) then
+                         ((value = (tid \[ i \]))
+                          (if ((($builtIn type (value)) == "number")
+                               or
+                               (($builtIn type (value)) == "string"))
+                              then
+                              (accum = value)
+                              else
+                              (return ($builtIn error
+                                                ((("invalid value at index "
+                                                   .. ($builtIn tostring (i)))
+                                                  .. " in table for 'concat'"))))
+                              end)
+                          (i = (i + 1))
+                          (while (i <= j) do
+                                 ((value = (tid \[ i \]))
+                                  (if ((($builtIn type (value)) == "number")
+                                       or
+                                       (($builtIn type (value)) == "string"))
+                                      then
+                                      ((accum = (accum .. String))
+                                       (accum = (accum .. value)))
+                                      else
+                                      (return ($builtIn error
+                                                        ((("invalid value at index "
+                                                           .. ($builtIn tostring (i)))
+                                                          .. " in table for 'concat'"))))
+                                      end)
+                                  (i = (i + 1)))
+                                 end))
+                         ; {i > j}
+                         else
+                         \;
+                         end)
                      (return accum))
                     end)
                   end) \)) ())]
