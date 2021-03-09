@@ -398,7 +398,7 @@
    (cons "string.reverse"
          (term (((_ENV \[ "string" \]) \[ "reverse" \])
                 = (function $string.reverse (<<<)
-                            (return ($builtIn string.reverse (string)))
+                            (return ($builtIn string.reverse (<<<)))
                             end))
                ))
 

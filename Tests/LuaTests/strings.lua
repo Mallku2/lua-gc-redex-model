@@ -1,3 +1,23 @@
+-- Copyright Â© 1994â€“2019 Lua.org, PUC-Rio.
+
+-- Permission is hereby granted, free of charge, to any person obtaining a copy 
+-- of this software and associated documentation files (the "Software"), to deal 
+-- in the Software without restriction, including without limitation the rights 
+-- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+-- copies of the Software, and to permit persons to whom the Software is 
+-- furnished to do so, subject to the following conditions:
+
+-- The above copyright notice and this permission notice shall be included in 
+-- all copies or substantial portions of the Software.
+
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+-- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+-- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
+-- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
+-- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
+-- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+-- SOFTWARE. 
+
 print('testing strings and string library')
 
 assert('alo' < 'alo1')
@@ -85,9 +105,9 @@ assert(#"1234567890" == 10)
 -- assert(string.char() == "")
 -- assert(string.char(0, 255, 0) == "\0\255\0")
 -- assert(string.char(0, string.byte("\xe4"), 0) == "\0\xe4\0")
--- assert(string.char(string.byte("\xe4l\0óu", 1, -1)) == "\xe4l\0óu")
--- assert(string.char(string.byte("\xe4l\0óu", 1, 0)) == "")
--- assert(string.char(string.byte("\xe4l\0óu", -10, 100)) == "\xe4l\0óu")
+-- assert(string.char(string.byte("\xe4l\0Ã³u", 1, -1)) == "\xe4l\0Ã³u")
+-- assert(string.char(string.byte("\xe4l\0Ã³u", 1, 0)) == "")
+-- assert(string.char(string.byte("\xe4l\0Ã³u", -10, 100)) == "\xe4l\0Ã³u")
 -- print('+')
 
 -----------------------------------------------------------------
@@ -96,7 +116,7 @@ assert(#"1234567890" == 10)
 -- assert(string.upper("ab\0c") == "AB\0C")
 -- assert(string.lower("\0ABCc%$") == "\0abcc%$")
 assert(string.rep('teste', 0) == '')
-assert(string.rep('tés\00tê', 2) == 'tés\0têtés\000tê')
+assert(string.rep('tÃ©s\00tÃª', 2) == 'tÃ©s\0tÃªtÃ©s\000tÃª')
 assert(string.rep('', 10) == '')
 
 -- repetitions with separator
@@ -136,8 +156,8 @@ print('+')
 -----------------------------------------------------------------
 -- TODO: string.format, string.byte
 -----------------------------------------------------------------
--- x = '"ílo"\n\\'
--- assert(string.format('%q%s', x, x) == '"\\"ílo\\"\\\n\\\\""ílo"\n\\')
+-- x = '"Ã­lo"\n\\'
+-- assert(string.format('%q%s', x, x) == '"\\"Ã­lo\\"\\\n\\\\""Ã­lo"\n\\')
 -- assert(string.format('%q', "\0") == [["\0"]])
 -- assert(load(string.format('return %q', x))() == x)
 -- x = "\0\1\0023\5\0009"
@@ -233,7 +253,7 @@ print('+')
 -- assert(not pcall(string.format, "%x", -1))
 
 
-assert(load("return 1\n--comentário sem EOL no final")() == 1)
+assert(load("return 1\n--comentÃ¡rio sem EOL no final")() == 1)
 
 
 assert(table.concat{} == "")
@@ -246,16 +266,14 @@ assert(table.concat(a, "123").."123" == string.rep("xuxu123", 30))
 assert(table.concat(a, "b", 20, 20) == "xuxu")
 assert(table.concat(a, "", 20, 21) == "xuxuxuxu")
 assert(table.concat(a, "x", 22, 21) == "")
--------------------------------------------------------------------------
--- TODO: limits
--------------------------------------------------------------------------
--- assert(table.concat(a, "3", 2999) == "xuxu3xuxu")
--- if not _no32 then
---   assert(table.concat({}, "x", 2^31-1, 2^31-2) == "")
---   assert(table.concat({}, "x", -2^31+1, -2^31) == "")
---   assert(table.concat({}, "x", 2^31-1, -2^31) == "")
---   assert(table.concat({[2^31-1] = "alo"}, "x", 2^31-1, 2^31-1) == "alo")
--- end
+-- WAS: assert(table.concat(a, "3", 2999) == "xuxu3xuxu")
+ assert(table.concat(a, "3", 29) == "xuxu3xuxu")
+if not _no32 then
+  assert(table.concat({}, "x", 2^31-1, 2^31-2) == "")
+  assert(table.concat({}, "x", -2^31+1, -2^31) == "")
+  assert(table.concat({}, "x", 2^31-1, -2^31) == "")
+  assert(table.concat({[2^31-1] = "alo"}, "x", 2^31-1, 2^31-1) == "alo")
+end
 
 assert(not pcall(table.concat, {"a", "b", {}}))
 
@@ -283,18 +301,18 @@ assert(table.concat(a, ",", 4) == "")
 -- if not trylocale("collate")  then
 --   print("locale not supported")
 -- else
---   assert("alo" < "álo" and "álo" < "amo")
+--   assert("alo" < "Ã¡lo" and "Ã¡lo" < "amo")
 -- end
 
 -- if not trylocale("ctype") then
 --   print("locale not supported")
 -- else
 --   assert(load("a = 3.4"));  -- parser should not change outside locale
---   assert(not load("á = 3.4"));  -- even with errors
---   assert(string.gsub("áéíóú", "%a", "x") == "xxxxx")
---   assert(string.gsub("áÁéÉ", "%l", "x") == "xÁxÉ")
---   assert(string.gsub("áÁéÉ", "%u", "x") == "áxéx")
---   assert(string.upper"áÁé{xuxu}ção" == "ÁÁÉ{XUXU}ÇÃO")
+--   assert(not load("Ã¡ = 3.4"));  -- even with errors
+--   assert(string.gsub("Ã¡Ã©Ã­Ã³Ãº", "%a", "x") == "xxxxx")
+--   assert(string.gsub("Ã¡ÃÃ©Ã‰", "%l", "x") == "xÃxÃ‰")
+--   assert(string.gsub("Ã¡ÃÃ©Ã‰", "%u", "x") == "Ã¡xÃ©x")
+--   assert(string.upper"Ã¡ÃÃ©{xuxu}Ã§Ã£o" == "ÃÃÃ‰{XUXU}Ã‡ÃƒO")
 -- end
 
 -- os.setlocale("C")
