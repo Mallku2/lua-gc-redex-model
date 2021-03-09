@@ -71,6 +71,9 @@
 (define-lex-abbrevs
 
   ; some lexical conventions of strings:
+  (string-delimiter (re-or "'"
+                           "\""))
+  
   ; ref. manual: "\ddd, where ddd is a sequence of up to three decimal digits"
   (byte-decimal (re-or (re-: "\\"
                              digits
@@ -194,29 +197,28 @@
    ; however, in order to maintain the same syntax as in Lua, we preserve
    ; racket's strings until the moment of operations on them, where we
    ; translate them to bytes/utf-8
-   ("\""
-    ((lua-strings #\") input-port))
-
-   ("'"
-      ((lua-strings #\') input-port))
+   (string-delimiter ((lua-strings lexeme (position-line start-pos)) input-port))
 
    (long-bracket-str-beg
     (begin
+      ; set flags and accums
       (set! cons-long-bracket-end #f)
       (set! long-bracket-end "")
       (define res
+        ; compute quantity of =
         ((lua-long-bracket-str (- (string-length lexeme) 2)) input-port))
       (if (token? res)
-          (token-STRING
-            (clean (token-value res)))
+          (token-STRING (clean (token-value res)))
           ; res is an error
           res)))
 
    (long-bracket-str-beg-newline
     (begin
+      ; set flags and accums
       (set! cons-long-bracket-end #f)
       (set! long-bracket-end "")
       (define res
+        ; compute quantity of =
         ((lua-long-bracket-str (- (string-length lexeme) 3)) input-port))
       (if (token? res)
           (token-STRING (clean (token-value res)))
@@ -231,7 +233,7 @@
    ("." (token-\.))
    ; Delete comments
    ("--[[" (lua-mult-line-comment-lexer input-port))
-   ("--" (lua-sing-line-comment-lexer input-port))
+   ("--" ((lua-sing-line-comment-lexer (position-line start-pos)) input-port))
    
    ("-" (token--))
    ("+" (token-+))
@@ -282,78 +284,102 @@
 
 ; another lexer, specific for skipping comments' content
 ; single-line comments
-(define lua-sing-line-comment-lexer 
+(define (lua-sing-line-comment-lexer actual_line)
   (lexer
-   ["\n" (lua-lexer input-port)]
+;   ["\n" (if (not (= (position-line end-pos) actual_line))
+;             (lua-lexer input-port)
+;             ((lua-sing-line-comment-lexer actual_line) input-port))]
+
+   [(eof)
+    (lua-lexer input-port)]
    
-   [any-char (lua-sing-line-comment-lexer input-port)]))
+   [any-char
+    (if (not (= (position-line end-pos) actual_line))
+        ; ending
+        (lua-lexer input-port)
+        ((lua-sing-line-comment-lexer actual_line) input-port))]))
 
 ; another lexer, specific for skipping comments' content
 ; multiple-lines comments
 (define lua-mult-line-comment-lexer 
   (lexer
    ["]]--" (lua-lexer input-port)]
+
+   [(eof) (lua-lexer input-port)]
    
    [any-char
     (lua-mult-line-comment-lexer input-port)]))
 
 ; lexer that implements Lua's strings lexical conventions
 ; PARAM:
-; closing_char: the single or double quote char that delimits the string
+; closing_char: the single or double quote char (contained into a string) that
+; delimits the string
+; actual_line: line where the string begins
 ; RETURNS:
 ; a token-STRING or error
-(define (lua-strings closing_char)
+(define (lua-strings closing_char actual_line)
   (lexer
+   ; byte specified with decimal numbers
    [byte-decimal
 
-    (begin
-      (define res ((lua-strings closing_char) input-port))
-      (if (token? res)
-          (token-STRING
-          (string-append (bytes->string/utf-8
-                          ; we interpret the lexeme as a byte
-                          (bytes (string->number
-                                  (substring lexeme
-                                             1
-                                             ;(- (string-length lexeme) 1)
-                                             (string-length lexeme)
-                                             ))))
-                         (token-value res)))
-          res
-          ))]
+    (if (and (= (position-line start-pos) (position-line end-pos))
+             (= (position-line start-pos) actual_line))
+        ((lambda (res)
+           (if (token? res)
+               (token-STRING
+                (string-append (bytes->string/utf-8
+                                ; we interpret the lexeme as a byte
+                                (bytes (string->number
+                                        (substring lexeme
+                                                   1
+                                                   ;(- (string-length lexeme) 1)
+                                                   (string-length lexeme)
+                                                   ))))
+                               (token-value res)))
+               res
+               )) ((lua-strings closing_char actual_line) input-port))
+        ; {not (and (= (position-line start-pos) (position-line end-pos))
+        ;           (= (position-line start-pos) actual_line))}
+        (error "Lexer error. Lexeme:" lexeme)
+        )]
 
+   ; byte specified with hexadecimal numbers
    [byte-hexadecimal
 
-    (begin
-      (define res ((lua-strings closing_char) input-port))
-      (if (token? res)
-          (token-STRING
-          (string-append (bytes->string/utf-8
-                          ; we interpret the lexeme as a byte
-                          (bytes (string->number
-                                  ; we convert it into an hexa in racket
-                                  (string-append "#x"
-                                                 (substring
-                                                  lexeme
-                                                  2
-                                                  ;(- (string-length lexeme) 2)
-                                                  (string-length lexeme)
-                                                  )))))
-                         (token-value res)))
-          res))]
+    (if (and (= (position-line start-pos) (position-line end-pos))
+             (= (position-line start-pos) actual_line))
+        ((lambda (res)
+           (if (token? res)
+               (token-STRING
+                (string-append (bytes->string/utf-8
+                                ; we interpret the lexeme as a byte
+                                (bytes (string->number
+                                        ; we convert it into an hexa in racket
+                                        (string-append "#x"
+                                                       (substring
+                                                        lexeme
+                                                        2
+                                                        (string-length lexeme)
+                                                        )))))
+                               (token-value res)))
+               res)) ((lua-strings closing_char actual_line) input-port))
+        ; {not (and (= (position-line start-pos) (position-line end-pos))
+        ;           (= (position-line start-pos) actual_line))}
+        (error "Lexer error. Lexeme:" lexeme)
+        )]
 
    ; from ref. manual: "The escape sequence '\z' skips the following span of
    ; white-space characters, including line breaks;"
    [(re-: "\\z"
           (re-* whitespace))
     
-    ; we just discard the lexeme
-    ((lua-strings closing_char) input-port)]
+    ; we just discard the lexeme; actual line may have changed
+    ((lua-strings closing_char (position-line end-pos)) input-port)]
    
    ; ending
-   ["\""
+   [string-delimiter
     
-    (if (equal? closing_char #\")
+    (if (equal? closing_char lexeme)
         ; ending
         (token-STRING "")
         ; lexeme must be appended to the rest of the string
@@ -363,32 +389,35 @@
                 (string-append lexeme
                                (token-value res)))
                res
-               )) ((lua-strings closing_char) input-port)))]
+               )) ((lua-strings closing_char actual_line) input-port)))]
 
-   ["'"
+   ; ref. manual: " A backslash followed by a real newline results in a newline
+   ; in the string"
+   ; the first backslash will be escaped, the real new line's backslash won't
+   ["\\\n"
     
-    (if (equal? closing_char #\')
-        ; ending
-        (token-STRING "")
-        ; lexeme must be appended to the rest of the string
+    ((lambda (res)
+       (if (token? res)
+           
+           (token-STRING (string-append "\n" (token-value res)))
+               
+           res))
+     ; actual line may have changed 
+     ((lua-strings closing_char (position-line end-pos)) input-port))]
+
+   ; any char
+   [any-char
+
+    (if (and (= (position-line start-pos) (position-line end-pos))
+             (= (position-line start-pos) actual_line))
         ((lambda (res)
            (if (token? res)
                (token-STRING
                 (string-append lexeme
                                (token-value res)))
                res
-               )) ((lua-strings closing_char) input-port)))]
-   
-   [any-char
-    
-    (begin
-      (define res ((lua-strings closing_char) input-port))
-      (if (token? res)
-          (token-STRING
-           (string-append lexeme
-                          (token-value res)))
-          res
-          ))]))
+               )) ((lua-strings closing_char actual_line) input-port))
+        (error "Lexer error. Lexeme:" lexeme))]))
 
 ; flags the beginning of a possible closing bracket
 (define cons-long-bracket-end #f)
@@ -484,6 +513,9 @@
   ; Unescape backslashs from \t
   (set! aux (string-replace aux "\\t" "\t"))
   (set! aux (string-replace aux "\\\t" "\t"))
+
+  (set! aux (string-replace aux "\\0" "\0"))
+  (set! aux (string-replace aux "\\\0" "\\0"))
     
   (if (equal? aux string)
       string ; Nothing left to be cleaned

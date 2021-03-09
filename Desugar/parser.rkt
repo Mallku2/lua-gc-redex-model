@@ -31,9 +31,9 @@
    
    (error (lambda (tok-ok? tok-name tok-value)
             (begin
-              ; the presence of an error while parsing could let the symbol table
-              ; with information that must be cleaned before a possible new
-              ; call of the parser (eg. during run-time, while using load)
+              ; the presence of an error while parsing could leave into the symbol
+              ; table information that must be cleaned before a possible next
+              ; call to the parser (eg. during run-time, while using load)
               (set! actual-block (new-empty-block))
               (error "Parser error. Token name:" tok-name))))
 
@@ -673,8 +673,7 @@
     
     ; single statement
     (_
-     ;(conc-stats (list block stat))
-     ; Check stat
+     ; check stat
      (match stat
        ; block of statements
        ((conc-stats stats)
@@ -719,11 +718,13 @@
       (set! global-env-subst ref)
       (set! global-env-subst (id-name '_ENV)))
 
+  (define counting-lines-port (open-input-string input))
+  
+  (port-count-lines! counting-lines-port)
+  
   (define res
         (concrete-grammar-s
-         (lua-parser (lex-this lua-lexer
-                               (open-input-string
-                                (clean input))))))
+         (lua-parser (lex-this lua-lexer counting-lines-port))))
 
   ; cleaning symbol table
   (set! actual-block (new-empty-block))
