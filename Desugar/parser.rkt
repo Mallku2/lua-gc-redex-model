@@ -728,6 +728,12 @@
 
   ; cleaning symbol table
   (set! actual-block (new-empty-block))
+
+  (set! actual-block (new-block actual-block))
+
+  (set! actual-block
+        (new-scope actual-block
+                   (list (string->symbol "_ENV"))))
   
   res)
 

@@ -7,7 +7,9 @@
          parser-tools/yacc
          (prefix-in re- parser-tools/lex-sre)
          math/flonum ; operations over flonums
-         "../grammar.rkt")
+         "../grammar.rkt"
+         "../Desugar/lexer.rkt" ; clean, to unescape strings
+         )
 
 ; dictionary that maps alphabetic digits and their decimal interpretation,
 ; according to Lua's tonumber
@@ -418,7 +420,10 @@
 (define (number-lex-this lexer input) (lambda () (lexer input)))
 
 (define (number-parse-this input)
-  (number-parser (number-lex-this number-lexer (open-input-string input))))
+  (number-parser (number-lex-this number-lexer
+                                  (open-input-string
+                                   ; unescape \
+                                   (clean input)))))
 
 (provide number-parse-this)
 
@@ -444,7 +449,6 @@
    
    ; skip whitespaces
    (whitespace (ext-number-lexer input-port))
-   ;("\t" (ext-number-lexer input-port))
    
    ((eof) (token-EOF))))
 
@@ -482,7 +486,11 @@
    ; first, we use the previous parser to verify that we received just a string
    ; with ext-digits and, possible, whitespaces, then we use convert_string over
    ; the resulting string
-   (convert_string ,(ext-number-parser (ext-number-lex-this ext-number-lexer (open-input-string input)))
+   (convert_string ,(ext-number-parser
+                     (ext-number-lex-this ext-number-lexer
+                                          (open-input-string
+                                           ; unescape \
+                                           (clean input))))
                    ,base))
   )
 
