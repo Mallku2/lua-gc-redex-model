@@ -30,7 +30,11 @@
 ; meta-function that generates a fresh tid
 (define-metafunction ext-lang
   freshObjRef : θ -> tid
-  ; store with meta-tables from types different than tables or empty store
+  [(freshObjRef ())
+   (objr ,objStoreFirstLocation)]
+
+  ; {non-empty store}
+  ; store with meta-tables from types different than tables
   [(freshObjRef (((any Number) object) ...))
    (objr ,objStoreFirstLocation)
 
