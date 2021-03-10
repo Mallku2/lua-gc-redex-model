@@ -30,10 +30,15 @@
 ; meta-function that generates a fresh tid
 (define-metafunction ext-lang
   freshObjRef : θ -> tid
-  ; empty Store
-  [(freshObjRef ())
-   (objr ,objStoreFirstLocation)]
-  
+  ; store with meta-tables from types different than tables or empty store
+  [(freshObjRef (((any Number) object) ...))
+   (objr ,objStoreFirstLocation)
+
+   (side-condition (< (+ 1 (argmax max (term (Number ...))))
+                      objStoreFirstLocation))]
+
+  ;{(>= ,(+ 1 (argmax max (term (Number ...))))
+  ;                    objStoreFirstLocation)}
   ; an store with at least one object
   [(freshObjRef (((any Number) object) ...))
    (objr Number_2)
