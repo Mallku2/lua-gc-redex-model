@@ -24,7 +24,7 @@ events:
 	$(call test-file-parts,events,(test-events_1)(test-events_2)(test-events_3a)(test-events_3b)(test-events_3c)(test-events_4))
 
 gc:
-        $(call test-file-parts,events,(test-gc_1)(test-gc_2)(test-gc_3a)(test-gc_3b)(test-gc_3c)(test-gc_3d))
+	$(call test-file-parts,gc,(test-gc_1)(test-gc_2)(test-gc_3a)(test-gc_3b)(test-gc_3c)(test-gc_3d))
 
 locals:
 	$(call test-file-parts,locals,(test-locals_1)(test-locals_2))

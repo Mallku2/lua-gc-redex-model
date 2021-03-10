@@ -3,18 +3,9 @@
 
 ; local variables and environments
 (define (test-locals_1)
-  (test-suite "locals_1.lua"
-              (list "assert"
-                    "load"
-                    "print"
-                    "select"
-                    "type")))
+  (test-suite "locals_1.lua"))
 
 (define (test-locals_2)
-  (test-suite "locals_2.lua"
-              (list "_G"
-                    "assert"
-                    "load"
-                    "print")))
+  (test-suite "locals_2.lua"))
 
 (provide test-locals_1 test-locals_2)

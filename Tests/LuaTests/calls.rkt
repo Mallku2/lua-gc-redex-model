@@ -6,94 +6,44 @@
 ; local-function recursion
 ; declarations
 (define (test-calls_1a)
-  (test-suite "calls_1a.lua"
-              (list "assert"
-                    "print"
-                    "type")))
+  (test-suite "calls_1a.lua"))
 
 (define (test-calls_1b)
-  (test-suite "calls_1b.lua"
-              (list "assert"
-                    "print")))
+  (test-suite "calls_1b.lua"))
 
 (define (test-calls_1c)
-  (test-suite "calls_1c.lua"
-              (list "assert"
-                    "load"
-                    "print")))
+  (test-suite "calls_1c.lua"))
 
 ; closures
 ; multiple returns
 ; calls with 'incorrect' arguments
 (define (test-calls_2a)
-  (test-suite "calls_2a.lua"
-              (list "assert"
-                    "collectgarbage"
-                    "print")))
+  (test-suite "calls_2a.lua"))
 
 (define (test-calls_2b)
-  (test-suite "calls_2b.lua"
-              (list "assert"
-                    "collectgarbage"
-                    "math"
-                    "math.sin"
-                    "rawget"
-                    "rawset"
-                    "table"
-                    "table.pack")))
+  (test-suite "calls_2b.lua"))
 
 ; generic load
 (define (test-calls_3a)
-  (test-suite "calls_3a.lua"
-              (list "_G"
-                    "assert"
-                    "collectgarbage"
-                    "load"
-                    "string"
-                    "string.sub")))
+  (test-suite "calls_3a.lua"))
 
 (define (test-calls_3b)
-  (test-suite "calls_3b.lua"
-              (list "_G"
-                    "assert"
-                    "load"
-                    "string"
-                    "string.dump"
-                    "type")))
+  (test-suite "calls_3b.lua"))
 
 (define (test-calls_3c)
-  (test-suite "calls_3c.lua"
-              (list "_G"
-                    "assert"
-                    "collectgarbage"
-                    "load"
-                    "string"
-                    "string.dump"
-                    "string.sub")))
+  (test-suite "calls_3c.lua"))
 
 ; load when _ENV is not first upvalue
 (define (test-calls_4)
-  (test-suite "calls_4.lua"
-              (list "_G"
-                    "assert"
-                    "load"
-                    "string"
-                    "string.dump")))
+  (test-suite "calls_4.lua"))
 
 ; generic load with nested functions
 (define (test-calls_5)
-  (test-suite "calls_5.lua"
-              (list "assert"
-                    "collectgarbage"
-                    "load"
-                    "string"
-                    "string.sub")))
+  (test-suite "calls_5.lua"))
 
 ; bug in parameter adjustment
 (define (test-calls_6)
-  (test-suite "calls_6.lua"
-              (list "assert"
-                    "print")))
+  (test-suite "calls_6.lua"))
 
 (provide test-calls_1a test-calls_1b test-calls_1c
          test-calls_2a test-calls_2b

@@ -5,14 +5,5 @@
 ; table.unpack
 ; table.pack
 (define (test-sort)
-  (test-suite "sort.lua"
-              (list "assert"
-                    "next"
-                    "pcall"
-                    "print"
-                    "select"
-                    "table"
-                    "table.unpack"
-                    "table.pack"
-                    )))
+  (test-suite "sort.lua"))
 (provide test-sort)
