@@ -18,15 +18,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 -- SOFTWARE. 
 
--- WAS: local a = {}; for i=1,3000 do a[i] = "xuxu" end
--- WAS: assert(table.concat(a, "123").."123" == string.rep("xuxu123", 3000))
-local a = {}; for i=1,30 do a[i] = "xuxu" end
-assert(table.concat(a, "123").."123" == string.rep("xuxu123", 30))
-assert(table.concat(a, "b", 20, 20) == "xuxu")
-assert(table.concat(a, "", 20, 21) == "xuxuxuxu")
-assert(table.concat(a, "x", 22, 21) == "")
--- WAS: assert(table.concat(a, "3", 2999) == "xuxu3xuxu")
- assert(table.concat(a, "3", 29) == "xuxu3xuxu")
 if not _no32 then
   assert(table.concat({}, "x", 2^31-1, 2^31-2) == "")
   assert(table.concat({}, "x", -2^31+1, -2^31) == "")

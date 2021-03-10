@@ -143,13 +143,13 @@
 
 (provide full_term)
 
-(define (test-suite file services)
-  ;(check-redundancy #t)
-  ;(caching-enabled? #t)
+(define (test-suite file)
   (printf "Testing ~V\n" file)
   (test-predicate ok? (apply-reduction-relation*
                        full-progs-rel
-                       (full_term file services)))
+                       (full_term file
+                                  ; library services from file
+                                  (services-from (file->string file)))))
   (printf "File ~V passed\n" file))
 
 (provide test-suite)
