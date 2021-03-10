@@ -5,27 +5,26 @@
          "Desugar/parser.rkt"
          "Relations/fullProgs.rkt"
          "Relations/gc.rkt"
-         )
+         "Tests/LuaTests/tests_aux.rkt")
 
 ; PARAM : code, the actual Lua program to be executed, as a string value
-; PARAM : selec_servs, a list containing the name of the library services
 ; required for the execution of the program
 ;
 ; example:
-; (execute "print(\"hello, world!\")" (list "print"))
+; (execute "print(\"hello, world!\")")
 
-(define (execute code selec_servs)
+(define (execute code)
   (apply-reduction-relation* full-progs-rel
         (plugIntoExecutionEnvironment services
-                                      selec_servs
+                                      (services-from code)
                                       (parse-this code #f (void)))))
 
-(define (luatrace code selec_servs)
+(define (luatrace code)
   (begin
     (reduction-steps-cutoff 500)
     (traces full-progs-rel
         (plugIntoExecutionEnvironment services
-                                      selec_servs
+                                      (services-from code)
                                       (parse-this code #f (void))))))
 
 (define (luagctrace code selec_servs)
