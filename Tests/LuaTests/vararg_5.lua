@@ -18,30 +18,33 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 -- SOFTWARE. 
 
-------------------------------------------
----- Taken from vararg_1.lua
-function c12 (...)
-  assert(arg == nil)
-  local x = {...}; x.n = #x
-  local res = (x.n==2 and x[1] == 1 and x[2] == 2)
-  if res then res = 55 end
-  return res, 2
-end
+-- varargs for main chunks
+f = load[[ return {...} ]]
+x = f(2,3)
+assert(x[1] == 2 and x[2] == 3 and x[3] == nil)
 
-function vararg (...) return {n = select('#', ...), ...} end
 
-local call = function (f, args) return f(table.unpack(args, 1, args.n)) end
-------------------------------------------
+f = load[[
+  local x = {...}
+  for i=1,select('#', ...) do assert(x[i] == select(i, ...)) end
+  assert(x[select('#', ...)+1] == nil)
+  return true
+]]
 
-local a = vararg(call(next, {_G,nil;n=2}))
-local b,c = next(_G)
-assert(a[1] == b and a[2] == c and a.n == 2)
-a = vararg(call(call, {c12, {1,2}}))
-assert(a.n == 2 and a[1] == 55 and a[2] == 2)
-a = call(print, {'+'})
-assert(a == nil)
+assert(f("a", "b", nil, {}, assert))
+assert(f())
 
-local t = {1, 10}
-function t:f (...) local arg = {...}; return self[...]+#arg end
-assert(t:f(1,4) == 3 and t:f(2) == 11)
-print('+')
+a = {select(3, table.unpack{10,20,30,40})}
+assert(#a == 2 and a[1] == 30 and a[2] == 40)
+a = {select(1)}
+assert(next(a) == nil)
+a = {select(-1, 3, 5, 7)}
+assert(a[1] == 7 and a[2] == nil)
+a = {select(-2, 3, 5, 7)}
+assert(a[1] == 5 and a[2] == 7 and a[3] == nil)
+pcall(select, 10000)
+pcall(select, -10000)
+
+print('OK')
+
+

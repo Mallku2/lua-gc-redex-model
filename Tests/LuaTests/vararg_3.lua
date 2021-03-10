@@ -20,28 +20,29 @@
 
 ------------------------------------------
 ---- Taken from vararg_1.lua
-function c12 (...)
-  assert(arg == nil)
-  local x = {...}; x.n = #x
-  local res = (x.n==2 and x[1] == 1 and x[2] == 2)
-  if res then res = 55 end
-  return res, 2
-end
-
-function vararg (...) return {n = select('#', ...), ...} end
-
 local call = function (f, args) return f(table.unpack(args, 1, args.n)) end
 ------------------------------------------
 
-local a = vararg(call(next, {_G,nil;n=2}))
-local b,c = next(_G)
-assert(a[1] == b and a[2] == c and a.n == 2)
-a = vararg(call(call, {c12, {1,2}}))
-assert(a.n == 2 and a[1] == 55 and a[2] == 2)
-a = call(print, {'+'})
-assert(a == nil)
+lim = 20
+local i, a = 1, {}
+while i <= lim do a[i] = i+0.3; i=i+1 end
 
-local t = {1, 10}
-function t:f (...) local arg = {...}; return self[...]+#arg end
-assert(t:f(1,4) == 3 and t:f(2) == 11)
-print('+')
+function f(a, b, c, d, ...)
+  local more = {...}
+  assert(a == 1.3 and more[1] == 5.3 and
+         more[lim-4] == lim+0.3 and not more[lim-3])
+end
+
+function g(a,b,c)
+  assert(a == 1.3 and b == 2.3 and c == 3.3)
+end
+
+call(f, a)
+call(g, a)
+
+a = {}
+i = 1
+while i <= lim do a[i] = i; i=i+1 end
+assert(call(math.max, a) == lim)
+
+print("+")

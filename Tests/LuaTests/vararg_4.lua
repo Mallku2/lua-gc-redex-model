@@ -18,30 +18,25 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 -- SOFTWARE. 
 
-------------------------------------------
----- Taken from vararg_1.lua
-function c12 (...)
+-- new-style varargs
+
+function oneless (a, ...) return ... end
+
+function f (n, a, ...)
+  local b
   assert(arg == nil)
-  local x = {...}; x.n = #x
-  local res = (x.n==2 and x[1] == 1 and x[2] == 2)
-  if res then res = 55 end
-  return res, 2
+  if n == 0 then
+    local b, c, d = ...
+    return a, b, c, d, oneless(oneless(oneless(...)))
+  else
+    n, b, a = n-1, ..., a
+    assert(b == ...)
+    return f(n, a, ...)
+  end
 end
 
-function vararg (...) return {n = select('#', ...), ...} end
+a,b,c,d,e = assert(f(10,5,4,3,2,1))
+assert(a==5 and b==4 and c==3 and d==2 and e==1)
 
-local call = function (f, args) return f(table.unpack(args, 1, args.n)) end
-------------------------------------------
-
-local a = vararg(call(next, {_G,nil;n=2}))
-local b,c = next(_G)
-assert(a[1] == b and a[2] == c and a.n == 2)
-a = vararg(call(call, {c12, {1,2}}))
-assert(a.n == 2 and a[1] == 55 and a[2] == 2)
-a = call(print, {'+'})
-assert(a == nil)
-
-local t = {1, 10}
-function t:f (...) local arg = {...}; return self[...]+#arg end
-assert(t:f(1,4) == 3 and t:f(2) == 11)
-print('+')
+a,b,c,d,e = f(4)
+assert(a==nil and b==nil and c==nil and d==nil and e==nil)

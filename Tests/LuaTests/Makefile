@@ -39,8 +39,8 @@ sort:
 	$(call test-file,sort)
 
 strings:
-	$(call test-file-parts,strings,(test-strings_1)(test-strings_2)(test-strings_3))
+	$(call test-file-parts,strings,(test-strings_1)(test-strings_2)(test-strings_3)(test-strings_4))
 
 vararg:
-	$(call test-file-parts,vararg,(test-vararg_1)(test-vararg_2))
+	$(call test-file-parts,vararg,(test-vararg_1)(test-vararg_2)(test-vararg_3)(test-vararg_4)(test-vararg_5))
 
