@@ -11,6 +11,42 @@ all: calls closure constructs errors events gc locals math nextvar sort strings 
 calls:
 	$(call test-file-parts,calls,(test-calls_1a)(test-calls_1b)(test-calls_1c)(test-calls_2a)(test-calls_2b)(test-calls_3a)(test-calls_3b)(test-calls_3c)(test-calls_4)(test-calls_5)(test-calls_6))
 
+# to execute just the modules from calls and obtain parallelism
+only_calls: calls_1a calls_1b calls_1c calls_2a calls_2b calls_3a calls_3b calls_3c calls_4 calls_5 calls_6
+	
+calls_1a:
+	$(call test-file-parts,calls,(test-calls_1a))
+
+calls_1b:
+	$(call test-file-parts,calls,(test-calls_1b))
+
+calls_1c:
+	$(call test-file-parts,calls,(test-calls_1c))
+
+calls_2a:
+	$(call test-file-parts,calls,(test-calls_2a))
+
+calls_2b:
+	$(call test-file-parts,calls,(test-calls_2b))
+
+calls_3a:
+	$(call test-file-parts,calls,(test-calls_3a))
+
+calls_3b:
+	$(call test-file-parts,calls,(test-calls_3b))
+
+calls_3c:
+	$(call test-file-parts,calls,(test-calls_3c))
+
+calls_4:
+	$(call test-file-parts,calls,(test-calls_4))
+
+calls_5:
+	$(call test-file-parts,calls,(test-calls_5))
+
+calls_6:
+	$(call test-file-parts,calls,(test-calls_6))
+
 closure:
 	$(call test-file-parts,closure,(test-closure_1)(test-closure_2)(test-closure_3))
 
