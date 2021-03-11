@@ -327,12 +327,16 @@
         ((lambda (res)
            (if (token? res)
                (token-STRING
-                (string-append (bytes->string/utf-8
+                ; from docs on bytes->string/latin-1:
+                ; "Produces a string by decoding the start to end substring of
+                ; bstr as a Latin-1 encoding of Unicode code points; i.e., each
+                ; byte is translated directly to a character using
+                ; integer->char, so the decoding always succeeds. "
+                (string-append (bytes->string/latin-1
                                 ; we interpret the lexeme as a byte
                                 (bytes (string->number
                                         (substring lexeme
                                                    1
-                                                   ;(- (string-length lexeme) 1)
                                                    (string-length lexeme)
                                                    ))))
                                (token-value res)))
@@ -351,7 +355,7 @@
         ((lambda (res)
            (if (token? res)
                (token-STRING
-                (string-append (bytes->string/utf-8
+                (string-append (bytes->string/latin-1
                                 ; we interpret the lexeme as a byte
                                 (bytes (string->number
                                         ; we convert it into an hexa in racket
