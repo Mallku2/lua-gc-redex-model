@@ -411,15 +411,15 @@ doit('I = load("a=9+"); a=3')
 assert(a==3 and I == nil)
 print('+')
 
-------------------------------------------
--- TODO: performance
-------------------------------------------
--- lim = 1000
--- if _soft then lim = 100 end
--- for i=1,lim do
---   doit('a = ')
---   doit('a = 4+nil')
--- end
+---------------------------------------------------
+-- WAS: lim = 1000, changed for performance reasons
+---------------------------------------------------
+lim = 10
+if _soft then lim = 100 end
+for i=1,lim do
+  doit('a = ')
+  doit('a = 4+nil')
+end
 
 
 -- -- testing syntax limits
