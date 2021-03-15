@@ -73,15 +73,15 @@ local function GC1 ()
 
   finish = false; local i = 1
   u = setmetatable({}, {__gc = function () finish = true end})
-  -- WAS: nothing, we add an explicit call to the garbage collector to end the
-  -- loop
+  -- WAS: nothing, we add an explicit call to the garbage collector at the end of
+  -- the loop
   repeat i = i + 1; u = i .. i; collectgarbage() until finish
   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
 
   finish = false
   u = setmetatable({}, {__gc = function () finish = true end})
-  -- WAS: nothing, we add an explicit call to the garbage collector to end the
-  -- loop
+  -- WAS: nothing, we add an explicit call to the garbage collector at the end of
+  -- the loop
   repeat local i; u = function () return i end; collectgarbage() until finish
   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
 end

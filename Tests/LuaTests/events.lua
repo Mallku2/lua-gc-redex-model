@@ -43,7 +43,6 @@ assert(tostring(a) == nil)
 assert(pcall(setmetatable, a, {}) == false)
 a.name = "gororoba"
 assert(tostring(a) == "gororoba")
-
 local a, t = {10,20,30; x="10", y="20"}, {}
 assert(setmetatable(a,t) == a)
 assert(getmetatable(a) == t)
@@ -105,7 +104,6 @@ do  -- newindex
   foi = false; a[1]=nil; assert(foi)
 end
 
-
 setmetatable(t, nil)
 function f (t, ...) return t, {...} end
 t.__call = f
@@ -165,7 +163,6 @@ assert(cap[0] == "pow" and cap[1] == '4' and cap[2] == a and cap[3]==nil)
 assert(#a == a)
 assert(cap[0] == "len" and cap[1] == a)
 
-
 -- test for rawlen
 t = setmetatable({1,2,3}, {__len = function () return 10 end})
 assert(#t == 10 and rawlen(t) == 3)
@@ -214,7 +211,6 @@ end
 
 test()  -- retest comparisons, now using both `lt' and `le'
 
-
 -- test `partial order'
 
 local function Set(x)
@@ -249,7 +245,6 @@ end
 assert(not (Set{1,3} <= Set{3,5}))   -- now its OK!
 assert(not(Set{1,3} <= Set{3,5}))
 assert(not(Set{1,3} >= Set{3,5}))
-
 t.__eq = function (a,b)
   for k in pairs(a) do
     if not b[k] then return false end
@@ -266,7 +261,6 @@ assert(Set{1,3,5,1} == Set{3,5,1})
 assert(Set{1,3,5} ~= Set{3,5,1,6})
 t[Set{1,3,5}] = 1
 assert(t[Set{1,3,5}] == nil)   -- `__eq' is not valid for table accesses
-
 
 t.__concat = function (a,b,c)
   assert(c == nil)
@@ -292,7 +286,6 @@ assert(getmetatable(x) == t and x.val == 'cd')
 x = 0 .."a".."b"..c..d.."e".."f".."g"
 assert(x.val == "0abcdefg")
 
-
 -- concat metamethod x numbers (bug in 5.1.1)
 c = {}
 local x
@@ -317,7 +310,6 @@ t2.__eq = t1.__eq
 t2.__lt = t1.__lt
 setmetatable(d, t2)
 assert(c == d and c < d and not(d <= c))
-
 
 
 -- test for several levels of calls
@@ -353,39 +345,35 @@ rawset(a, "x", 1, 2, 3)
 assert(a.x == 1 and rawget(a, "x", 3) == 1)
 
 print '+'
-
-------------------------------------------
--- TODO: debug
-------------------------------------------
--- -- testing metatables for basic types
+-- testing metatables for basic types
 -- local debug = require'debug'
--- mt = {}
--- debug.setmetatable(10, mt)
--- assert(getmetatable(-2) == mt)
--- mt.__index = function (a,b) return a+b end
--- assert((10)[3] == 13)
--- assert((10)["3"] == 13)
--- debug.setmetatable(23, nil)
--- assert(getmetatable(-2) == nil)
+mt = {}
+debug.setmetatable(10, mt)
+assert(getmetatable(-2) == mt)
+mt.__index = function (a,b) return a+b end
+assert((10)[3] == 13)
+assert((10)["3"] == 13)
+debug.setmetatable(23, nil)
+assert(getmetatable(-2) == nil)
 
--- debug.setmetatable(true, mt)
--- assert(getmetatable(false) == mt)
--- mt.__index = function (a,b) return a or b end
--- assert((true)[false] == true)
--- assert((false)[false] == false)
--- debug.setmetatable(false, nil)
--- assert(getmetatable(true) == nil)
+debug.setmetatable(true, mt)
+assert(getmetatable(false) == mt)
+mt.__index = function (a,b) return a or b end
+assert((true)[false] == true)
+assert((false)[false] == false)
+debug.setmetatable(false, nil)
+assert(getmetatable(true) == nil)
 
--- debug.setmetatable(nil, mt)
--- assert(getmetatable(nil) == mt)
--- mt.__add = function (a,b) return (a or 0) + (b or 0) end
--- assert(10 + nil == 10)
--- assert(nil + 23 == 23)
--- assert(nil + nil == 0)
--- debug.setmetatable(nil, nil)
--- assert(getmetatable(nil) == nil)
+debug.setmetatable(nil, mt)
+assert(getmetatable(nil) == mt)
+mt.__add = function (a,b) return (a or 0) + (b or 0) end
+assert(10 + nil == 10)
+assert(nil + 23 == 23)
+assert(nil + nil == 0)
+debug.setmetatable(nil, nil)
+assert(getmetatable(nil) == nil)
 
--- debug.setmetatable(nil, {})
+debug.setmetatable(nil, {})
 
 
 -- loops in delegation
@@ -409,5 +397,3 @@ assert(T == parent and K == "foo" and V == 10)
 print 'OK'
 
 return 12
-
-
