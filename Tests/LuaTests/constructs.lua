@@ -335,8 +335,9 @@ local function allcases (n)
 end
 
 -- do not do too many combinations for soft tests
-local level = _soft and 3 or 4
-
+_soft = true  --WAS: nothing, setting to test fewer cases
+local level = _soft and 1 or 4 --WAS: local level = _soft and 3 or 4 
+-- TODO: for level >= 2 the test takes hours under our mechanization in Redex 
 for _, v in pairs(allcases(level)) do
   local res = load("return " .. v[1])()
   assert(res == v[2])

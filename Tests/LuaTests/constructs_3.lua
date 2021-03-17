@@ -18,116 +18,6 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 -- SOFTWARE. 
 
-------------------------------------------
--- TODO: string.gsub
-------------------------------------------
--- f = [[
--- return function ( a , b , c , d , e )
---   local x = a >= b or c or ( d and e ) or nil
---   return x
--- end , { a = 1 , b = 2 >= 1 , } or { 1 };
--- ]]
-
--- f = string.gsub(f, "%s+", "\n");   -- force a SETLINE between opcodes
--- f,a = load(f)();
--- assert(a.a == 1 and a.b)
-
--- function g (a,b,c,d,e)
---   if not (a>=b or c or d and e or nil) then return 0; else return 1; end;
--- end
-
--- function h (a,b,c,d,e)
---   while (a>=b or c or (d and e) or nil) do return 1; end;
---   return 0;
--- end;
-
-------------------------------------------
--- TODO: string.gsub in f
-------------------------------------------
--- assert(f(2,1) == true and g(2,1) == 1 and h(2,1) == 1)
--- assert(f(1,2,'a') == 'a' and g(1,2,'a') == 1 and h(1,2,'a') == 1)
--- assert(f(1,2,'a')
--- ~=          -- force SETLINE before nil
--- nil, "")
--- assert(f(1,2,'a') == 'a' and g(1,2,'a') == 1 and h(1,2,'a') == 1)
--- assert(f(1,2,nil,1,'x') == 'x' and g(1,2,nil,1,'x') == 1 and
---                                    h(1,2,nil,1,'x') == 1)
--- assert(f(1,2,nil,nil,'x') == nil and g(1,2,nil,nil,'x') == 0 and
---                                      h(1,2,nil,nil,'x') == 0)
--- assert(f(1,2,nil,1,nil) == nil and g(1,2,nil,1,nil) == 0 and
---                                    h(1,2,nil,1,nil) == 0)
-
-assert(1 and 2<3 == true and 2<3 and 'a'<'b' == true)
-x = 2<3 and not 3; assert(x==false)
-x = 2<1 or (2>1 and 'a'); assert(x=='a')
-
-
-do
-  local a; if nil then a=1; else a=2; end;    -- this nil comes as PUSHNIL 2
-  assert(a==2)
-end
-
-------------------------------------------
--- TODO: debug and string functions
-------------------------------------------
--- function F(a)
---   assert(debug.getinfo(1, "n").name == 'F')
---   return a,2,3
--- end
-
--- a,b = F(1)~=nil; assert(a == true and b == nil);
--- a,b = F(nil)==nil; assert(a == true and b == nil)
-
-----------------------------------------------------------------
--- creates all combinations of 
--- [not] ([not] arg op [not] (arg op [not] arg ))
--- and tests each one
-
--- function ID(x) return x end
-
--- function f(t, i)
---   local b = t.n
---   local res = math.fmod(math.floor(i/c), b)+1
---   c = c*b
---   return t[res]
--- end
-
--- local arg = {" ( 1 < 2 ) ", " ( 1 >= 2 ) ", " F ( ) ", "  nil "; n=4}
-
--- local op = {" and ", " or ", " == ", " ~= "; n=4}
-
--- local neg = {" ", " not "; n=2}
-
--- local i = 0
-------------------------------------------
--- TODO: string.gsub
-------------------------------------------
--- repeat
---   c = 1
---   local s = f(neg, i)..'ID('..f(neg, i)..f(arg, i)..f(op, i)..
---             f(neg, i)..'ID('..f(arg, i)..f(op, i)..f(neg, i)..f(arg, i)..'))'
---   local s1 = string.gsub(s, 'ID', '')
---   K,X,NX,WX1,WX2 = nil
---   s = string.format([[
---       local a = %s
---       local b = not %s
---       K = b
---       local xxx; 
---       if %s then X = a  else X = b end
---       if %s then NX = b  else NX = a end
---       while %s do WX1 = a; break end
---       while %s do WX2 = a; break end
---       repeat if (%s) then break end; assert(b)  until not(%s)
---   ]], s1, s, s1, s, s1, s, s1, s, s)
---   assert(load(s))()
---   assert(X and not NX and not WX1 == K and not WX2 == K)
---   if math.fmod(i,4000) == 0 then print('+') end
---   i = i+1
--- until i==c
-
-print '+'
-
-------------------------------------------------------------------
 print 'testing short-circuit optimizations'
 
 _ENV.GLOB1 = 1
@@ -176,13 +66,12 @@ end
 
 -- do not do too many combinations for soft tests
 _soft = true  --WAS: nothing, setting to test fewer cases
-local level = _soft and 2 or 4 --WAS: local level = _soft and 3 or 4 
-
+local level = _soft and 1 or 4 --WAS: local level = _soft and 3 or 4 
+-- TODO: for level >= 2 the test takes hours under our mechanization in Redex 
 for _, v in pairs(allcases(level)) do
   print("-")
   local res = load("return " .. v[1])()
   assert(res == v[2])
-  collectgarbage() --WAS: nothing, cleaning up
 end
 ------------------------------------------------------------------
 
