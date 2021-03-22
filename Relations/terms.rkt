@@ -4,8 +4,7 @@
 (require redex
          "../grammar.rkt"
          "../Meta-functions/grammarMetaFunctions.rkt"
-         "../Meta-functions/delta.rkt"
-         )
+         "../Meta-functions/delta.rkt")
 
 (define terms-rel
   (reduction-relation
@@ -65,95 +64,91 @@
    [-->s/e (v_1 binop v_2)
            v_3
         
-           E-BinOpNumber
-
-           ; arith. or .. op, over numeric or string operands
-           (side-condition (or (term (isArithBinOp binop))
-                               (is_strconcat? (term binop))))
-
            ; apply binop, check if the operation was successful
            (where v_3 (δ binop v_1 v_2))
 
            ; we are assuming the soundness of δ: successful arithops only return
-           ; numbers, successful concat only returns strings
-           (side-condition (or (is_string? (term v_3))
-                               (is_number? (term v_3))))]
+           ; numbers, successful concat only returns strings, etc
+           ; if (δ binop v_1 v_2) is a value (i.e. not an error), the operation
+           ; was successful
+           (side-condition (or (is_strconcat? (term binop))
+                               
+                               (is_arithop? (term binop))
+
+                               (is_lt_le? (term binop))))
+
+           E-BinOp]
    
    ; logical conectives
    [-->s/e (v binop e)
            (δ binop v e)
-           E-LogicOp
-        
-           (side-condition (term (isBooleanBinOp binop)))]
+           
+           (side-condition (is_bool_binop? (term binop)))
+
+           E-LogicOp]
    
    ; unary operations
    [-->s/e (- v)
            Number
         
-           E-NumNeg
-
            ; check if the operation was successful
-           (where Number (δ - v))]
+           (where Number (δ - v))
+
+           E-NumNeg]
    
    [-->s/e (unop v)
            (δ unop v)
-           E-UnOp
-
-        
+           
            (side-condition (or (and ; there is no coercion to numbers, in this case
                                 (is_string? (term v))
                                 (equal? (term unop) (term \#)))
                             
-                               (equal? (term unop) (term not))))]
+                               (equal? (term unop) (term not))))
+
+           E-UnOp]
    
    ; equality comparison
    [-->s/e (v_1 == v_2)
            true
-           E-EqualitySuccess
-           (side-condition (is_true? (term (δ == v_1 v_2))))]
+           
+           (side-condition (is_true? (term (δ == v_1 v_2))))
+
+           E-EqualitySuccess]
 
    [-->s/e (v_1 == v_2)
            false
-           E-EqualityFailNtables
+           
            (side-condition (is_false? (term (δ == v_1 v_2))))
            (side-condition (or (not (is_tid? (term v_1)))
-                               (not (is_tid? (term v_2)))))]
+                               (not (is_tid? (term v_2)))))
+
+           E-EqualityFailNtables]
 
    ; rel ops
    ; translation of expressions involving > and >=
    [-->s/e (v_1 binop v_2)
            (v_2 any v_1)
-           E-TranslateComparison
-        
+           
            (side-condition (or (equal? (term binop) (term >))
                                (equal? (term binop) (term >=))))
-           (where any (translateComparisonOp binop))]
-   
-   [-->s/e (v_1 binop v_2)
-           (δ binop v_1 v_2)
-           E-RelOp
+           
+           (where any (translateComparisonOp binop))
 
-           ; relational op (< or <=) over numeric or string operands
-           (side-condition (and (term (isRelationalOperator binop))
-
-                                (equal? (term (δ type v_1))
-                                        (term (δ type v_2)))
-
-                                (or (is_string? (term v_1))
-                                    (is_number? (term v_1)))))]
+           E-TranslateComparison]
 
    ; abnormal situations with primitive operators
    [-->s/e (v_1 binop v_2)
-           ((v_1 binop v_2) ArithWrongOps)
-           E-ArithBinOpWrongOps
+           ((v_1 binop v_2) BinopWO)
+           
+           (where e (δ binop v_1 v_2))
 
-           ; arith op over non-numeric or non-string operands
-           (side-condition (term (isArithBinOp binop)))
+           (side-condition (and (or (is_strconcat? (term binop))
+                                    (is_arithop? (term binop))
+                                    (is_lt_le? (term binop)))
+                               
+                                (not (is_v? (term e)))))
 
-           ; the operation was not successful
-           (where any (δ binop v_1 v_2))
-
-           (side-condition (not (is_number? (term any))))]
+           Binop-Wo]
    
    [-->s/e (- v)
            ((- v) NegWrongOp)
@@ -163,15 +158,6 @@
            (where any (δ - v))
 
            (side-condition (not (is_number? (term any))))]
-   
-   [-->s/e (v_1 .. v_2)
-           ((v_1 .. v_2) StrConcatWrongOps)
-           E-AlertStringConcatWrongOperands
-
-           ; concat only fails when applied to operands of unexpected type
-           (where any (δ .. v_1 v_2))
-
-           (side-condition (not (is_string? (term any))))]
    
    [-->s/e (\# v)
            ((\# v) StrLenWrongOp)
@@ -188,19 +174,6 @@
            (side-condition (is_false? (term (δ == v_1 v_2))))
            (side-condition (and (is_tid? (term v_1))
                                 (is_tid? (term v_2))))]
-   
-   [-->s/e (v_1 binop v_2)
-           ((v_1 binop v_2) OrdCompWrongOps)
-           E-AlertOrdCompWrongOps
-        
-           (side-condition (and (term (isRelationalOperator binop))
-                             
-                                (not (and (equal? (term (δ type v_1))
-                                                  (term (δ type v_2)))
-                                       
-                                          (or (is_string? (term v_1))
-                                              (is_number? (term v_1)))))))
-           ]
 
 
    ; built-in services
@@ -299,31 +272,35 @@
    ; If statement
    [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
            scoreblock_1
-           IfTrue
+           If-T
       
            (side-condition (not (is_false_cond? (term v))))]
    
    [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
            scoreblock_2
-           IfFalse
+           If-F
       
            (side-condition (is_false_cond? (term v)))]
 
    ; While statement
    [-->s/e (while e do scoreblock end)
            (($iter e do scoreblock end) Break)
-           SignpostWhile]
+           
+           While-Start]
    
    [-->s/e ($iter e do scoresing end)
            (if e then (scoresing ($iter e do scoresing end)) else \; end)
-           While_single_stat]
+           
+           While-Iter-Sing]
 
    [-->s/e ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...) end)
            (if e then
                (scoresing_1 scoresing_2 scoresing_3 ...
-                        ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...) end))
+                        ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...)
+                               end))
                else \; end)
-           While_conc_stats]
+           
+           While-Iter-Concat]
 
    
    ; concatenation of statements
@@ -331,15 +308,18 @@
    ; in this mechanization.
    [-->s/e (\; scoresing)
            scoresing
-           ConcatBehavior]
+
+           Seq-Single]
 
    [-->s/e (\; scoresing_1 scoresing_2 scoresing_3 ...)
            (scoresing_1 scoresing_2 scoresing_3 ...)
-           ConcatBehavior2]
+           
+           Seq-Concat]
 
    ; Do ... End block
    [-->s/e (do \; end)
            \;
+           
            DoEnd]
 
    ; list length-equating rules for assignment statements
@@ -374,11 +354,13 @@
    ; Break
    [-->s/e ((in-hole Elf break) Break)
            \;
-           Break]
+           
+           While-Break]
 
    [-->s/e (\; Break)
            \;
-           FinalizationWhile]
+           
+           While-End]
 
    ; call over a non-function value (both, function call as stat and exp)
    [-->s/e ($statFunCall ..._1 v (v_1 ...))

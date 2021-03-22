@@ -1,6 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
+         "./grammarMetaFunctions.rkt"
          ; indexMetaTable, rawget, error, type
          "../Meta-functions/deltaBasic.rkt")
 
@@ -185,33 +186,34 @@
 (provide wrong_key_e)
 
 
-;                                                                                   
-;                                                                                   
-;                                                                                   
-;                        ;              ;                                           
-;                        ;       ;      ;                                           
-;                                ;      ;                                           
-;     ;;;;     ; ;;;   ;;;     ;;;;;;   ; ;;;;  ;       ;   ;;;    ; ;;;     ;;;;;  
-;    ;    ;    ;;   ;    ;       ;      ;;   ;; ;       ;  ;   ;   ;;   ;   ;     ; 
-;         ;    ;         ;       ;      ;     ;  ;  ;  ;  ;     ;  ;     ;  ;       
-;    ;;;;;;    ;         ;       ;      ;     ;  ;  ;  ;  ;     ;  ;     ;  ;;;;    
-;   ;;    ;    ;         ;       ;      ;     ;  ; ; ; ;  ;     ;  ;     ;      ;;; 
-;   ;     ;    ;         ;       ;      ;     ;  ; ; ; ;  ;     ;  ;     ;        ; 
-;   ;    ;;    ;         ;       ;      ;     ;   ;   ;    ;   ;   ;;   ;   ;     ; 
-;    ;;;; ;    ;      ;;;;;;;     ;;;   ;     ;   ;   ;     ;;;    ; ;;;     ;;;;;  
-;                                                                  ;                
-;                                                                  ;                
-;                                                                  ;                
-;                                                                                   
+;                                                                 
+;                                                                 
+;                                                                 
+;   ;           ;                                                 
+;   ;           ;                                                 
+;   ;                                                             
+;   ; ;;;     ;;;     ; ;;;;     ;;;    ; ;;;   ;       ;   ;;;   
+;   ;;   ;      ;     ;;   ;;   ;   ;   ;;   ;  ;       ;  ;   ;  
+;   ;     ;     ;     ;     ;  ;     ;  ;     ;  ;  ;  ;  ;     ; 
+;   ;     ;     ;     ;     ;  ;     ;  ;     ;  ;  ;  ;  ;     ; 
+;   ;     ;     ;     ;     ;  ;     ;  ;     ;  ; ; ; ;  ;     ; 
+;   ;     ;     ;     ;     ;  ;     ;  ;     ;  ; ; ; ;  ;     ; 
+;   ;;   ;      ;     ;     ;   ;   ;   ;;   ;    ;   ;    ;   ;  
+;   ; ;;;    ;;;;;;;  ;     ;    ;;;    ; ;;;     ;   ;     ;;;   
+;                                       ;                         
+;                                       ;                         
+;                                       ;                         
+;                                                                 
+                                                                              
 
-; implements the meta-table mechanism for ArithWrongOps
+; implements the meta-table mechanism for BinopWO
 (define-metafunction ext-lang
 
   ; break loop
-  [(arith_wrong_ops (θ : ((v_1 binop v_2) ArithWrongOps
-                                          tid_1 ...
-                                          tid_2
-                                          tid_3 ...)))
+  [(binop_wo (θ : ((v_1 binop v_2) BinopWO
+                                   tid_1 ...
+                                   tid_2
+                                   tid_3 ...)))
    (δbasic error "loop in arithop")
         
    ; determine if v_1 or v_2 efectively have a meta-table
@@ -220,85 +222,59 @@
                                      (binopeventkey binop)
                                      θ))]
 
-  ; handler
-  [(arith_wrong_ops (θ : ((v_1 binop v_2) ArithWrongOps tid_1 ...)))
+  ; metatables for arith ops and .. have an analogous semantics
+  [(binop_wo (θ : ((v_1 binop v_2) BinopWO tid_1 ...)))
    ((\( (v_3 (v_1 v_2)) \)) Meta tid_1 ... tid_2)
 
+   (side-condition (or (is_strconcat? (term binop))
+                       (is_arithop? (term binop))))
+   
    ; determine if v_1 or v_2 efectively have a meta-table
    (where (tid_2 v_3) (getBinHandler v_1
                                      v_2
                                      (binopeventkey binop)
                                      θ))]
 
+  ; handler for <
+  [(binop_wo (θ : ((v_1 < v_2) BinopWO tid_1 ...)))
+   ((not (not (v_3 (v_1 v_2)))) Meta tid_1 ... tid_2)
+
+   ; obtain a handler for the operation
+   (where (tid_2 v_3) (getBinHandler v_1 
+                                     v_2 
+                                     (binopeventkey <) 
+                                     θ))]
+
+  ; handler for <=
+  [(binop_wo (θ : ((v_1 <= v_2) BinopWO tid_1 ...)))
+   ((not (not (v_3 (v_1 v_2)))) Meta tid_1 ... tid_2)
+
+   ; obtain a handler for the operation
+   (where (tid_2 v_3) (getBinHandler v_1 
+                                     v_2 
+                                     (binopeventkey <=) 
+                                     θ))]
+
+  ; try with not (v_2 < v_1)
+  [(binop_wo (θ : ((v_1 <= v_2) BinopWO tid_1 ...)))
+  ((not (v_3 (v_2 v_1))) Meta tid_1 ... tid_2)
+
+   (where (tid_2 v_3) (getBinHandler v_1
+                                     v_2
+                                     (binopeventkey <)
+                                     θ))]
+
   ; no handler
-  [(arith_wrong_ops (θ : ((v_1 binop v_2) ArithWrongOps objid ...)))
+  [(binop_wo (θ : ((v_1 binop v_2) BinopWO objid ...)))
    (δbasic error String)
         
-   (where String (errmessage ArithWrongOps
+   (where String (errmessage BinopWO
+                             binop
                              (δbasic type v_1)
                              (δbasic type v_2)))]
   )
 
-(provide arith_wrong_ops)
-
-
-;                                                                                                                       
-;                                                                                                                       
-;                                                                                                                       
-;                                                                                                                       
-;              ;                                                              ;                                         
-;              ;                                                              ;                                         
-;    ;;;;;   ;;;;;;     ; ;;;    ;;;      ;;;    ; ;;;;     ;;;      ;;;;   ;;;;;;  ;       ;   ;;;    ; ;;;     ;;;;;  
-;   ;     ;    ;        ;;   ;  ;   ;    ;   ;   ;;   ;;   ;   ;    ;    ;    ;     ;       ;  ;   ;   ;;   ;   ;     ; 
-;   ;          ;        ;      ;        ;     ;  ;     ;  ;              ;    ;      ;  ;  ;  ;     ;  ;     ;  ;       
-;   ;;;;       ;        ;      ;        ;     ;  ;     ;  ;         ;;;;;;    ;      ;  ;  ;  ;     ;  ;     ;  ;;;;    
-;       ;;;    ;        ;      ;        ;     ;  ;     ;  ;        ;;    ;    ;      ; ; ; ;  ;     ;  ;     ;      ;;; 
-;         ;    ;        ;      ;        ;     ;  ;     ;  ;        ;     ;    ;      ; ; ; ;  ;     ;  ;     ;        ; 
-;   ;     ;    ;        ;       ;   ;    ;   ;   ;     ;   ;   ;   ;    ;;    ;       ;   ;    ;   ;   ;;   ;   ;     ; 
-;    ;;;;;      ;;;     ;        ;;;      ;;;    ;     ;    ;;;     ;;;; ;     ;;;    ;   ;     ;;;    ; ;;;     ;;;;;  
-;                                                                                                      ;                
-;                                                                                                      ;                
-;                                                                                                      ;                
-;                                                                                                                       
-
-; implements the meta-table mechanism for StrConcatWrongOps
-(define-metafunction ext-lang
-
-  ; break loop
-  [(str_concat_wrong_ops (θ : ((v_1 .. v_2) StrConcatWrongOps
-                                            tid_1 ...
-                                            tid_2
-                                            tid_3 ...)))
-   ; TODO: check this
-   (δbasic error "loop in concat")
-        
-   ; determine if v_1 or v_2 efectively have a meta-table
-   (where (tid_2 v_3) (getBinHandler v_1
-                                     v_2
-                                     (binopeventkey ..)
-                                     θ))]
-  
-  ; handler
-  [(str_concat_wrong_ops (θ : ((v_1 .. v_2) StrConcatWrongOps tid_1 ...)))
-   ((\( (v_3 (v_1 v_2)) \)) Meta tid_1 ... tid_2)
-        
-   ; determine if v_1 or v_2 efectively have a meta-table
-   (where (tid_2 v_3) (getBinHandler v_1
-                                     v_2
-                                     (binopeventkey ..)
-                                     θ))]
-
-  ; no handler
-  [(str_concat_wrong_ops (θ : ((v_1 .. v_2) StrConcatWrongOps tid ...)))
-   (δbasic error String)
-        
-   (where String (errmessage StrConcatWrongOps
-                             (δbasic type v_1)
-                             (δbasic type v_2)))]
-  )
-
-(provide str_concat_wrong_ops)
-
+(provide binop_wo)
 
 ;                                                                 
 ;                                                                 
@@ -463,107 +439,6 @@
 
 (provide eq_fail)
 
-
-;                                                                 
-;                                                                 
-;                                                                 
-;                           ;                                     
-;                           ;                                     
-;                           ;                                     
-;     ;;;      ; ;;;    ;;; ; ;       ;   ;;;    ; ;;;     ;;;;;  
-;    ;   ;     ;;   ;  ;   ;; ;       ;  ;   ;   ;;   ;   ;     ; 
-;   ;     ;    ;      ;     ;  ;  ;  ;  ;     ;  ;     ;  ;       
-;   ;     ;    ;      ;     ;  ;  ;  ;  ;     ;  ;     ;  ;;;;    
-;   ;     ;    ;      ;     ;  ; ; ; ;  ;     ;  ;     ;      ;;; 
-;   ;     ;    ;      ;     ;  ; ; ; ;  ;     ;  ;     ;        ; 
-;    ;   ;     ;       ;   ;;   ;   ;    ;   ;   ;;   ;   ;     ; 
-;     ;;;      ;        ;;; ;   ;   ;     ;;;    ; ;;;     ;;;;;  
-;                                                ;                
-;                                                ;                
-;                                                ;                
-;                                                                 
-
-; implements the meta-table mechanism for OrdCompWrongOps
-(define-metafunction ext-lang
-
-  ; break loop
-  [(ord_comp_wrong_ops_lt (θ : ((v_1 < v_2) OrdCompWrongOps
-                                            tid_1 ...
-                                            tid_2
-                                            tid_3 ...)))
-   ; TODO: check this
-  (δbasic error "loop in <")
-        
-   (where (tid_2 v_3) (getBinHandler v_1 
-                                     v_2 
-                                     (binopeventkey <) 
-                                     θ))]
-
-  ; handler
-  [(ord_comp_wrong_ops_lt (θ : ((v_1 < v_2) OrdCompWrongOps tid_1 ...)))
-   ((not (not (v_3 (v_1 v_2)))) Meta tid_1 ... tid_2)
-
-   ; obtain a handler for the operation
-   (where (tid_2 v_3) (getBinHandler v_1 
-                                     v_2 
-                                     (binopeventkey <) 
-                                     θ))]
-
-  ; no handler
-  [(ord_comp_wrong_ops_lt (θ : ((v_1 < v_2) OrdCompWrongOps objid ...)))
-  (δbasic error String)
-        
-   (where String (errmessage OrdCompWrongOps 
-                             (δbasic type v_1)
-                             (δbasic type v_2)))]
-  )
-
-(provide ord_comp_wrong_ops_lt)
-
-(define-metafunction ext-lang
-
-  ; break loop
-  [(ord_comp_wrong_ops_le (θ : ((v_1 <= v_2) OrdCompWrongOps
-                                             tid_1 ...
-                                             tid_2
-                                             tid_3 ...)))
-   ; TODO: check this
-   (δbasic error "loop in <=")
-        
-   (where (tid_2 v_3) (getBinHandler v_1 
-                                     v_2 
-                                     (binopeventkey <=) 
-                                     θ))]
-  
-  ; handler
-  [(ord_comp_wrong_ops_le (θ : ((v_1 <= v_2) OrdCompWrongOps tid_1 ...)))
-   ((not (not (v_3 (v_1 v_2)))) Meta tid_1 ... tid_2)
-
-   ; obtain a handler for the operation
-   (where (tid_2 v_3) (getBinHandler v_1 
-                                     v_2 
-                                     (binopeventkey <=) 
-                                     θ))]
-
-  ; try with not (v_2 < v_1)
-  [(ord_comp_wrong_ops_le (θ : ((v_1 <= v_2) OrdCompWrongOps tid_1 ...)))
-  ((not (v_3 (v_2 v_1))) Meta tid_1 ... tid_2)
-
-   (where (tid_2 v_3) (getBinHandler v_1
-                                     v_2
-                                     (binopeventkey <)
-                                     θ))]
-
-  ; no handler
-  [(ord_comp_wrong_ops_le (θ : ((v_1 <= v_2) OrdCompWrongOps tid ...)))
-  (δbasic error String)
-        
-   (where String (errmessage OrdCompWrongOps
-                             (δbasic type v_1)
-                             (δbasic type v_2)))]
-  )
-
-(provide ord_comp_wrong_ops_le)
 
 
 ;                                                                                                                       

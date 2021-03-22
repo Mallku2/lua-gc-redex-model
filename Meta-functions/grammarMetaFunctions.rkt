@@ -4,31 +4,6 @@
 ; Predicates over grammar's symbols, to ease the definition of some rules
 ; from the model
 (define-metafunction ext-lang
-  [(isArithBinOp +)
-   #t]
-  
-  [(isArithBinOp -)
-   #t]
-  
-  [(isArithBinOp *)
-   #t]
-  
-  [(isArithBinOp %)
-   #t]
-  
-  [(isArithBinOp ^)
-   #t]
-  
-  [(isArithBinOp /)
-   #t]
-  
-  [(isArithBinOp any)
-   #f])
-
-(provide isArithBinOp)
-
-
-(define-metafunction ext-lang
   [(isRelationalOperator <)
    #t]
   
@@ -42,14 +17,6 @@
 
 
 (define-metafunction ext-lang
-  [(isNumberBinOp binop)
-   (or (isArithBinOp binop)
-       (isRelationalOperator binop))])
-
-(provide isNumberBinOp)
-
-
-(define-metafunction ext-lang
   [(translateComparisonOp >)
    <]
   
@@ -57,27 +24,6 @@
    <=])
 
 (provide translateComparisonOp)
-
-(define-metafunction ext-lang
-  [(isBooleanBinOp and)
-   #t]
-  
-  [(isBooleanBinOp or)
-   #t]
-  
-  [(isBooleanBinOp any)
-   #f])
-
-(provide isBooleanBinOp)
-
-
-(define-metafunction ext-lang
-  [(isStringBinOp binop)
-   (or (term (isRelationalOperator binop))
-       (equal? (term binop) (term ..)))])
-
-(provide isStringBinOp)
-
 
 ; For each ev. contexts where tuples are truncated, we need to add an equation
 ; this definition
@@ -188,3 +134,212 @@
   )
 
 (provide concat-stats)
+
+
+
+;                                                                                            
+;                                                                                            
+;                                                                                            
+;                                       ;                     ;;;                            
+;                       ;               ;                    ;                               
+;                       ;               ;                    ;                               
+;   ;;;;;;     ;;;;   ;;;;;;     ;;;    ; ;;;;             ;;;;;;  ;     ;  ; ;;;;     ;;;   
+;   ;  ;  ;   ;    ;    ;       ;   ;   ;;   ;;              ;     ;     ;  ;;   ;;   ;   ;  
+;   ;  ;  ;        ;    ;      ;        ;     ;              ;     ;     ;  ;     ;  ;       
+;   ;  ;  ;   ;;;;;;    ;      ;        ;     ;              ;     ;     ;  ;     ;  ;       
+;   ;  ;  ;  ;;    ;    ;      ;        ;     ;              ;     ;     ;  ;     ;  ;       
+;   ;  ;  ;  ;     ;    ;      ;        ;     ;              ;     ;     ;  ;     ;  ;       
+;   ;  ;  ;  ;    ;;    ;       ;   ;   ;     ;              ;     ;;   ;;  ;     ;   ;   ;  
+;   ;  ;  ;   ;;;; ;     ;;;     ;;;    ;     ;              ;      ;;;; ;  ;     ;    ;;;   
+;                                                                                            
+;                                                                                            
+;                                                                                            
+;                                                                                            
+                                                                             
+
+(define is_s?
+  (redex-match? ext-lang
+                s))
+
+(define is_e?
+  (redex-match? ext-lang
+                e))
+
+(define (is_term? t)
+  (or (is_s? t)
+
+      (is_e? t)))
+
+
+; values
+(define is_v?
+  (redex-match? ext-lang
+                v))
+
+(define is_number?
+  (redex-match? ext-lang
+                Number))
+
+(define is_string?
+  (redex-match? ext-lang
+                String))
+
+(define is_nil?
+  (redex-match? ext-lang
+                nil))
+
+(define is_false?
+  (redex-match? ext-lang
+                false))
+
+; values that are interpreted as false, in a boolean context
+(define (is_false_cond? t)
+  (or (is_false? t)
+      (is_nil? t)))
+
+(define is_true?
+  (redex-match? ext-lang
+                true))
+
+(define (is_bool? t)
+  (or (is_false? t)
+      (is_true? t)))
+
+(define (is_tid? t)
+  (redex-match? ext-lang
+                tid
+                t))
+
+(define is_cid?
+  (redex-match? ext-lang
+                cid))
+
+(define is_fdef?
+  (redex-match? ext-lang
+                functiondef))
+
+
+; operators
+(define is_strconcat?
+  (redex-match? ext-lang
+                ..))
+
+(define is_arithop?
+  (redex-match? ext-lang
+                arithop))
+
+(define is_and?
+  (redex-match? ext-lang
+                and))
+
+(define is_or?
+  (redex-match? ext-lang
+                or))
+
+(define (is_bool_binop? t)
+  (or (is_and? t)
+      (is_or? t)))
+
+(define is_relop?
+  (redex-match? ext-lang
+                relop))
+
+(define is_eq?
+  (redex-match? ext-lang
+                ==))
+
+(define is_lt?
+  (redex-match? ext-lang
+                <))
+
+(define is_le?
+  (redex-match? ext-lang
+                <=))
+
+(define is_gt?
+  (redex-match? ext-lang
+                >))
+
+(define is_ge?
+  (redex-match? ext-lang
+                >=))
+
+(define (is_lt_le? t)
+  (or (is_lt? t)
+      (is_le? t)))
+
+(define (is_gt_ge? t)
+  (or (is_gt? t)
+      (is_ge? t)))
+
+; exps
+(define is_r?
+  (redex-match? ext-lang
+                r))
+
+; statements
+(define is_skip?
+  (redex-match? ext-lang
+                \;))
+
+(define is_break?
+  (redex-match? ext-lang
+                break))
+
+; state
+(define is_intreptable?
+  (redex-match? ext-lang
+                intreptable))
+
+(define (is_cte? t)
+  (or (is_tid? t)
+
+      (is_cid? t)))
+
+(define is_theta?
+  (redex-match? ext-lang
+                θ))
+
+(define is_conf?
+  (redex-match? ext-lang
+                (σ : θ : s)))
+
+
+(provide is_s? is_e? is_term?
+         ;values
+         is_v?
+         is_number?
+         is_string?
+         is_tid?
+         is_cid?
+         is_fdef?
+         is_nil?
+         is_false?
+         is_true?
+         is_false_cond?
+         is_bool?
+
+         ; ops
+         is_strconcat?
+         is_arithop?
+         is_and?
+         is_or?
+         is_bool_binop?
+         is_eq?
+         is_relop?
+         is_lt?
+         is_gt?
+         is_le?
+         is_ge?
+         is_lt_le?
+         is_gt_ge?
+
+         ; stats
+         is_skip?
+         is_break?
+         
+         is_r?
+         is_intreptable? 
+         is_cte?
+         is_theta?
+         is_conf? )

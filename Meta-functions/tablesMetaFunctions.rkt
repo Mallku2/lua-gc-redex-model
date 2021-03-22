@@ -1,6 +1,7 @@
 #lang racket
 (require redex
          "../grammar.rkt"
+         "./grammarMetaFunctions.rkt"
          "./delta.rkt")
 
 ; operations that deals with tables and their internal representation

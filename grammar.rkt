@@ -100,10 +100,10 @@
      ((v_1 (v_2 ...)) WFunCall objid ...)
      ((v \[ v \]) NonTable objid ...)
      ((tid \[ v \]) WrongKey objid ...)
-     ((v arithop v) ArithWrongOps objid ...)
-     ((v .. v) StrConcatWrongOps objid ...)
-     ((v < v) OrdCompWrongOps objid ...)
-     ((v <= v) OrdCompWrongOps objid ...)
+     ((v arithop v) BinopWO objid ...)
+     ((v .. v) BinopWO objid ...)
+     ((v < v) BinopWO objid ...)
+     ((v <= v) BinopWO objid ...)
      ((- v) NegWrongOp objid ...)
      ((\# v) StrLenWrongOp objid ...)
      ((v == v) EqFail objid ...)]
@@ -190,10 +190,8 @@
 
   [explabel WrongKey
             NonTable
-            ArithWrongOps
-            StrConcatWrongOps
+            BinopWO
             EqFail
-            OrdCompWrongOps
             NegWrongOp
             StrLenWrongOp
             WFunCall]
@@ -506,8 +504,8 @@
      ((v \[ C \]) NonTable objid ...)
      ((C \[ v \]) WrongKey objid ...)
      ((tid \[ C \]) WrongKey objid ...)
-     ((C arithop v) ArithWrongOps objid ...)
-     ((v arithop C) ArithWrongOps objid ...)
+     ((C arithop v) BinopWO objid ...)
+     ((v arithop C) BinopWO objid ...)
      ((C .. v) StrConcatWrongOps objid ...)
      ((v .. C) StrConcatWrongOps objid ...)
      ((C < v) OrdCompWrongOps objid ...)
@@ -542,151 +540,4 @@
      (function Name_1 (Name_2 ... <<<) C end)
      ]  
   )
-(provide ext-lang)
-
-
-;                             
-;                             
-;                             
-;      ;                      
-;     ; ;                     
-;     ; ;                     
-;     ; ;    ;     ;  ;;   ;; 
-;     ; ;    ;     ;   ;   ;  
-;    ;   ;   ;     ;    ; ;   
-;    ;   ;   ;     ;     ;    
-;    ;;;;;   ;     ;     ;    
-;    ;   ;   ;     ;    ; ;   
-;   ;     ;  ;;   ;;   ;   ;  
-;   ;     ;   ;;;; ;  ;;   ;; 
-;                             
-;                             
-;                             
-;                             
-                               
-(define is_s?
-  (redex-match? ext-lang
-                s))
-
-(define is_e?
-  (redex-match? ext-lang
-                e))
-
-(define (is_term? t)
-  (or (is_s? t)
-
-      (is_e? t)))
-
-
-; values
-(define is_v?
-  (redex-match? ext-lang
-                v))
-
-(define is_number?
-  (redex-match? ext-lang
-                Number))
-
-(define is_string?
-  (redex-match? ext-lang
-                String))
-
-(define is_nil?
-  (redex-match? ext-lang
-                nil))
-
-(define is_false?
-  (redex-match? ext-lang
-                false))
-
-; values that are interpreted as false, in a boolean context
-(define (is_false_cond? t)
-  (or (is_false? t)
-      (is_nil? t)))
-
-(define is_true?
-  (redex-match? ext-lang
-                true))
-
-(define (is_tid? t)
-  (redex-match? ext-lang
-                tid
-                t))
-
-(define is_cid?
-  (redex-match? ext-lang
-                cid))
-
-(define is_fdef?
-  (redex-match? ext-lang
-                functiondef))
-
-
-; operators
-(define is_strconcat?
-  (redex-match? ext-lang
-                ..))
-
-(define is_arithop?
-  (redex-match? ext-lang
-                arithop))
-
-; exps
-(define is_r?
-  (redex-match? ext-lang
-                r))
-
-; statements
-(define is_skip?
-  (redex-match? ext-lang
-                \;))
-
-(define is_break?
-  (redex-match? ext-lang
-                break))
-
-; state
-(define is_intreptable?
-  (redex-match? ext-lang
-                intreptable))
-
-(define (is_cte? t)
-  (or (is_tid? t)
-
-      (is_cid? t)))
-
-(define is_theta?
-  (redex-match? ext-lang
-                θ))
-
-(define is_conf?
-  (redex-match? ext-lang
-                (σ : θ : s)))
-
-
-(provide is_s? is_e? is_term?
-         ;values
-         is_v?
-         is_number?
-         is_string?
-         is_tid?
-         is_cid?
-         is_fdef?
-         is_nil?
-         is_false?
-         is_true?
-         is_false_cond?
-
-         ; ops
-         is_strconcat?
-         is_arithop?
-
-         ; stats
-         is_skip?
-         is_break?
-         
-         is_r?
-         is_intreptable? 
-         is_cte?
-         is_theta?
-         is_conf? )
+(provide ext-lang)               

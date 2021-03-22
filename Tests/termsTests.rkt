@@ -257,112 +257,112 @@
   ; Abnormal expressions
   (test-->> terms-rel
             (term ("a" + 1))
-            (term (("a" + 1)ArithWrongOps)))
+            (term (("a" + 1) BinopWO)))
   (test-->> terms-rel
             (term (1 + "a"))
-            (term ((1 + "a")ArithWrongOps)))
+            (term ((1 + "a") BinopWO)))
   (test-->> terms-rel
             (term ("0xq" + 1))
-            (term (("0xq" + 1)ArithWrongOps)))
+            (term (("0xq" + 1) BinopWO)))
   (test-->> terms-rel
             (term (1 + "0xq"))
-            (term ((1 + "0xq")ArithWrongOps)))
+            (term ((1 + "0xq") BinopWO)))
   (test-->> terms-rel
             (term (1 + "0x1.q"))
-            (term ((1 + "0x1.q")ArithWrongOps)))
+            (term ((1 + "0x1.q") BinopWO)))
   (test-->> terms-rel
             (term (1 + "0x1.1pq"))
-            (term ((1 + "0x1.1pq")ArithWrongOps)))
+            (term ((1 + "0x1.1pq") BinopWO)))
   (test-->> terms-rel
             (term ("a" - 1))
-            (term (("a" - 1)ArithWrongOps)))
+            (term (("a" - 1) BinopWO)))
   (test-->> terms-rel
             (term (1 - "a"))
-            (term ((1 - "a")ArithWrongOps)))
+            (term ((1 - "a") BinopWO)))
   (test-->> terms-rel
             (term ("0xq" - 1))
-            (term (("0xq" - 1)ArithWrongOps)))
+            (term (("0xq" - 1) BinopWO)))
   (test-->> terms-rel
             (term (1 - "0xq"))
-            (term ((1 - "0xq")ArithWrongOps)))
+            (term ((1 - "0xq") BinopWO)))
   (test-->> terms-rel
             (term (1 - "0x1.q"))
-            (term ((1 - "0x1.q")ArithWrongOps)))
+            (term ((1 - "0x1.q") BinopWO)))
   (test-->> terms-rel
             (term (1 - "0x1.1pq"))
-            (term ((1 - "0x1.1pq")ArithWrongOps)))
+            (term ((1 - "0x1.1pq") BinopWO)))
   (test-->> terms-rel
             (term ("a" * 1))
-            (term (("a" * 1)ArithWrongOps)))
+            (term (("a" * 1) BinopWO)))
   (test-->> terms-rel
             (term (1 * "a"))
-            (term ((1 * "a")ArithWrongOps)))
+            (term ((1 * "a") BinopWO)))
   (test-->> terms-rel
             (term ("0xq" * 1))
-            (term (("0xq" * 1)ArithWrongOps)))
+            (term (("0xq" * 1) BinopWO)))
   (test-->> terms-rel
             (term (1 * "0xq"))
-            (term ((1 * "0xq")ArithWrongOps)))
+            (term ((1 * "0xq") BinopWO)))
   (test-->> terms-rel
             (term (1 * "0x1.q"))
-            (term ((1 * "0x1.q")ArithWrongOps)))
+            (term ((1 * "0x1.q") BinopWO)))
   (test-->> terms-rel
             (term (1 * "0x1.1pq"))
-            (term ((1 * "0x1.1pq")ArithWrongOps)))
+            (term ((1 * "0x1.1pq") BinopWO)))
   (test-->> terms-rel
             (term ("a" ^ 1))
-            (term (("a" ^ 1)ArithWrongOps)))
+            (term (("a" ^ 1) BinopWO)))
   (test-->> terms-rel
             (term (1 ^ "a"))
-            (term ((1 ^ "a")ArithWrongOps)))
+            (term ((1 ^ "a") BinopWO)))
   (test-->> terms-rel
             (term ("0xq" ^ 1))
-            (term (("0xq" ^ 1)ArithWrongOps)))
+            (term (("0xq" ^ 1) BinopWO)))
   (test-->> terms-rel
             (term (1 ^ "0xq"))
-            (term ((1 ^ "0xq")ArithWrongOps)))
+            (term ((1 ^ "0xq") BinopWO)))
   (test-->> terms-rel
             (term (1 ^ "0x1.q"))
-            (term ((1 ^ "0x1.q")ArithWrongOps)))
+            (term ((1 ^ "0x1.q") BinopWO)))
   (test-->> terms-rel
             (term (1 ^ "0x1.1pq"))
-            (term ((1 ^ "0x1.1pq")ArithWrongOps)))
+            (term ((1 ^ "0x1.1pq") BinopWO)))
   (test-->> terms-rel
             (term ("a" % 1))
-            (term (("a" % 1)ArithWrongOps)))
+            (term (("a" % 1) BinopWO)))
   (test-->> terms-rel
             (term (1 % "a"))
-            (term ((1 % "a")ArithWrongOps)))
+            (term ((1 % "a") BinopWO)))
   (test-->> terms-rel
             (term ("0xq" % 1))
-            (term (("0xq" % 1)ArithWrongOps)))
+            (term (("0xq" % 1) BinopWO)))
   (test-->> terms-rel
             (term (1 % "0xq"))
-            (term ((1 % "0xq")ArithWrongOps)))
+            (term ((1 % "0xq") BinopWO)))
   (test-->> terms-rel
             (term (1 % "0x1.q"))
-            (term ((1 % "0x1.q")ArithWrongOps)))
+            (term ((1 % "0x1.q") BinopWO)))
   (test-->> terms-rel
             (term (1 % "0x1.1pq"))
-            (term ((1 % "0x1.1pq")ArithWrongOps)))
+            (term ((1 % "0x1.1pq") BinopWO)))
   (test-->> terms-rel
             (term (- "a"))
-            (term ((- "a")NegWrongOp)))
+            (term ((- "a") NegWrongOp)))
   (test-->> terms-rel
             (term (- "0xq"))
-            (term ((- "0xq")NegWrongOp)))
+            (term ((- "0xq") NegWrongOp)))
   (test-->> terms-rel
             (term (- "0x1.q"))
-            (term ((- "0x1.q")NegWrongOp)))
+            (term ((- "0x1.q") NegWrongOp)))
   (test-->> terms-rel
             (term (- "0x1.1pq"))
-            (term ((- "0x1.1pq")NegWrongOp)))
+            (term ((- "0x1.1pq") NegWrongOp)))
   (test-->> terms-rel
             (term ("a" .. (objr 1)))
-            (term (("a" .. (objr 1))StrConcatWrongOps)))
+            (term (("a" .. (objr 1)) BinopWO)))
   (test-->> terms-rel
             (term (\# (objr 1)))
-            (term ((\# (objr 1))StrLenWrongOp)))
+            (term ((\# (objr 1)) StrLenWrongOp)))
   (test-->> terms-rel
             (term ("a" == "b"))
             (term false))
@@ -371,10 +371,10 @@
             (term false))
   (test-->> terms-rel
             (term ((objr 1) < (objr 1)))
-            (term (((objr 1) < (objr 1))OrdCompWrongOps)))
+            (term (((objr 1) < (objr 1)) BinopWO)))
   (test-->> terms-rel
             (term ((objr 1) <= (objr 1)))
-            (term (((objr 1) <= (objr 1))OrdCompWrongOps)))
+            (term (((objr 1) <= (objr 1)) BinopWO)))
 
   ;                                                                                                                          
   ;   ;                         ;                        ;;                                     ;                            

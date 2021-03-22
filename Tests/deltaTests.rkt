@@ -902,36 +902,52 @@
                       (function
                        $dummy
                        ()
-                       (local
-                         i
-                         j
-                         accum
-                         value
-                         =
-                         1
-                         1
-                         ""
-                         nil
+                       (local i j accum value = 1 1 "" nil
                          in
-                         ((while
-                           (i <= j)
-                           do
-                           ((value = ((objr 1) |[| i |]|))
-                            (if value
-                                then
-                                (accum = (accum .. value))
-                                else
-                                (return
-                                 ($builtIn
-                                  error
-                                  ((("invalid value (nil) at index "
-                                     ..
-                                     ($builtIn tostring (i)))
-                                    ..
-                                    " in table for 'concat'"))))
-                                end)
-                            (i = (i + 1)))
-                           end)
+                         ((if (i <= j)
+                              then
+                              ((value = ((objr 1) |[| i |]|))
+                               (if ((($builtIn type (value)) == "number")
+                                    or
+                                    (($builtIn type (value)) == "string"))
+                                   then
+                                   (accum = value)
+                                   else
+                                   (return
+                                    ($builtIn
+                                     error
+                                     ((("invalid value at index "
+                                        ..
+                                        ($builtIn tostring (i)))
+                                       ..
+                                       " in table for 'concat'"))))
+                                   end)
+                               (i = (i + 1))
+                               (while
+                                (i <= j)
+                                do
+                                ((value = ((objr 1) |[| i |]|))
+                                 (if ((($builtIn type (value)) == "number")
+                                      or
+                                      (($builtIn type (value)) == "string"))
+                                     then
+                                     ((accum = (accum .. "a"))
+                                      (accum = (accum .. value)))
+                                     else
+                                     (return
+                                      ($builtIn
+                                       error
+                                       ((("invalid value at index "
+                                          ..
+                                          ($builtIn tostring (i)))
+                                         ..
+                                         " in table for 'concat'"))))
+                                     end)
+                                 (i = (i + 1)))
+                                end))
+                              else
+                              |;|
+                              end)
                           (return accum))
                          end)
                        end)
@@ -954,72 +970,56 @@
                          ""
                          nil
                          in
-                         ((while
-                           (i <= j)
-                           do
-                           ((value = ((objr 1) |[| i |]|))
-                            (if value
-                                then
-                                (accum = (accum .. value))
-                                else
-                                (return
-                                 ($builtIn
-                                  error
-                                  ((("invalid value (nil) at index "
-                                     ..
-                                     ($builtIn tostring (i)))
-                                    ..
-                                    " in table for 'concat'"))))
-                                end)
-                            (i = (i + 1)))
-                           end)
+                         ((if (i <= j)
+                              then
+                              ((value = ((objr 1) |[| i |]|))
+                               (if ((($builtIn type (value)) == "number")
+                                    or
+                                    (($builtIn type (value)) == "string"))
+                                   then
+                                   (accum = value)
+                                   else
+                                   (return
+                                    ($builtIn
+                                     error
+                                     ((("invalid value at index "
+                                        ..
+                                        ($builtIn tostring (i)))
+                                       ..
+                                       " in table for 'concat'"))))
+                                   end)
+                               (i = (i + 1))
+                               (while
+                                (i <= j)
+                                do
+                                ((value = ((objr 1) |[| i |]|))
+                                 (if ((($builtIn type (value)) == "number")
+                                      or
+                                      (($builtIn type (value)) == "string"))
+                                     then
+                                     ((accum = (accum .. "a"))
+                                      (accum = (accum .. value)))
+                                     else
+                                     (return
+                                      ($builtIn
+                                       error
+                                       ((("invalid value at index "
+                                          ..
+                                          ($builtIn tostring (i)))
+                                         ..
+                                         " in table for 'concat'"))))
+                                     end)
+                                 (i = (i + 1)))
+                                end))
+                              else
+                              |;|
+                              end)
                           (return accum))
                          end)
                        end)
                       |)|)
                      ())))
-
-  (test-equal (term (δ table.concat (objr 1) "a" 1 3))
-              (term ((|(|
-                      (function
-                       $dummy
-                       ()
-                       (local
-                         i
-                         j
-                         accum
-                         value
-                         =
-                         1
-                         3
-                         ""
-                         nil
-                         in
-                         ((while
-                           (i <= j)
-                           do
-                           ((value = ((objr 1) |[| i |]|))
-                            (if value
-                                then
-                                (accum = (accum .. value))
-                                else
-                                (return
-                                 ($builtIn
-                                  error
-                                  ((("invalid value (nil) at index "
-                                     ..
-                                     ($builtIn tostring (i)))
-                                    ..
-                                    " in table for 'concat'"))))
-                                end)
-                            (i = (i + 1)))
-                           end)
-                          (return accum))
-                         end)
-                       end)
-                      |)|)
-                     ())))
-
+  
   (test-equal (term (δ table.concat (objr 1) "" nil nil))
               (term ((|(|
                       (function
@@ -1036,31 +1036,56 @@
                          ""
                          nil
                          in
-                         ((while
-                           (i <= j)
-                           do
-                           ((value = ((objr 1) |[| i |]|))
-                            (if value
-                                then
-                                (accum = (accum .. value))
-                                else
-                                (return
-                                 ($builtIn
-                                  error
-                                  ((("invalid value (nil) at index "
-                                     ..
-                                     ($builtIn tostring (i)))
-                                    ..
-                                    " in table for 'concat'"))))
-                                end)
-                            (i = (i + 1)))
-                           end)
+                         ((if (i <= j)
+                              then
+                              ((value = ((objr 1) |[| i |]|))
+                               (if ((($builtIn type (value)) == "number")
+                                    or
+                                    (($builtIn type (value)) == "string"))
+                                   then
+                                   (accum = value)
+                                   else
+                                   (return
+                                    ($builtIn
+                                     error
+                                     ((("invalid value at index "
+                                        ..
+                                        ($builtIn tostring (i)))
+                                       ..
+                                       " in table for 'concat'"))))
+                                   end)
+                               (i = (i + 1))
+                               (while
+                                (i <= j)
+                                do
+                                ((value = ((objr 1) |[| i |]|))
+                                 (if ((($builtIn type (value)) == "number")
+                                      or
+                                      (($builtIn type (value)) == "string"))
+                                     then
+                                     ((accum = (accum .. ""))
+                                      (accum = (accum .. value)))
+                                     else
+                                     (return
+                                      ($builtIn
+                                       error
+                                       ((("invalid value at index "
+                                          ..
+                                          ($builtIn tostring (i)))
+                                         ..
+                                         " in table for 'concat'"))))
+                                     end)
+                                 (i = (i + 1)))
+                                end))
+                              else
+                              |;|
+                              end)
                           (return accum))
                          end)
                        end)
                       |)|)
                      ())))
-
+                    
   (test-equal (term (δ table.concat (objr 1) nil nil nil))
               (term ((|(|
                       (function
@@ -1077,25 +1102,50 @@
                          ""
                          nil
                          in
-                         ((while
-                           (i <= j)
-                           do
-                           ((value = ((objr 1) |[| i |]|))
-                            (if value
-                                then
-                                (accum = (accum .. value))
-                                else
-                                (return
-                                 ($builtIn
-                                  error
-                                  ((("invalid value (nil) at index "
-                                     ..
-                                     ($builtIn tostring (i)))
-                                    ..
-                                    " in table for 'concat'"))))
-                                end)
-                            (i = (i + 1)))
-                           end)
+                         ((if (i <= j)
+                              then
+                              ((value = ((objr 1) |[| i |]|))
+                               (if ((($builtIn type (value)) == "number")
+                                    or
+                                    (($builtIn type (value)) == "string"))
+                                   then
+                                   (accum = value)
+                                   else
+                                   (return
+                                    ($builtIn
+                                     error
+                                     ((("invalid value at index "
+                                        ..
+                                        ($builtIn tostring (i)))
+                                       ..
+                                       " in table for 'concat'"))))
+                                   end)
+                               (i = (i + 1))
+                               (while
+                                (i <= j)
+                                do
+                                ((value = ((objr 1) |[| i |]|))
+                                 (if ((($builtIn type (value)) == "number")
+                                      or
+                                      (($builtIn type (value)) == "string"))
+                                     then
+                                     ((accum = (accum .. ""))
+                                      (accum = (accum .. value)))
+                                     else
+                                     (return
+                                      ($builtIn
+                                       error
+                                       ((("invalid value at index "
+                                          ..
+                                          ($builtIn tostring (i)))
+                                         ..
+                                         " in table for 'concat'"))))
+                                     end)
+                                 (i = (i + 1)))
+                                end))
+                              else
+                              |;|
+                              end)
                           (return accum))
                          end)
                        end)

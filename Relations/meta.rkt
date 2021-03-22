@@ -40,27 +40,16 @@
             (where e
                    (wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey objid ...))))]
 
-   ; ArithWrongOps
-   [-->meta (θ : ((v_1 binop v_2) ArithWrongOps objid ...))
+   ; BinopWO
+   [-->meta (θ : ((v_1 binop v_2) BinopWO objid ...))
             (θ : e)
         
-            E-ArithWrongOps
+            E-ArithWO
             
             (where e
-                   (arith_wrong_ops (θ : ((v_1 binop v_2)
-                                            ArithWrongOps
+                   (binop_wo (θ : ((v_1 binop v_2)
+                                            BinopWO
                                             objid ...))))]
-
-   ; StrConcatWrongOps
-   [-->meta (θ : ((v_1 .. v_2) StrConcatWrongOps objid ...))
-            (θ : e)
-        
-            E-StrConcatWrongOps
-            
-            (where e
-                   (str_concat_wrong_ops (θ : ((v_1 .. v_2)
-                                                 StrConcatWrongOps
-                                                 objid ...))))] 
 
    ; NegWrongOp
    [-->meta (θ : ((- v) NegWrongOp objid ...))
@@ -90,28 +79,6 @@
             
             (where e
                    (eq_fail (θ : ((v_1 == v_2) EqFail objid ...))))]
-
-   ; OrdCompWrongOps
-   [-->meta (θ : ((v_1 < v_2) OrdCompWrongOps objid ...))
-            (θ : e)
-        
-            E-OrdCompWrongOpsLt
-            
-            (where e
-                   (ord_comp_wrong_ops_lt (θ : ((v_1 < v_2)
-                                                  OrdCompWrongOps
-                                                  objid ...))))]
-
-   [-->meta (θ : ((v_1 <= v_2) OrdCompWrongOps objid ...))
-            (θ : e)
-        
-            E-OrdCompWrongOpsLe
-            
-            (where e
-                   (ord_comp_wrong_ops_le (θ : ((v_1 <= v_2)
-                                                  OrdCompWrongOps
-                                                  objid ...))))] 
-
 
    ;                                                                                  
    ;                                                                                  

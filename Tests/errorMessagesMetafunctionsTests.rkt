@@ -5,10 +5,10 @@
 
 (define (errmessages-test-suite)
   ; Arithmetic operations
-  (test-equal (term (\#errmessage ArithWrongOps "table" "number"))
+  (test-equal (term (\#errmessage ArithWO "table" "number"))
               "attempt to perform arithmetic on a table value.")
 
-  (test-equal (term (\#errmessage ArithWrongOps "number" "table"))
+  (test-equal (term (\#errmessage ArithWO "number" "table"))
               "attempt to perform arithmetic on a table value.")
 
   ; String concatenation

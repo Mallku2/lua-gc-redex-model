@@ -118,9 +118,9 @@
     WrongKey
     (substExp tid ((id e) ...)) ...)]
   
-  [(substExp ((v_1 arithop v_2) ArithWrongOps tid ...) ((id e) ...))
+  [(substExp ((v_1 arithop v_2) ArithWO tid ...) ((id e) ...))
    (((substExp v_1 ((id e) ...)) arithop (substExp v_2 ((id e) ...)))
-    ArithWrongOps
+    ArithWO
     (substExp tid ((id e) ...)) ...)]
 
   [(substExp ((v_1 .. v_2) StrConcatWrongOps tid ...) ((id e) ...))

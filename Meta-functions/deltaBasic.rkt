@@ -23,11 +23,12 @@
    (δbasic binop Number_1 Number_2)
    
    (side-condition (and
+                    (is_arithop? (term binop))
+
                     ; the following condition triggers coercion
                     (or (is_string? (term v_1))
                         (is_string? (term v_2)))
-                    
-                    (term (isArithBinOp binop))))
+                    ))
    
    (where Number_1 (δbasic tonumber v_1 nil))
    (where Number_2 (δbasic tonumber v_2 nil))]
@@ -456,7 +457,7 @@
                    (var = (var + 1))
                    
                    (result = ($builtIn rawget (t var)))
-                   
+
                    (if (result == nil)
                        
                        then
@@ -1522,7 +1523,7 @@
 
 (define-metafunction ext-lang
   
-  [(errmessage ArithWrongOps String_1 String_2)
+  [(errmessage BinopWO arithop String_1 String_2)
    ,(string-append "attempt to perform arithmetic on a "
                    (term String_1)
                    " value.")
@@ -1530,22 +1531,22 @@
    (side-condition (not (equal? (term String_1)
                                 "number")))]
   
-  [(errmessage ArithWrongOps "number" String_2)
+  [(errmessage BinopWO arithop "number" String_2)
    ,(string-append "attempt to perform arithmetic on a "
                    (term String_2)
                    " value.")]
   
-  [(errmessage StrConcatWrongOps "string" String_2)
+  [(errmessage BinopWO .. "string" String_2)
    ,(string-append "attempt to concatenate a "
                    (term String_2)
                    " value.")]
   
-  [(errmessage StrConcatWrongOps String_1 String_2)
+  [(errmessage BinopWO .. String_1 String_2)
    ,(string-append "attempt to concatenate a "
                    (term String_1)
                    " value.")]
   
-  [(errmessage OrdCompWrongOps String_1 String_2)
+  [(errmessage BinopWO relop String_1 String_2)
    ,(string-append "attempt to compare "
                    (term String_1)
                    " with "
@@ -1651,18 +1652,19 @@
 (provide getMetaTableRef)
 
 ; returns the meta-table tid of a given value, if set, or nil, otherwise
+; PRE : {if v ∈ tid then v ∈ dom(θ)}
 (define-metafunction ext-lang
   getMetaTable : v θ -> v
 
   [(getMetaTable tid (osp_1 ...
-                      (tid (evaluatedtable v any))
+                      (tid (evaluatedtable v pos))
                       osp_2 ...))
    v]
 
   ; {v ∉ tid}
   [(getMetaTable v θ)
    tid
-   
+
    (where tid (getMetaTableRef v))
    
    (side-condition (term (refBelongsToTheta? tid θ)))]

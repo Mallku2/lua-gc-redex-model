@@ -139,74 +139,74 @@
   ; E-AdditionWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__add" \] = 1) \}) nil 0))) 
-                   : (("q" + "q") ArithWrongOps)))
+                   : (("q" + "q") BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__add" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-AdditionWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" + "q")ArithWrongOps)))
+            (term (() : (("q" + "q")BinopWO)))
             (term (() : ($err
                          "attempt to perform arithmetic on a string value."))))
   
   ; E-SubstractionWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__sub" \] = 1) \}) nil 0))) 
-                   : (("q" - "q") ArithWrongOps)))
+                   : (("q" - "q") BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__sub" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-SubstractionWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" - "q")ArithWrongOps)))
+            (term (() : (("q" - "q")BinopWO)))
             (term (() : ($err "attempt to perform arithmetic on a string value."))))
   
   ; E-MultiplicationWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__mul" \] = 1) \}) nil 0))) 
-                   : (("q" * "q") ArithWrongOps)))
+                   : (("q" * "q") BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__mul" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-MultiplicationWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" * "q")ArithWrongOps)))
+            (term (() : (("q" * "q")BinopWO)))
             (term (() : ($err "attempt to perform arithmetic on a string value."))))
   
   ; E-DivisionWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__div" \] = 1) \}) nil 0))) 
-                   : (("q" / "q")ArithWrongOps)))
+                   : (("q" / "q")BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__div" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-DivisionWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" / "q")ArithWrongOps)))
+            (term (() : (("q" / "q")BinopWO)))
             (term (() : ($err "attempt to perform arithmetic on a string value."))))
   
   ; E-ExponentiationWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__pow" \] = 1) \}) nil 0))) 
-                   : (("q" ^ "q")ArithWrongOps)))
+                   : (("q" ^ "q")BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__pow" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-ExponentiationWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" ^ "q")ArithWrongOps)))
+            (term (() : (("q" ^ "q")BinopWO)))
             (term (() : ($err "attempt to perform arithmetic on a string value."))))
   
   ; E-ModuleWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__mod" \] = 1) \}) nil 0))) 
-                   : (("q" % "q")ArithWrongOps)))
+                   : (("q" % "q")BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__mod" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" "q")) \)) Meta (objr 4)))))
   
   ; E-ModuleWrongOperandsNoHandler
   (test-->> meta
-            (term (() : (("q" % "q")ArithWrongOps)))
+            (term (() : (("q" % "q")BinopWO)))
             (term
              (()
               :
@@ -230,19 +230,19 @@
   ; E-StringConcatWrongOperandsWithHandler
   (test-->> meta
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
-                   : ((1 .. "q") StrConcatWrongOps)))
+                   : ((1 .. "q") BinopWO)))
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
                    : ((\( (1 (1 "q")) \)) Meta (objr 1)))))
   
   (test-->> meta
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
-                   : (("q" .. 1)StrConcatWrongOps)))
+                   : (("q" .. 1)BinopWO)))
             (term ((((objr 1) ((\{ (\[ "__concat" \] = 1) \}) nil 0))) 
                    : ((\( (1 ("q" 1)) \)) Meta (objr 1)))))
   
   ; E-StringConcatWrongOperandsWithHandler
   (test-->> meta
-            (term (() : ((1 .. "q") StrConcatWrongOps)))
+            (term (() : ((1 .. "q") BinopWO)))
             (term
              (()
               :
@@ -324,13 +324,13 @@
   ; E-LessThanFailWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__lt" \] = 1) \}) nil 0))) 
-                   : (("a" < 1)OrdCompWrongOps)))
+                   : (("a" < 1) BinopWO)))
             (term ((((objr 4) ((\{ (\[ "__lt" \] = 1) \}) nil 0))) 
                    : ((not (not (1 ("a" 1)))) Meta (objr 4)))))
   
   ; E-LessThanFailNoHandler
   (test-->> meta
-            (term (() : (("a" < 1)OrdCompWrongOps)))
+            (term (() : (("a" < 1) BinopWO)))
             (term
              (()
               :
@@ -339,7 +339,7 @@
   ; E-LessThanOrEqualFailWithHandler
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__le" \] = 1) \}) nil 0))) 
-                   : (("a" <= 1) OrdCompWrongOps)))
+                   : (("a" <= 1) BinopWO)))
             
             (term ((((objr 4) ((\{ (\[ "__le" \] = 1) \}) nil 0))) 
                    : ((not (not (1 ("a" 1)))) Meta (objr 4)))))
@@ -348,7 +348,7 @@
   (test-->> meta
             (term ((((objr 4) ((\{ (\[ "__le" \] = nil)
                                    (\[ "__lt" \] = 1) \}) nil 0))) 
-                   : (("a" <= 1) OrdCompWrongOps)))
+                   : (("a" <= 1) BinopWO)))
             
             (term ((((objr 4) ((\{ (\[ "__le" \] = nil)
                                    (\[ "__lt" \] = 1) \}) nil 0))) 
@@ -356,7 +356,7 @@
   
   ; E-LessThanOrEqualFailNoHandler
   (test-->> meta
-            (term (() : (("a" <= 1)OrdCompWrongOps)))
+            (term (() : (("a" <= 1) BinopWO)))
             (term
              (()
               :
