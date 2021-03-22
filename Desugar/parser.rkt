@@ -717,14 +717,10 @@
   (if runtime?
       (set! global-env-subst ref)
       (set! global-env-subst (id-name '_ENV)))
-
-  (define counting-lines-port (open-input-string input))
-  
-  (port-count-lines! counting-lines-port)
   
   (define res
         (concrete-grammar-s
-         (lua-parser (lex-this lua-lexer counting-lines-port))))
+         (lua-parser (lex-this lua-lexer (open-input-string input)))))
 
   ; cleaning symbol table
   (set! actual-block (new-empty-block))
