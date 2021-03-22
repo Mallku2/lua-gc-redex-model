@@ -167,7 +167,11 @@
                                   digits)))))
 
 ; Lexer for Lua
-(define lua-lexer
+(define (lua-lexer port)
+  (port-count-lines! port)
+  (lua-lexer-def port))
+
+(define lua-lexer-def
   (lexer ; literals
    ("nil" (token-NIL))
    ("false" (token-FALSE))
@@ -286,9 +290,6 @@
 ; single-line comments
 (define (lua-sing-line-comment-lexer actual_line)
   (lexer
-;   ["\n" (if (not (= (position-line end-pos) actual_line))
-;             (lua-lexer input-port)
-;             ((lua-sing-line-comment-lexer actual_line) input-port))]
 
    [(eof)
     (lua-lexer input-port)]
