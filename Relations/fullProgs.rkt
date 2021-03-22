@@ -25,7 +25,7 @@
         
       (where (t_2) ,(apply-reduction-relation terms-rel (term t_1)))
 
-      E-terms]
+      FWD-Pure]
    
    ; terms that interact with the value store
    [↦ (σ_1 : θ : (in-hole E t_1))
@@ -35,7 +35,7 @@
                                                       (term
                                                        (σ_1 : t_1))))
 
-      E-valStoreTerms]
+      FWD-σ]
    
    ; terms that interact with the object store
    [↦ (σ : θ_1 : (in-hole E t_1))
@@ -45,7 +45,7 @@
                                                       (term
                                                        (θ_1 : t_1))))
 
-      E-objStoreTerms]
+      FWD-θ]
 
    ; terms that interact with both stores
    [↦ (σ_1 : θ_1 : (in-hole E t_1))
@@ -56,7 +56,7 @@
                                    (term (σ_1 : θ_1 : t_1))))
 
         
-      E-valObjStoreTerms]
+      FWD-σθ]
    
    ; meta
    [↦ (σ : θ_1 : (in-hole E (t_1 label objid ...)))
@@ -66,7 +66,7 @@
              ,(apply-reduction-relation meta
                                         (term (θ_1 : (t_1 label objid ...)))))
 
-      E-meta]
+      FWD-Meta]
 
    [↦ (σ_1 : θ_1 : (in-hole E (t_1 Meta objid ...)))
       (σ_2 : θ_2 : (in-hole E (in-hole E_2 (t_2 label objid ...))))
@@ -98,7 +98,7 @@
       (side-condition (not (eq? (term Enp)
                                 (term hole))))
 
-      E-errorPropagation]
+      FWD-Error]
 
    ; GC
    [↦ (σ_1 : θ_1 : (in-hole E ($builtIn collectgarbage (v ...))))
@@ -111,7 +111,7 @@
                 θ_1
                 (in-hole E ($builtIn collectgarbage (v ...)))))
 
-      E-builtInCollectgarbage]
+      FWD-GC]
    ))
 
 (provide full-progs-rel)

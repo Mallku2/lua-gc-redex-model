@@ -25,7 +25,7 @@
          ; defined in this way, to help redex-check to generate correct stores
          (where (vsp_1 ... (r v) vsp_2 ...) σ)
         
-         E-RefDeref]
+         Local-Deref]
    
    ;                                                                                  
    ;                                                                                  
@@ -51,7 +51,7 @@
          ; defined in this way, to help redex-check to generate correct stores
          (where (vsp_1 ... (r v_1) vsp_2 ...) σ)
         
-         E-RefMapChange]
+         Local-Assgn]
    
    ; local variables
    ; equal quantity of l-values and r-values (forced by naming ..._1 both
@@ -59,9 +59,10 @@
    [-->σ (σ_1 : (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 in s_1 end))
          (σ_2 : ((substBlock s_1 ((Name_1 r_1) (Name_2 r_2) ...))
                  ((rEnv r_1) (rEnv r_2) ...) LocalBody))
-         E-Local
 
-         (where (σ_2 (r_1 r_2 ...)) (addSimpVal σ_1 (v_1 v_2 ...)))]
+         (where (σ_2 (r_1 r_2 ...)) (addSimpVal σ_1 (v_1 v_2 ...)))
+
+          Local-Decl]
    
    ))
 (provide terms-val-store)
