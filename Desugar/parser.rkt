@@ -105,7 +105,7 @@
      
      ((BREAK) (break))
 
-     ; intercept funcalls as stats to add the label $statFunCall
+     ; intercept funcalls as stats to add the label $statFCall
      ((prefixexp args) (stat-fun-call $1 $2))
      ((prefixexp : NAME args) (stat-method-call $1 (id-name $3) $4))
      

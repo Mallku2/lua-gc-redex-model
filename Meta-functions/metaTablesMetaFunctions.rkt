@@ -29,7 +29,7 @@
 (define-metafunction ext-lang
 
   ; break loop
-  [(w_fun_call (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall
+  [(w_fun_call (θ : (($statFCall ..._1 v_1 (v_2 ...)) WFunCall
                                                         tid_1 ...
                                                         tid_2
                                                         tid_3 ...)))
@@ -42,8 +42,8 @@
 
    (side-condition (not (is_false_cond? (term v_3))))]
 
-  [(w_fun_call (θ : (($statFunCall ..._1 v_1 (v_2 ...)) WFunCall tid_1 ...)))
-   (($statFunCall ..._1 v_3 (v_1 v_2 ...)) Meta tid_1 ... tid_2)
+  [(w_fun_call (θ : (($statFCall ..._1 v_1 (v_2 ...)) WFunCall tid_1 ...)))
+   (($statFCall ..._1 v_3 (v_1 v_2 ...)) Meta tid_1 ... tid_2)
 
    ; determine if v_1 has a meta-table
    (where tid_2 (getMetaTable v_1 θ))
@@ -51,7 +51,7 @@
 
    (side-condition (not (is_false_cond? (term v_3))))]
 
-  [(w_fun_call (θ : (($statFunCall ... v_1 (v_2 ...)) WFunCall tid ...)))
+  [(w_fun_call (θ : (($statFCall ... v_1 (v_2 ...)) WFunCall tid ...)))
    (δbasic error String)
    
    (where String (errmessage WFunCall (δbasic type v_1)))]
@@ -79,52 +79,6 @@
 ;                                                                                                      ;       
 ;                                                                                                              
 
-; implements the meta-table mechanism for NonTable
-(define-metafunction ext-lang
-
-  ; break loop
-  [(non_table_e (θ : ((v_1 \[ v_2 \]) NonTable
-                                      tid_1 ...
-                                      tid_2
-                                      tid_3 ... )))
-   (δbasic error "loop in gettable")
-
-   ; determine if v_1 has a meta-table
-   (where tid_2 (getMetaTable v_1 θ))
-   (where v_3 (δbasic rawget tid_2 "__index" θ))
-
-   (side-condition (not (is_nil? (term v_3))))]
-  
-  ; function handler
-  [(non_table_e (θ : ((v_1 \[ v_2 \]) NonTable tid_1 ...)))
-   ((\( (cid (v_1 v_2)) \)) Meta tid_1 ... tid_2)
-
-   ; determine if v_1 has a meta-table
-   (where tid_2 (getMetaTable v_1 θ))
-   (where cid (δbasic rawget tid_2 "__index" θ))]
-
-  ; table handler
-  [(non_table_e (θ : ((v_1 \[ v_2 \]) NonTable tid_1 ...)))
-   ((v_3 \[ v_2 \]) Meta tid_1 ... tid_2)
-   
-   ; determine if v_1 has a meta-table
-   (where tid_2 (getMetaTable v_1 θ))
-   (where v_3 (δbasic rawget tid_2 "__index" θ))
-
-   (side-condition (not (is_nil? (term v_3))))]
-
-  ; no handler
-  [(non_table_e (θ : ((v_1 \[ v_2 \]) NonTable tid ...)))
-   (δbasic error String)
-   
-   (where String (errmessage NonTable
-                             (δbasic type v_1)))]
-  )
-
-(provide non_table_e)
-
-
-
 ;                                                                                                              
 ;                                                                                                              
 ;                                                                                                              
@@ -144,14 +98,17 @@
 ;                                         ;;;;                      ;;                                 ;       
 ;                                                                                                              
 
-; implements the meta-table mechanism for WrongKey
-(define-metafunction ext-lang
 
+; implements the meta-table mechanism for NonTable and WrongKey, in table
+; indexing
+; PRE : {explabel ∈ {NonTable, WrongKey}}
+(define-metafunction ext-lang
+  
   ; break loop
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey
-                                      tid_1 ...
-                                      tid_2
-                                      tid_3 ... )))
+  [(index (θ : ((v_1 \[ v_2 \]) explabel
+                                tid_1 ...
+                                tid_2
+                                tid_3 ... )))
    (δbasic error "loop in gettable")
 
    ; determine if v_1 has a meta-table
@@ -159,9 +116,9 @@
    (where v_3 (δbasic rawget tid_2 "__index" θ))
 
    (side-condition (not (is_nil? (term v_3))))]
-
+  
   ; function handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey tid_1 ... )))
+  [(index (θ : ((v_1 \[ v_2 \]) explabel tid_1 ... )))
    ((\( (cid (v_1 v_2)) \)) Meta tid_1 ... tid_2)
 
    ; determine if v_1 has a meta-table
@@ -169,7 +126,7 @@
    (where cid (δbasic rawget tid_2 "__index" θ))]
 
   ; table handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey tid_1 ...)))
+  [(index (θ : ((v_1 \[ v_2 \]) explabel tid_1 ...)))
    ((v_3 \[ v_2 \]) Meta tid_1 ... tid_2)
    
    ; determine if v_1 has a meta-table
@@ -178,13 +135,19 @@
 
    (side-condition (not (is_nil? (term v_3))))]
 
-  ; no handler
-  [(wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey objid ...)))
+  ; no handler in WrongKey
+  [(index (θ : ((v_1 \[ v_2 \]) WrongKey objid ...)))
    nil]
+
+  ; no handler in NonTable
+  [(index (θ : ((v_1 \[ v_2 \]) NonTable tid ...)))
+   (δbasic error String)
+   
+   (where String (errmessage NonTable
+                             (δbasic type v_1)))]
   )
 
-(provide wrong_key_e)
-
+(provide index)
 
 ;                                                                 
 ;                                                                 
@@ -257,7 +220,7 @@
 
   ; try with not (v_2 < v_1)
   [(binop_wo (θ : ((v_1 <= v_2) BinopWO tid_1 ...)))
-  ((not (v_3 (v_2 v_1))) Meta tid_1 ... tid_2)
+   ((not (v_3 (v_2 v_1))) Meta tid_1 ... tid_2)
 
    (where (tid_2 v_3) (getBinHandler v_1
                                      v_2
@@ -304,7 +267,7 @@
                                tid_2
                                tid_3 ...)))
    ; TODO: check this
-  (δbasic error "loop in negop")
+   (δbasic error "loop in negop")
         
    ; determine if v_1 efectively has a meta-table
    (where (tid_2 v_2) (getUnaryHandler v_1 
@@ -322,7 +285,7 @@
 
   ; no handler
   [(neg_wrong_op (θ : ((- v_1) NegWrongOp objid ...)))
-  (δbasic error String)
+   (δbasic error String)
    
    (where String (errmessage NegWrongOp (δbasic type v_1)))]
   )
@@ -459,54 +422,6 @@
 ;                                                                                                                       
 ;                                                                                                                       
 ;                                                                                                                       
-
-; implements the meta-table mechanism for NonTable
-(define-metafunction ext-lang
-
-  ; break loop
-  [(non_table_s (θ : (((v_1 \[ v_2 \]) = v_3) NonTable
-                                              tid_1 ...
-                                              tid_2
-                                              tid_3 ...)))
-   ; TODO: check this
-   (δbasic error "loop in settable")
-   
-    ; determine if v_1 has a meta-table
-   (where tid_2 (getMetaTable v_1 θ))
-   (where v_4 (δbasic rawget tid_2 "__newindex" θ))
-
-    (side-condition (not (is_nil? (term v_4))))]
-  
-  ; function handler
-  [(non_table_s (θ : (((v_1 \[ v_2 \]) = v_3) NonTable tid_1 ...)))
-  (($statFunCall cid (v_1 v_2 v_3)) Meta tid_1 ... tid_2)
-
-   ; determine if v_1 has a meta-table with a handler
-   (where tid_2 (getMetaTable v_1 θ))
-   (where cid (δbasic rawget tid_2 "__newindex" θ))]
-
-  ; table handler
-  [(non_table_s (θ : (((v_1 \[ v_2 \]) = v_3) NonTable tid_1 ...)))
-  (((v_4 \[ v_2 \]) = v_3) Meta tid_1 ... tid_2)
-        
-   ; determine if v_1 has a meta-table with a handler
-   (where tid_2 (getMetaTable v_1 θ))
-   (where v_4 (δbasic rawget tid_2 "__newindex" θ))
-
-   (side-condition (not (is_nil? (term v_4))))]
-
-  ; no handler
-  [(non_table_s (θ : (((v_1 \[ v_2 \]) = v_3) NonTable tid ...)))
-   (δbasic error String)
-
-   (where String ,(string-append "attempt to index a "
-                                 (term (δbasic type v_1))
-                                 " value"))]
-  )
-
-(provide non_table_s)
-
-
 ;                                                                                                                       
 ;                                                                                                                       
 ;                                                                                                                       
@@ -526,43 +441,45 @@
 ;                                         ;;;;                      ;;                                                  
 ;                                                                                                                       
 
-; implements the meta-table mechanism for NonTable
+; implements the meta-table mechanism for NonTable and WrongKey, in table
+; assignment
+; PRE : {statlabel ∈ {NonTable, WrongKey}}
 (define-metafunction ext-lang
-
+  
   ; break loop
-  [(wrong_key_s (θ : (((tid_1 \[ v_1 \]) = v_2) WrongKey
-                                              tid_2 ...
-                                              tid_3
-                                              tid_4 ...)))
+  [(new_index (θ : (((v_1 \[ v_2 \]) = v_3) statlabel
+                                            tid_1 ...
+                                            tid_2
+                                            tid_3 ...)))
    ; TODO: check this
    (θ : (δbasic error "loop in settable"))
+   
+   ; determine if v_1 has a meta-table
+   (where tid_2 (getMetaTable v_1 θ))
+   (where v_4 (δbasic rawget tid_2 "__newindex" θ))
 
-   ; determine if v_1 has a meta-table with a handler
-   (where tid_3 (getMetaTable tid_1 θ))
-   (where v_3 (δbasic rawget tid_3 "__newindex" θ))
-
-   (side-condition (not (is_nil? (term v_3))))]
+   (side-condition (not (is_nil? (term v_4))))]
   
   ; function handler
-  [(wrong_key_s (θ : (((tid_1 \[ v_1 \]) = v_2) WrongKey tid_2 ...)))
-   (θ : (($statFunCall cid (tid_1 v_1 v_2)) Meta tid_2 ... tid_3))
+  [(new_index (θ : (((v_1 \[ v_2 \]) = v_3) statlabel tid_1 ...)))
+   (θ : (($statFCall cid (v_1 v_2 v_3)) Meta tid_1 ... tid_2))
 
    ; determine if v_1 has a meta-table with a handler
-   (where tid_3 (getMetaTable tid_1 θ))
-   (where cid (δbasic rawget tid_3 "__newindex" θ))]
+   (where tid_2 (getMetaTable v_1 θ))
+   (where cid (δbasic rawget tid_2 "__newindex" θ))]
 
   ; table handler
-  [(wrong_key_s (θ : (((tid_1 \[ v_1 \]) = v_2) WrongKey tid_2 ...)))
-   (θ : (((v_3 \[ v_1 \]) = v_2) Meta tid_2 ... tid_3))
+  [(new_index (θ : (((v_1 \[ v_2 \]) = v_3) statlabel tid_1 ...)))
+   (θ : (((v_4 \[ v_2 \]) = v_3) Meta tid_1 ... tid_2))
         
    ; determine if v_1 has a meta-table with a handler
-   (where tid_3 (getMetaTable tid_1 θ))
-   (where v_3 (δbasic rawget tid_3 "__newindex" θ))
-   
-   (side-condition (not (is_nil? (term v_3))))]
+   (where tid_2 (getMetaTable v_1 θ))
+   (where v_4 (δbasic rawget tid_2 "__newindex" θ))
 
-  ; no handler
-  [(wrong_key_s (θ_1 : (((tid_1 \[ v_1 \]) = v_2) WrongKey tid_2 ...)))
+   (side-condition (not (is_nil? (term v_4))))]
+
+  ; no handler in WrongKey
+  [(new_index (θ_1 : (((tid_1 \[ v_1 \]) = v_2) WrongKey tid_2 ...)))
    (θ_2 : any_2)
 
    ; try to create new field [v_1] = v_2
@@ -572,9 +489,16 @@
    ; in this way we simplify rules
    (where any_2 ,(if (is_tid? (term any_1))
                      (term \;) ; success
-                     (term any_1) ; any_1 is an error object: key was
-                     ; nil,nan
+                     (term any_1) ; any_1 is an error object: key was nil,nan
                      ))]
+
+  ; no handler in NonTable
+  [(new_index (θ : (((v_1 \[ v_2 \]) = v_3) NonTable tid ...)))
+   (θ : (δbasic error String))
+
+   (where String ,(string-append "attempt to index a "
+                                 (term (δbasic type v_1))
+                                 " value"))]
   )
 
-(provide wrong_key_s)
+(provide new_index)

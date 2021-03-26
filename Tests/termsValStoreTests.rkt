@@ -43,15 +43,15 @@
   ; Local statement
   (test-->> terms-val-store
             (term (() : 
-                      (local X = 1 in ($statFunCall X ()) end)))
+                      (local X = 1 in ($statFCall X ()) end)))
             
-            (term ((((ref 1) 1)) :  (($statFunCall (ref 1) ())
+            (term ((((ref 1) 1)) :  (($statFCall (ref 1) ())
                                      ((rEnv (ref 1))) LocalBody))))
 
   (test-->> terms-val-store
             (term (() : 
-                      (local X Y = 1 nil in ($statFunCall X ()) end)))
-            (term ((((ref 1) 1) ((ref 2) nil)) : (($statFunCall (ref 1) ())
+                      (local X Y = 1 nil in ($statFCall X ()) end)))
+            (term ((((ref 1) 1) ((ref 2) nil)) : (($statFCall (ref 1) ())
                                                   ((rEnv (ref 1))
                                                    (rEnv (ref 2)))
                                                   LocalBody))))

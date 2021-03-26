@@ -644,31 +644,31 @@
 
   ; Conditional
   (test-->> terms-rel
-            (term (if true then ($statFunCall X ())
-                      else ($statFunCall Y ()) end))
-            (term ($statFunCall X ())))
+            (term (if true then ($statFCall X ())
+                      else ($statFCall Y ()) end))
+            (term ($statFCall X ())))
   (test-->> terms-rel
-            (term (if (objr 1) then ($statFunCall X ())
-                      else ($statFunCall Y ()) end))
-            (term ($statFunCall X ())))
+            (term (if (objr 1) then ($statFCall X ())
+                      else ($statFCall Y ()) end))
+            (term ($statFCall X ())))
   (test-->> terms-rel
-            (term (if false then ($statFunCall X ())
-                      else ($statFunCall Y ()) end))
-            (term ($statFunCall Y ())))
+            (term (if false then ($statFCall X ())
+                      else ($statFCall Y ()) end))
+            (term ($statFCall Y ())))
   (test-->> terms-rel
-            (term (if nil then ($statFunCall X ())
-                      else ($statFunCall Y ()) end))
-            (term ($statFunCall Y ())))
+            (term (if nil then ($statFCall X ())
+                      else ($statFCall Y ()) end))
+            (term ($statFCall Y ())))
   ; While loop
   (test-->> terms-rel
             (term (while false do
-                         ($statFunCall X ()) end))
+                         ($statFCall X ()) end))
             (term (($iter false do
-                                 ($statFunCall X ()) end) Break)))
+                                 ($statFCall X ()) end) Break)))
   ; Concatenation of statements
   (test-->> terms-rel
-            (term (\; ($statFunCall Y ())))
-            (term ($statFunCall Y ())))
+            (term (\; ($statFCall Y ())))
+            (term ($statFCall Y ())))
   ; Block Do-End
   (test-->> terms-rel
             (term (do \; end))

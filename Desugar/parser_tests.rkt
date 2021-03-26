@@ -49,30 +49,30 @@
   
   ;functioncall
   (check-equal? (parse-this "x ()"  #f (void))
-                (term ($statFunCall (_ENV  \[ "x" \]) ())))
+                (term ($statFCall (_ENV  \[ "x" \]) ())))
   
   (check-equal? (parse-this "x () ()"  #f (void))
-                (term ($statFunCall ((_ENV  \[ "x" \]) ()) ())))
+                (term ($statFCall ((_ENV  \[ "x" \]) ()) ())))
   
   (check-equal? (parse-this "x (1, 2)"  #f (void))
-                (term ($statFunCall (_ENV  \[ "x" \]) (1.0 2.0))))
+                (term ($statFCall (_ENV  \[ "x" \]) (1.0 2.0))))
   
   (check-equal? (parse-this "x {1}"  #f (void))
-                (term ($statFunCall (_ENV  \[ "x" \]) ((\{ 1.0 \})))))
+                (term ($statFCall (_ENV  \[ "x" \]) ((\{ 1.0 \})))))
   
   (check-equal? (parse-this "(x) {1}" #f (void))
-                (term ($statFunCall (\( (_ENV  \[ "x" \]) \)) ((\{ 1.0 \})))))
+                (term ($statFCall (\( (_ENV  \[ "x" \]) \)) ((\{ 1.0 \})))))
 
   ; method call
   (check-equal? (parse-this "x : method_name {1}" #f (void))
-                (term ($statFunCall (_ENV  \[ "x" \]) : method_name ((\{ 1.0 \})))))
+                (term ($statFCall (_ENV  \[ "x" \]) : method_name ((\{ 1.0 \})))))
 
   (check-equal? (parse-this "y . component_1 : method_name_1 {2}" #f (void))
-                (term ($statFunCall ((_ENV  \[ "y" \]) \[ "component_1" \])
+                (term ($statFCall ((_ENV  \[ "y" \]) \[ "component_1" \])
                                     : method_name_1 ((\{ 2.0 \})))))
   
   (check-equal? (parse-this "y : method_name_1 {1} : method_name_2 {2}" #f (void))
-                (term ($statFunCall ((_ENV  \[ "y" \]) : method_name_1 ((\{ 1.0 \})))
+                (term ($statFCall ((_ENV  \[ "y" \]) : method_name_1 ((\{ 1.0 \})))
                                     : method_name_2 ((\{ 2.0 \})))))
   
   ; local var
@@ -117,13 +117,13 @@
                              (|;| (local fact = nil
                                     in
                                     ((fact = (function $1 (n) (do \; end) end))
-                                     ($statFunCall (_ENV |[| "assert" |]|)
+                                     ($statFCall (_ENV |[| "assert" |]|)
                                                    (((fact (5.0)) == 120.0))))
                                     end)
                                   )
                              end)
                          end)
-                       ($statFunCall (_ENV |[| "assert" |]|)
+                       ($statFCall (_ENV |[| "assert" |]|)
                                      (((_ENV |[| "fact" |]|) == false))))))
   
   ; TODO: avoid unnecessary skips
@@ -169,11 +169,11 @@
                                ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                |;|
                                ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
-                               (if (not (_ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                               (if (not (_ENV |[| "finish" |]|)) then ($statFCall $dummyVar ()) else |;| end))
                               end)
                              end)
                            end))
-                         ($statFunCall $dummyVar ()))
+                         ($statFCall $dummyVar ()))
                         end)))
 
   ; local vars in guard
@@ -200,11 +200,11 @@
                               (($dummyGuardVar = 1)
                                (local i = 1.0 in (|;| (if (not (i > 2.0))
                                                           then
-                                                          ($statFunCall $dummyVar ()) else |;| end)) end))
+                                                          ($statFCall $dummyVar ()) else |;| end)) end))
                               end)
                              end)
                            end))
-                         ($statFunCall $dummyVar ()))
+                         ($statFCall $dummyVar ()))
                         end)))
 
   ; concat
@@ -235,11 +235,11 @@
                                 ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                 |;|
                                 ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
-                                (if (not (_ENV |[| "finish" |]|)) then ($statFunCall $dummyVar ()) else |;| end))
+                                (if (not (_ENV |[| "finish" |]|)) then ($statFCall $dummyVar ()) else |;| end))
                                end)
                               end)
                             end))
-                          ($statFunCall $dummyVar ()))
+                          ($statFCall $dummyVar ()))
                          end))))
   
   ; numeric for
@@ -472,7 +472,7 @@
                                    fb = 2" #f (void))
                 (term (local fa = nil in
                         ((fa = (function $1 ()
-                                         (($statFunCall fa ())
+                                         (($statFCall fa ())
                                           (local fb = 1.0 in \; end)) end))
                          ((_ENV  \[ "fb" \]) = 2.0)) end)))
   
@@ -493,7 +493,7 @@
                                                (return (n * (fact ((n - 1.0)))))
                                                end)
                                            end))
-                         ($statFunCall (_ENV |[| "assert" |]|)
+                         ($statFCall (_ENV |[| "assert" |]|)
                                        (((fact (5.0)) == 120.0))))
                         end)))
   
@@ -669,11 +669,11 @@
   ; scoping
   (check-equal? (parse-this "h = function (x) end x()" #f (void))
                 (term (((_ENV |[| "h" |]|) = (function $1 (x) |;| end))
-                       ($statFunCall (_ENV |[| "x" |]|) ()))))
+                       ($statFCall (_ENV |[| "x" |]|) ()))))
 
   (check-equal? (parse-this "function h (x) end x()" #f (void))
                 (term (((_ENV |[| "h" |]|) = (function $1 (x) |;| end))
-                       ($statFunCall (_ENV |[| "x" |]|) ()))))
+                       ($statFCall (_ENV |[| "x" |]|) ()))))
   
   
   ;                                  

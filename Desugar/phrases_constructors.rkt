@@ -396,14 +396,14 @@
            (concrete-grammar-exps args)))
 
     ((stat-fun-call prefixexp args) (list
-                                     (term $statFunCall)
+                                     (term $statFCall)
                                      (concrete-grammar-e prefixexp)
                                      (concrete-grammar-exps args)
                                      ))
 
     ((stat-method-call prefixexp method-name args)
      (list
-      (term $statFunCall)
+      (term $statFCall)
       (concrete-grammar-e prefixexp)
       (term :)
       (concrete-grammar-e method-name)

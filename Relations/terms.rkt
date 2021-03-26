@@ -21,12 +21,12 @@
            (in-hole Et nil)
            E-TruncateEmptyTuple]
    
-   [-->s/e (in-hole Eu (< v_1 v_2 ... >))
-           (fixUnwrap Eu (v_1 v_2 ...))
+   [-->s/e (in-hole Ea (< v_1 v_2 ... >))
+           (fixUnwrap Ea (v_1 v_2 ...))
            E-UnwrapNonEmptyTuple]
 
-   [-->s/e (in-hole Eu (< >))
-           (fixUnwrap Eu '())
+   [-->s/e (in-hole Ea (< >))
+           (fixUnwrap Ea '())
            E-UnwrapEmptyTuple]
    ;                                                                                          
    ;                                                             ;                            
@@ -74,9 +74,8 @@
            (side-condition (or (is_strconcat? (term binop))
                                
                                (is_arithop? (term binop))
-
+                               
                                (is_lt_le? (term binop))))
-
            E-BinOp]
    
    ; logical conectives
@@ -328,7 +327,7 @@
    [-->s/e (evar_1 evar_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ...)
            (evar_1 evar_2 ... = v_1 v_2 ...)
            
-           AssignDiscardRvalues]
+           Assgn-More]
    
    [-->s/e (evar_1 ..._1 evar_2 evar_3 ..._2 = v_1 ..._1)
            (evar_1 ... evar_2 evar_3 ... = v_1 ... nil nil ..._2)
@@ -338,7 +337,8 @@
    ; same length on both sides of = 
    [-->s/e (evar_1 evar_2 ..._1 evar_3 = v_1 v_2 ..._1 v_3)
            ((evar_3 = v_3) (evar_1 evar_2 ... = v_1 v_2 ...))
-           AssignSplit]
+
+           Assgn-Split]
 
    [-->s/e (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ... in scoreblock end)
            (local Name_1 Name_2 ... = v_1 v_2 ... in scoreblock end)
@@ -363,16 +363,16 @@
            While-End]
 
    ; call over a non-function value (both, function call as stat and exp)
-   [-->s/e ($statFunCall ..._1 v (v_1 ...))
-           (($statFunCall ..._1 v (v_1 ...)) WFunCall)
+   [-->s/e ($statFCall ..._1 v (v_1 ...))
+           (($statFCall ..._1 v (v_1 ...)) WFunCall)
 
            E-AlertWrongStatFunCall
            ; Determine that v_1 is not a reference to a function
            (side-condition (not (is_cid? (term v))))]
    
    ; method call (both, method call as stat and exp)
-   [-->s/e ($statFunCall ..._1 v : Name (e ...))
-           ($statFunCall ..._1 (v \[ String \]) (v e ...))
+   [-->s/e ($statFCall ..._1 v : Name (e ...))
+           ($statFCall ..._1 (v \[ String \]) (v e ...))
            E-MethodCallStat
 
            (where String ,(symbol->string (term Name)))]

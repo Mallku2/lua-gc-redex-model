@@ -60,16 +60,16 @@
 
   ; Function creation
   (test-->> terms-obj-store
-            (term (() : (function X () ($statFunCall Y ()) end)))
+            (term (() : (function X () ($statFCall Y ()) end)))
             (term ((((cl ,objStoreFirstLocation)
-                     (function X () ($statFunCall Y ()) end)))
+                     (function X () ($statFCall Y ()) end)))
                    : (cl ,objStoreFirstLocation))))
 
   (test-->> terms-obj-store
-            (term ((((cl 1) (function X () ($statFunCall Y ()) end)))
-                   : (function X () ($statFunCall Y ()) end)))
+            (term ((((cl 1) (function X () ($statFCall Y ()) end)))
+                   : (function X () ($statFCall Y ()) end)))
 
-            (term ((((cl 1) (function X () ($statFunCall Y ()) end)))
+            (term ((((cl 1) (function X () ($statFCall Y ()) end)))
                    : (cl 1))))
 
   ;                                                                                                                          

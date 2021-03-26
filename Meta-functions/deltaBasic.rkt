@@ -1618,7 +1618,7 @@
 
 (define-metafunction ext-lang
   
-  [(eventkey (($statFunCall ... v_1 (v_2 ...)) WFunCall))
+  [(eventkey (($statFCall ... v_1 (v_2 ...)) WFunCall))
    "__call"]
 
   [(eventkey ((v_1 \[ v_2 \]) explabel))

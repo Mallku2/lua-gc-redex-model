@@ -211,13 +211,13 @@
    \;]
 
   ; Function call
-  [(substBlock ($statFunCall e_1 (e_2 ...)) ((id e_3) ...))
-   ($statFunCall e_4 (e_5 ...))
+  [(substBlock ($statFCall e_1 (e_2 ...)) ((id e_3) ...))
+   ($statFCall e_4 (e_5 ...))
 
    (where (e_4 (e_5 ...)) (substExp (e_1 (e_2 ...)) ((id e_3) ...)))]
 
-  [(substBlock ($statFunCall e_1 : Name (e_2 ...)) ((id e_3) ...))
-   ($statFunCall e_4 : Name (e_5 ...))
+  [(substBlock ($statFCall e_1 : Name (e_2 ...)) ((id e_3) ...))
+   ($statFCall e_4 : Name (e_5 ...))
 
    (where (e_4 : Name (e_5 ...))
           (substExp (e_1 : Name (e_2 ...)) ((id e_3) ...)))]
@@ -317,13 +317,13 @@
     WFunCall
     (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) WFunCall tid ...) ((id e) ...))
-   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+  [(substBlock (($statFCall v_1 (v_2 ...)) WFunCall tid ...) ((id e) ...))
+   (($statFCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     WFunCall
     (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (($statFunCall v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
-   (($statFunCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+  [(substBlock (($statFCall v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
+   (($statFCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
     Meta
     (substExp tid ((id e) ...)) ...)]
 
@@ -513,13 +513,13 @@
    (where (id_1 ...) (fv any_1))
    (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv ($statFunCall any_1 (any_2 ...)))
+  [(fv ($statFCall any_1 (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
    (where (id_1 ...) (fv any_1))
    (where ((id_2 ...) ...) ((fv any_2) ...))]
 
-  [(fv ($statFunCall any_1 : Name (any_2 ...)))
+  [(fv ($statFCall any_1 : Name (any_2 ...)))
    (id_1 ... id_2 ... ...)
 
    (where (id_1 ...) (fv any_1))

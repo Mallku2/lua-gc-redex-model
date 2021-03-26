@@ -40,11 +40,11 @@
   [(fixUnwrap (v_1 (v_2 ... hole)) '())
    (v_1 (v_2 ...))]
 
-  [(fixUnwrap ($statFunCall v_1 (v_2 ... hole)) (v_3 ...))
-   ($statFunCall v_1 (v_2 ... v_3 ...))]
+  [(fixUnwrap ($statFCall v_1 (v_2 ... hole)) (v_3 ...))
+   ($statFCall v_1 (v_2 ... v_3 ...))]
 
-  [(fixUnwrap ($statFunCall v_1 (v_2 ... hole)) '())
-   ($statFunCall v_1 (v_2 ...))]
+  [(fixUnwrap ($statFCall v_1 (v_2 ... hole)) '())
+   ($statFCall v_1 (v_2 ...))]
   
   [(fixUnwrap ($builtIn builtinserv  (v_1 ... hole)) (v_2 ...))
    ($builtIn builtinserv  (v_1 ... v_2 ...))]

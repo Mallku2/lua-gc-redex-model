@@ -34,7 +34,7 @@
    [-->σ/θ (σ_1 : (osp_1 ...
                    (cid (function Name_1 (Name_2 ...) s_1 end))
                    osp_2 ...)
-                : ($statFunCall ..._1 cid (v ...)))
+                : ($statFCall ..._1 cid (v ...)))
          
            (σ_2 : (osp_1 ...
                    (cid (function Name_1 (Name_2 ...) s_1 end))
@@ -72,7 +72,7 @@
 
            ; choose apropriate function call label
            ; TODO: just to avoid the duplication of semantic rules
-           (where any ,(if (= (length (term ($statFunCall ..._1))) 1)
+           (where any ,(if (= (length (term ($statFCall ..._1))) 1)
                            (term RetStat)
                            (term RetExp)))]
    
@@ -80,14 +80,14 @@
    [-->σ/θ (σ_1 : (osp_1 ...
                    (cid (function Name_1 (Name_2 ... <<<) s_1 end))
                    osp_2 ...)
-                : ($statFunCall ..._1 cid (v ...)))
+                : ($statFCall ..._1 cid (v ...)))
          
            (σ_2 : (osp_1 ...
                    (cid (function Name_1 (Name_2 ... <<<) s_1 end))
                    osp_2 ...)
                 : ((substBlock s_1 ((Name_2 r) ...
                                     (<<< (< v_10 ... >))))
-                   ((rEnv r) ...) any))
+                  ((rEnv r) ...) any))
 
            E-ApplyVararg
 
@@ -124,7 +124,7 @@
 
            ; choose apropriate function call label
            ; TODO: just to avoid the duplication of semantic rules
-           (where any ,(if (= (length (term ($statFunCall ..._1))) 1)
+           (where any ,(if (= (length (term ($statFCall ..._1))) 1)
                            (term RetStat)
                            (term RetExp)))] 
    

@@ -13,7 +13,7 @@
             (plugIntoExecutionEnvironment
              services
              '("type")
-             (term ($statFunCall (_ENV \[ "type" \]) ())))
+             (term ($statFCall (_ENV \[ "type" \]) ())))
             
             (term
              ((((ref 1) (objr ,objStoreFirstLocation)) ((ref 2) nil))
@@ -38,7 +38,7 @@
             (plugIntoExecutionEnvironment
              services
              '("assert")
-             (term ($statFunCall (_ENV \[ "assert" \]) ())))
+             (term ($statFCall (_ENV \[ "assert" \]) ())))
             
             (term
              ((((ref 1) (objr ,objStoreFirstLocation)) ((ref 2) nil))
@@ -83,13 +83,13 @@
      '("assert" "pcall")
      (term ((local status errmessage = ((_ENV \[ "pcall" \]) ((_ENV \[ "assert" \]) false "error message"))
               in
-              (($statFunCall (_ENV \[ "assert" \]) ((status == false)))
-               ($statFunCall (_ENV \[ "assert" \])
+              (($statFCall (_ENV \[ "assert" \]) ((status == false)))
+               ($statFCall (_ENV \[ "assert" \])
                              ((errmessage == "error message"))))
               end)
              
-            ($statFunCall (_ENV \[ "assert" \]) (true "error message"))
-            ($statFunCall (_ENV \[ "assert" \]) (1 2 3 4 5)))))))
+            ($statFCall (_ENV \[ "assert" \]) (true "error message"))
+            ($statFCall (_ENV \[ "assert" \]) (1 2 3 4 5)))))))
           
           
           
@@ -121,8 +121,8 @@
                                         ((_ENV \[ "error" \])
                                          "error message"))
               in
-              (($statFunCall (_ENV \[ "assert" \]) ((status == false)))
-               ($statFunCall (_ENV \[ "assert" \])
+              (($statFCall (_ENV \[ "assert" \]) ((status == false)))
+               ($statFCall (_ENV \[ "assert" \])
                              ((errmessage == "error message"))))
               end)))))
             
@@ -152,8 +152,8 @@
      services
      '("assert" "setmetatable" "getmetatable")
      (term (local a b = (\{ \}) (\{ \}) in
-             (($statFunCall (_ENV \[ "setmetatable" \]) (a b))
-              ($statFunCall (_ENV \[ "assert" \])
+             (($statFCall (_ENV \[ "setmetatable" \]) (a b))
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "getmetatable" \]) (a)) == b))))
              end)))))
         
@@ -183,26 +183,26 @@
      (term ((local a = (\{ (\[ 1 \] = "a") (\[ 2 \] = "b") \}) in
               (local it table index = ((_ENV \[ "ipairs" \]) (a))
                 in
-                (($statFunCall (_ENV \[ "assert" \]) ((table == a)))
-                 ($statFunCall (_ENV \[ "assert" \]) ((index == 0)))
+                (($statFCall (_ENV \[ "assert" \]) ((table == a)))
+                 ($statFCall (_ENV \[ "assert" \]) ((index == 0)))
                  (local nextIndex value = (it (a 0))
                    in
-                   (($statFunCall (_ENV \[ "assert" \]) ((nextIndex == 1)))
+                   (($statFCall (_ENV \[ "assert" \]) ((nextIndex == 1)))
                                                              
-                    ($statFunCall (_ENV \[ "assert" \]) ((value == "a")))
+                    ($statFCall (_ENV \[ "assert" \]) ((value == "a")))
                                                              
                     (nextIndex value = (it (a 1)))
                                                              
-                    ($statFunCall (_ENV \[ "assert" \]) ((nextIndex == 2)))
+                    ($statFCall (_ENV \[ "assert" \]) ((nextIndex == 2)))
                                                              
-                    ($statFunCall (_ENV \[ "assert" \]) ((value == "b")))
+                    ($statFCall (_ENV \[ "assert" \]) ((value == "b")))
                                                              
                     ; The iterator returned in successive calls
                     ; is the same
                     (local it2 table2 index2 = ((_ENV \[ "ipairs" \]) (a))
                       in
                                                                
-                      ($statFunCall (_ENV \[ "assert" \]) ((it2 == it)))
+                      ($statFCall (_ENV \[ "assert" \]) ((it2 == it)))
                                                                
                       end)
                     )
@@ -216,19 +216,19 @@
                                                    (return (< 1 2 3 >))
                                                    end)) \})
               in
-              (($statFunCall (_ENV \[ "setmetatable" \]) (a b))
+              (($statFCall (_ENV \[ "setmetatable" \]) (a b))
                (local it table index = ((_ENV \[ "ipairs" \]) (a))
                  in
-                 (($statFunCall (_ENV \[ "assert" \]) ((it == 1)))
-                  ($statFunCall (_ENV \[ "assert" \]) ((table == 2)))
-                  ($statFunCall (_ENV \[ "assert" \]) ((index == 3)))
+                 (($statFCall (_ENV \[ "assert" \]) ((it == 1)))
+                  ($statFCall (_ENV \[ "assert" \]) ((table == 2)))
+                  ($statFCall (_ENV \[ "assert" \]) ((index == 3)))
                                                            
                   ; The iterator returned in successive calls
                   ; is the same
                   (local it2 table2 index2 = ((_ENV \[ "ipairs" \]) (a))
                     in
                                                              
-                    ($statFunCall (_ENV \[ "assert" \]) ((it2 == it)))
+                    ($statFCall (_ENV \[ "assert" \]) ((it2 == it)))
                                                              
                     end))
                  end))
@@ -267,7 +267,7 @@
                   end)
               end))
                    
-            ($statFunCall (_ENV \[ "assert" \]) (((_ENV \[ "load" \])
+            ($statFCall (_ENV \[ "assert" \]) (((_ENV \[ "load" \])
                                                   ("assert(fat(6)==720)"))))
             
             (local a = true in
@@ -281,7 +281,7 @@
                                          end)
                                      end)))
                 in
-                ($statFunCall (_ENV \[ "assert" \]) ((b ())))
+                ($statFCall (_ENV \[ "assert" \]) ((b ())))
                 end)
               end)
             
@@ -292,9 +292,9 @@
                          nil
                          (\{ (\[ "t" \] = (_ENV |[| "type" |]|))
                              (\[ "assert" \] = (_ENV |[| "assert" |]|))\}))))
-               ($statFunCall (_ENV \[ "assert" \]) (((proc ()) == "number")))
+               ($statFCall (_ENV \[ "assert" \]) (((proc ()) == "number")))
             
-               ($statFunCall (_ENV \[ "assert" \])
+               ($statFCall (_ENV \[ "assert" \])
                              ((((_ENV \[ "type" \]) (1)) == "number"))))
               end))))))
                                
@@ -322,9 +322,9 @@
      '("assert" "loadfile" "load")
      (term (((_ENV \[ "fat" \]) = ((_ENV \[ "loadfile" \])
                                    ("loadfile_test.lua")))
-            ($statFunCall (_ENV \[ "assert" \])
+            ($statFCall (_ENV \[ "assert" \])
                           ((((_ENV \[ "fat" \]) (1)) == 1)))
-            ($statFunCall (_ENV \[ "assert" \])
+            ($statFCall (_ENV \[ "assert" \])
                           ((((_ENV \[ "fat" \]) (6)) == 720))))))))
             
   ;                                  
@@ -350,22 +350,22 @@
      services
      '("assert" "next")
      (term ((local a = (\{ (\[ 1 \] = 2) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "next" \]) (a)) == 1)))
               end)
                   
             (local a = (\{ (\[ 1 \] = 2) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "next" \]) (a nil)) == 1)))
               end)
                   
             (local a = (\{ (\[ 1 \] = 2) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "next" \]) (a 1)) == nil)))
               end)
                   
             (local a = (\{ (\[ 1 \] = 2) (\[ 3 \] = 4) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "next" \]) (a 1)) == 3)))
               end))))))
   ;  
@@ -395,27 +395,27 @@
      (term ((local a = (\{ (\[ "a" \] = 1) (\[ "b" \] = 2) \}) in
               (local it table index = ((_ENV \[ "pairs" \]) (a))
                 in
-                (($statFunCall (_ENV \[ "assert" \])
+                (($statFCall (_ENV \[ "assert" \])
                                ((it == (_ENV \[ "next" \]))))
-                 ($statFunCall (_ENV \[ "assert" \]) ((table == a)))
-                 ($statFunCall (_ENV \[ "assert" \]) ((index == nil)))
+                 ($statFCall (_ENV \[ "assert" \]) ((table == a)))
+                 ($statFCall (_ENV \[ "assert" \]) ((index == nil)))
                                                                                   
                  ((_ENV \[ "next" \]) = 1)
                  (it = ((_ENV \[ "pairs" \]) (a)))
                  ; now, (_ENV \[ "next" \]) has 1 as value.
-                 ($statFunCall (_ENV \[ "assert" \])
+                 ($statFCall (_ENV \[ "assert" \])
                                ((not (it == (_ENV \[ "next" \])))))
                                                                                   
                  ; however, "it" points to the "next" built-in service
-                 ($statFunCall (_ENV \[ "assert" \]) (((it (a)) == "a")))
-                 ($statFunCall (_ENV \[ "assert" \]) (((it (a "a")) == "b")))
-                 ($statFunCall (_ENV \[ "assert" \]) (((it (a "b")) == nil)))
+                 ($statFCall (_ENV \[ "assert" \]) (((it (a)) == "a")))
+                 ($statFCall (_ENV \[ "assert" \]) (((it (a "a")) == "b")))
+                 ($statFCall (_ENV \[ "assert" \]) (((it (a "b")) == nil)))
                                                                                   
                  ; the iterator returned in successive calls
                  ; is the same
                  (local it2 table2 index2 = ((_ENV \[ "pairs" \]) (a))
                    in
-                   ($statFunCall (_ENV \[ "assert" \]) ((it2 == it)))
+                   ($statFCall (_ENV \[ "assert" \]) ((it2 == it)))
                                                                                     
                    end)
                  )
@@ -425,19 +425,19 @@
                                          = (function $func1 ()
                                                      (return (< 1 2 3 >))
                                                      end)) \}) in
-              (($statFunCall (_ENV \[ "setmetatable" \]) (a b))
+              (($statFCall (_ENV \[ "setmetatable" \]) (a b))
                (local it table index = ((_ENV \[ "pairs" \]) (a))
                  in
-                 (($statFunCall (_ENV \[ "assert" \]) ((it == 1)))
-                  ($statFunCall (_ENV \[ "assert" \]) ((table == 2)))
-                  ($statFunCall (_ENV \[ "assert" \]) ((index == 3)))
+                 (($statFCall (_ENV \[ "assert" \]) ((it == 1)))
+                  ($statFCall (_ENV \[ "assert" \]) ((table == 2)))
+                  ($statFCall (_ENV \[ "assert" \]) ((index == 3)))
                                                                                    
                   ; The iterator returned in successive calls
                   ; is the same
                   (local it2 table2 index2 = ((_ENV \[ "pairs" \]) (a))
                     in
                                                                                      
-                    ($statFunCall (_ENV \[ "assert" \]) ((it2 == it)))
+                    ($statFCall (_ENV \[ "assert" \]) ((it2 == it)))
                                                                                      
                     end)
                   )
@@ -466,9 +466,9 @@
      services
      '("assert" "pcall")
      (term (local f = (function $func ()
-                                ($statFunCall (_ENV \[ "assert" \]) (false))
+                                ($statFCall (_ENV \[ "assert" \]) (false))
                                 end)
-             in ($statFunCall (_ENV \[ "pcall" \]) (f))
+             in ($statFCall (_ENV \[ "pcall" \]) (f))
              end)))))
                                                                           
   ;                                                  
@@ -493,19 +493,19 @@
      services
      '("assert" "rawget" "pcall")
      (term ((local a = (\{ (\[ 1 \] = 2) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "rawget" \]) (a 1)) == 2)))
               end)
             (local a = (\{ (\[ 1 \] = 2) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "rawget" \]) (a 3)) == nil)))
               end)
                               
             (local status errmessage = ((_ENV \[ "pcall" \])
                                         ((_ENV \[ "rawget" \]) 1 2))
               in
-              (($statFunCall (_ENV \[ "assert" \]) ((status == false)))
-               ($statFunCall
+              (($statFCall (_ENV \[ "assert" \]) ((status == false)))
+               ($statFCall
                 (_ENV \[ "assert" \])
                 ((errmessage == "erroneous actual parameters to rawget"
                              ))))
@@ -536,11 +536,11 @@
      services
      '("assert" "rawlen")
      (term ((local a = (\{ (\[ 1 \] = 3) (\[ 2 \] = 4) \}) in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "rawlen" \]) (a)) == 2)))
               end)
             (local a = "añ" in
-              ($statFunCall (_ENV \[ "assert" \])
+              ($statFCall (_ENV \[ "assert" \])
                             ((((_ENV \[ "rawlen" \]) (a)) == 3)))
               end))))))
             
@@ -566,8 +566,8 @@
      services
      '("assert" "rawset" "rawget" "pcall")
      (term ((local a = (\{ \}) in
-              (($statFunCall (_ENV \[ "rawset" \]) (a 1 2))
-               ($statFunCall  (_ENV \[ "assert" \])
+              (($statFCall (_ENV \[ "rawset" \]) (a 1 2))
+               ($statFCall  (_ENV \[ "assert" \])
                               ((((_ENV \[ "rawget" \]) (a 1)) == 2))))
               end)
                               
@@ -575,8 +575,8 @@
               (local status errmessage = ((_ENV \[ "pcall" \])
                                           ((_ENV \[ "rawset" \]) a 1 2))
                 in
-                (($statFunCall (_ENV \[ "assert" \]) ((status == false)))
-                 ($statFunCall
+                (($statFCall (_ENV \[ "assert" \]) ((status == false)))
+                 ($statFCall
                   (_ENV \[ "assert" \])
                   ((errmessage == "erroneous actual parameters to rawset"
                                ))))
@@ -605,11 +605,11 @@
     (plugIntoExecutionEnvironment
      services
      '("assert" "select")
-     (term (($statFunCall (_ENV \[ "assert" \])
+     (term (($statFCall (_ENV \[ "assert" \])
                           ((((_ENV \[ "select" \]) (1 2)) == 2)))
-            ($statFunCall (_ENV \[ "assert" \])
+            ($statFCall (_ENV \[ "assert" \])
                           ((((_ENV \[ "select" \]) ("#" 1 2 3)) == 3)))
-            ($statFunCall (_ENV \[ "assert" \])
+            ($statFCall (_ENV \[ "assert" \])
                           ((((_ENV \[ "select" \]) ("#")) == 0))))))))
                                   
                             
@@ -637,12 +637,12 @@
      services
      '("assert" "setmetatable" "pcall")
      (term (local a b c = (\{ \}) (\{ (\[ "__metatable" \] = 1) \}) (\{ \}) in
-             (($statFunCall (_ENV \[ "setmetatable" \]) (a b))
+             (($statFCall (_ENV \[ "setmetatable" \]) (a b))
               (local status errmessage = ((_ENV \[ "pcall" \])
                                           ((_ENV \[ "setmetatable" \]) a c))
                 in
-                (($statFunCall (_ENV \[ "assert" \]) ((status == false)))
-                 ($statFunCall
+                (($statFCall (_ENV \[ "assert" \]) ((status == false)))
+                 ($statFCall
                   (_ENV \[ "assert" \])
                   ((errmessage == "cannot change a protected metatable"))))
                 end))
@@ -688,10 +688,10 @@
     (plugIntoExecutionEnvironment
      services
      '("assert" "string" "string.rep")
-     (term (($statFunCall (_ENV \[ "assert" \])
+     (term (($statFCall (_ENV \[ "assert" \])
                           (((((_ENV \[ "string" \]) \[ "rep" \]) ("a" 4))
                             == "aaaa")))
-            ($statFunCall (_ENV \[ "assert" \])
+            ($statFCall (_ENV \[ "assert" \])
                           (((((_ENV \[ "string" \]) \[ "rep" \]) ("a" 4 "b"))
                             == "abababa"))))))))
                                   
@@ -737,10 +737,10 @@
      services
      '("assert" "table" "table.pack")
      (term (local table = (((_ENV \[ "table" \]) \[ "pack" \]) ("a" "b" "c")) in
-             (($statFunCall (_ENV \[ "assert" \]) (((table \[ 1 \]) == "a")))
-              ($statFunCall (_ENV \[ "assert" \]) (((table \[ 2 \]) == "b")))
-              ($statFunCall (_ENV \[ "assert" \]) (((table \[ 3 \]) == "c")))
-              ($statFunCall (_ENV \[ "assert" \]) (((table \[ "n" \]) == 3))))
+             (($statFCall (_ENV \[ "assert" \]) (((table \[ 1 \]) == "a")))
+              ($statFCall (_ENV \[ "assert" \]) (((table \[ 2 \]) == "b")))
+              ($statFCall (_ENV \[ "assert" \]) (((table \[ 3 \]) == "c")))
+              ($statFCall (_ENV \[ "assert" \]) (((table \[ "n" \]) == 3))))
              end)))))
                                   
                                   
@@ -770,9 +770,9 @@
      (term (local table = (\{ "a" "b" "c" \}) in
              (local v1 v2 v3 = (((_ENV \[ "table" \]) \[ "unpack" \]) (table))
                in
-               (($statFunCall (_ENV \[ "assert" \]) ((v1 == "a")))
-                ($statFunCall (_ENV \[ "assert" \]) ((v2 == "b")))
-                ($statFunCall (_ENV \[ "assert" \]) ((v3 == "c"))))
+               (($statFCall (_ENV \[ "assert" \]) ((v1 == "a")))
+                ($statFCall (_ENV \[ "assert" \]) ((v2 == "b")))
+                ($statFCall (_ENV \[ "assert" \]) ((v3 == "c"))))
                end)
              end)))))
   (test-results))

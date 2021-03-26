@@ -10,8 +10,8 @@
   [scoresing \;
              break
              (return e ...)
-             ($statFunCall e (e ...))
-             ($statFunCall e : Name (e ...))
+             ($statFCall e (e ...))
+             ($statFCall e : Name (e ...))
              (var_1 var_2 ... = e ...)
              (do scoreblock end)
              (if e then scoreblock else scoreblock end)
@@ -28,12 +28,12 @@
          (s Break)
          ; to help with the definition of well-formed programs, we exclude as
          ; many ill-formed programs as possible,  using the grammar
-         (($statFunCall v (v ...)) Meta objid ...)
+         (($statFCall v (v ...)) Meta objid ...)
          (((v \[ v \]) = v) Meta objid ...)
          
          (((tid \[ v \]) = v) WrongKey objid ...)
          (((v \[ v \]) = v) NonTable objid ...)
-         (($statFunCall v (v ...)) WFunCall objid ...)
+         (($statFCall v (v ...)) WFunCall objid ...)
          ; renv is not an expression nor a value.
          (s (renv ...) LocalBody)
          ; to allow intermediate states of execution of a funtioncall
@@ -334,9 +334,9 @@
        (Elf ssing_1 ssing_2 ...)   
 
        ; Function call, method call, built-in services
-       ($statFunCall Elf (e ...))
-       ($statFunCall v (v ... Elf e ...))
-       ($statFunCall Elf : Name (e ...))
+       ($statFCall Elf (e ...))
+       ($statFCall v (v ... Elf e ...))
+       ($statFCall Elf : Name (e ...))
        ($builtIn builtinserv (v ... Elf e ...))
        (Elf (e ...))
        (v (v ... Elf e ...))
@@ -385,9 +385,9 @@
       (return v ... hole e_1 e_2 ...)
       (hole (e ...))
       (v Etel)
-      ($statFunCall hole (e ...))
-      ($statFunCall v Etel)
-      ($statFunCall hole : Name (e ...))
+      ($statFCall hole (e ...))
+      ($statFCall v Etel)
+      ($statFCall hole : Name (e ...))
       ($builtIn builtinserv Etel)
       (hole : Name (e ...))
       (hole binop e)
@@ -404,14 +404,14 @@
       ]
   
   ; list of expressions where a tuple is unwrapped
-  [Euel (v ... hole)]
+  [Eael  (v ... hole)]
   ; immediate evaluation contexts where a tuple is unwrapped
-  [Eu (local Name_1 Name_2 ... = v ... hole in scoreblock end)
+  [Ea (local Name_1 Name_2 ... = v ... hole in scoreblock end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)
       (v (v ... hole))
-      ($statFunCall v (v ... hole))
-      ($builtIn builtinserv Euel)
+      ($statFCall v Eael)
+      ($builtIn builtinserv Eael)
       (< v ... hole >)
       (\{ efield ... hole \})]
   ;                  
@@ -447,10 +447,10 @@
      (while C do scoreblock end)
      (while e do C end)
      ; Function call, method call, built-in services
-     ($statFunCall C (e ...))
-     ($statFunCall e (e ... C e ...))
-     ($statFunCall C : Name (e ...))
-     ($statFunCall e : Name (e ... C e ...))
+     ($statFCall C (e ...))
+     ($statFCall e (e ... C e ...))
+     ($statFCall C : Name (e ...))
+     ($statFCall e : Name (e ... C e ...))
 
      (C ssing_1 ssing_2 ...)
      (ssing_1 ssing_2 ... C ssing_3 ...)
@@ -471,8 +471,8 @@
 
      ; added each production, instead of a single (C statlabel) and
      ; (C explabel), to avoid redundancy errors
-     (($statFunCall C (v ...)) Meta objid ...)
-     (($statFunCall v (v ... C v ...)) Meta objid ...)
+     (($statFCall C (v ...)) Meta objid ...)
+     (($statFCall v (v ... C v ...)) Meta objid ...)
      (((C \[ v \]) = v) Meta objid ...)
      (((v \[ C \]) = v) Meta objid ...)
      (((v \[ v \]) = C) Meta objid ...)
@@ -483,8 +483,8 @@
      (((C \[ v \]) = v) NonTable objid ...)
      (((v \[ C \]) = v) NonTable objid ...)
      (((v \[ v \]) = C) NonTable objid ...)
-     (($statFunCall C (v ...)) WFunCall objid ...)
-     (($statFunCall v (v ... C v ...)) WFunCall objid ...)
+     (($statFCall C (v ...)) WFunCall objid ...)
+     (($statFCall v (v ... C v ...)) WFunCall objid ...)
      ((C (v ...)) WFunCall objid ...)
      ((v (v ... C v ...)) WFunCall objid ...)
 

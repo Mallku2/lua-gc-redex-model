@@ -34,9 +34,9 @@
         ; new table, not set for finalization
         ((osp ... (objref ((addKeys evaluatedtable) nil ⊥))) : objref)
 
-        E-CreateTable
+        (where objref (freshObjRef (osp ...)))
 
-        (where objref (freshObjRef (osp ...)))]
+        Table-Constr]
    
    ; table indexing
    [-->θ (θ : (objref \[ v_1 \]))
@@ -151,7 +151,6 @@
 ; Table assignment
    [-->θ (θ_1 : ((objref \[ v_1 \]) = v_2))
         (θ_2 : \;)
-        E-AssignTable
         
         ; this way of determining if v_1 is a key of objref is mentioned in
         ; Lua's reference manual.
@@ -161,23 +160,26 @@
         (side-condition (not (equal? (term v_3)
                                      (term nil))))
         
-        (where (θ_2 objref) (δ rawset objref v_1 v_2 θ_1))]
+        (where (θ_2 objref) (δ rawset objref v_1 v_2 θ_1))
+
+        Table-Update]
    
    [-->θ (θ : ((objref \[ v_1 \]) = v_2))
         (θ : (((objref \[ v_1 \]) = v_2)WrongKey))
         
-        E-AlertFieldAssignWrongKey
-
         ; The table doesn't have v_1 as key
-        (where nil (δ rawget objref v_1 θ))]
+        (where nil (δ rawget objref v_1 θ))
+
+        Table-Update-WK]
    
    [-->θ (θ : ((v_1 \[ v_2 \]) = v_3))
         (θ : (((v_1 \[ v_2 \]) = v_3) NonTable))
         
-        E-AlertFieldAssignOverNonTable
         ; Determine if simplevalue is not an reference pointing to a table
         (side-condition (not (equal? (term (δ type v_1))
-                                     (term "table"))))]
+                                     (term "table"))))
+
+        Table-Update-NT]
    ))
 
 (provide terms-obj-store)
