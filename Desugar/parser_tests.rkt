@@ -160,12 +160,12 @@
                            (local
                              $dummyGuardVar
                              =
-                             0
+                             false
                              in
                              (while
-                              ($dummyGuardVar < 1)
+                              (not $dummyGuardVar)
                               do
-                              (($dummyGuardVar = 1)
+                              (($dummyGuardVar = true)
                                ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                |;|
                                ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
@@ -192,12 +192,12 @@
                            (local
                              $dummyGuardVar
                              =
-                             0
+                             false
                              in
                              (while
-                              ($dummyGuardVar < 1)
+                              (not $dummyGuardVar)
                               do
-                              (($dummyGuardVar = 1)
+                              (($dummyGuardVar = true)
                                (local i = 1.0 in (|;| (if (not (i > 2.0))
                                                           then
                                                           ($statFCall $dummyVar ()) else |;| end)) end))
@@ -226,12 +226,12 @@
                             (local
                               $dummyGuardVar
                               =
-                              0
+                              false
                               in
                               (while
-                               ($dummyGuardVar < 1)
+                               (not $dummyGuardVar)
                                do
-                               (($dummyGuardVar = 1)
+                               (($dummyGuardVar = true)
                                 ((_ENV |[| "i" |]|) = ((_ENV |[| "i" |]|) + 1.0))
                                 |;|
                                 ((_ENV |[| "u" |]|) = ((_ENV |[| "i" |]|) .. (_ENV |[| "i" |]|)))
