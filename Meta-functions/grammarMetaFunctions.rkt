@@ -1,83 +1,69 @@
 #lang racket
 (require redex
          "../grammar.rkt")
-; Predicates over grammar's symbols, to ease the definition of some rules
-; from the model
-(define-metafunction ext-lang
-  [(isRelationalOperator <)
-   #t]
-  
-  [(isRelationalOperator <=)
-   #t]
-  
-  [(isRelationalOperator any)
-   #f])
-
-(provide isRelationalOperator)
-
 
 (define-metafunction ext-lang
-  [(translateComparisonOp >)
+  [(trans_comp_op >)
    <]
   
-  [(translateComparisonOp >=)
+  [(trans_comp_op >=)
    <=])
 
-(provide translateComparisonOp)
+(provide trans_comp_op)
 
 ; For each ev. contexts where tuples are truncated, we need to add an equation
 ; this definition
 (define-metafunction ext-lang
-  [(fixUnwrap (return v_1 ... hole) (v_2 ...))
+  [(fix_unwrap (return v_1 ... hole) (v_2 ...))
    (return v_1 ... v_2 ...)]
 
-  [(fixUnwrap (return v_1 ... hole) '())
+  [(fix_unwrap (return v_1 ... hole) '())
    (return v_1 ...) ]
   
-  [(fixUnwrap (v_1 (v_2 ... hole)) (v_3 ...))
+  [(fix_unwrap (v_1 (v_2 ... hole)) (v_3 ...))
    (v_1 (v_2 ... v_3 ...))]
 
-  [(fixUnwrap (v_1 (v_2 ... hole)) '())
+  [(fix_unwrap (v_1 (v_2 ... hole)) '())
    (v_1 (v_2 ...))]
 
-  [(fixUnwrap ($statFCall v_1 (v_2 ... hole)) (v_3 ...))
+  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) (v_3 ...))
    ($statFCall v_1 (v_2 ... v_3 ...))]
 
-  [(fixUnwrap ($statFCall v_1 (v_2 ... hole)) '())
+  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) '())
    ($statFCall v_1 (v_2 ...))]
   
-  [(fixUnwrap ($builtIn builtinserv  (v_1 ... hole)) (v_2 ...))
+  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) (v_2 ...))
    ($builtIn builtinserv  (v_1 ... v_2 ...))]
 
-  [(fixUnwrap ($builtIn builtinserv  (v_1 ... hole)) '())
+  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) '())
    ($builtIn builtinserv  (v_1 ...))]
   
-  [(fixUnwrap (< v_1 ... hole >) (v_2 ...))
+  [(fix_unwrap (< v_1 ... hole >) (v_2 ...))
    (< v_1 ... v_2 ... >)]
 
-  [(fixUnwrap (< v_1 ... hole >) '())
+  [(fix_unwrap (< v_1 ... hole >) '())
    (< v_1 ... >)]
   
-  [(fixUnwrap (\{ field ... hole \}) (v ...))
+  [(fix_unwrap (\{ field ... hole \}) (v ...))
    (\{ field ... v ... \})]
   
-  [(fixUnwrap (\{ field ... hole \}) '())
+  [(fix_unwrap (\{ field ... hole \}) '())
    (\{ field ... \})]
 
-  [(fixUnwrap (local Name ... = v_1 ... hole in s end) (v_2 ...))
+  [(fix_unwrap (local Name ... = v_1 ... hole in s end) (v_2 ...))
    (local Name ... = v_1 ... v_2 ... in s end)]
 
-  [(fixUnwrap (local Name ... = v_1 ... hole in s end) '())
+  [(fix_unwrap (local Name ... = v_1 ... hole in s end) '())
    (local Name ... = v_1 ... in s end)]
 
-  [(fixUnwrap (evar ... = v_1 ... hole) (v_2 ...))
+  [(fix_unwrap (evar ... = v_1 ... hole) (v_2 ...))
    (evar ... = v_1 ... v_2 ...)]
 
-  [(fixUnwrap (evar ... = v_1 ... hole) '())
+  [(fix_unwrap (evar ... = v_1 ... hole) '())
    (evar ... = v_1 ...)]
   )
 
-(provide fixUnwrap)
+(provide fix_unwrap)
 
 ; To flat a list of symbols into an string representing the corresponding
 ; s-expression (needed for the implementation of string.dump).
@@ -123,17 +109,17 @@
 ; simple solution to the problem of pluging a concat of stats into another
 ; concat of stats, obtaining a well-formed concat of stats
 (define-metafunction ext-lang
-  concat-stats : E any -> t
+  concat_stats : E any -> t
 
-  [(concat-stats (in-hole E (hole scoresing_1 scoresing_2 ...))
+  [(concat_stats (in-hole E (hole scoresing_1 scoresing_2 ...))
                  (ssing scoresing_4 scoresing_5 ...))
    (in-hole E (ssing scoresing_4 scoresing_5 ... scoresing_1 scoresing_2 ...))]
 
-  [(concat-stats E any)
+  [(concat_stats E any)
    (in-hole E any)]
   )
 
-(provide concat-stats)
+(provide concat_stats)
 
 
 
@@ -166,9 +152,8 @@
                 e))
 
 (define (is_term? t)
-  (or (is_s? t)
-
-      (is_e? t)))
+  (redex-match? ext-lang
+                t))
 
 
 ; values

@@ -21,7 +21,7 @@
    [↦ (σ : θ : (in-hole E t_1))
       ; to obtain a well-formed concat of stats when E and t_2 are concat
       ; stats (ex.: result of rule AssignSplit)
-      (σ : θ : (concat-stats E t_2))
+      (σ : θ : (concat_stats E t_2))
         
       (where (t_2) ,(apply-reduction-relation terms-rel (term t_1)))
 

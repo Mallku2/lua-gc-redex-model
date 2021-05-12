@@ -22,11 +22,11 @@
            E-TruncateEmptyTuple]
    
    [-->s/e (in-hole Ea (< v_1 v_2 ... >))
-           (fixUnwrap Ea (v_1 v_2 ...))
+           (fix_unwrap Ea (v_1 v_2 ...))
            E-UnwrapNonEmptyTuple]
 
    [-->s/e (in-hole Ea (< >))
-           (fixUnwrap Ea '())
+           (fix_unwrap Ea '())
            E-UnwrapEmptyTuple]
    ;                                                                                          
    ;                                                             ;                            
@@ -131,7 +131,7 @@
            (side-condition (or (equal? (term binop) (term >))
                                (equal? (term binop) (term >=))))
            
-           (where any (translateComparisonOp binop))
+           (where any (trans_comp_op binop))
 
            E-TranslateComparison]
 
@@ -228,23 +228,23 @@
    [-->s/e ((< v_1 ... >) ProtMD v_2)
            (< true v_1 ... >)
         
-           E-XProtMDNoError]
+           E-ProtTrue]
    
    ; error, but with a proper handler
    [-->s/e ((in-hole Enp ($err v)) ProtMD cid)
            ((\( (cid (v)) \)) ProtMD)
         
-           E-XProtMDErrorWithHandler]
+           E-ProtHandler]
 
-   ; error without a proper handler
+   ; error without a proper handler, or not a handler at all
    [-->s/e ((in-hole Enp ($err v_1)) ProtMD v_2 ...)
            (< false "error in error handling" >)
         
-           E-XProtMDErrorNoHandler
-
            (side-condition (not (redex-match? ext-lang
                                               (cid)
-                                              (term (v_2 ...)))))]
+                                              (term (v_2 ...)))))
+
+           E-ProtHandlerErr]
 
    ; no error during error handling
    [-->s/e (v ProtMD)
@@ -379,19 +379,27 @@
 
    ; Return
    [-->s/e ((in-hole Elf (return v ...)) (renv ...) RetStat)
+           
            \;
+           
            E-DiscardValues]
 
    [-->s/e (\; (renv ...) RetStat)
+           
            \;
+           
            E-ReturnNoValues]
 
    [-->s/e ((in-hole Elf (return v ...)) (renv ...) RetExp)
+           
            (< v ... >)
+           
            E-ReturnValues]
 
    [-->s/e (\; (renv ...) RetExp)
+           
            (< >)
+           
            E-ReturnEmptyTuple]
 
    

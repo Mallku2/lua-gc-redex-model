@@ -19,7 +19,7 @@
 -- SOFTWARE. 
 
 ------------------------------------------------------
--- TODO: these tests do not involve exercising of our mechanization of GC: we do
+-- TODO: these tests do not imply the exercising of our mechanization of GC: we do
 -- not treat strings as Lua's GC does
 print('long strings')
 x = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
@@ -128,4 +128,5 @@ b = nil
 collectgarbage()
 for n in pairs(a) do error'cannot be here' end
 for i=1,lim do a[i] = i end
+-- NOTE: this test is not exercising our mechanization
 for i=1,lim do assert(a[i] == i) end

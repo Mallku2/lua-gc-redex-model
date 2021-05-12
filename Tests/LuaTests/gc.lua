@@ -73,14 +73,14 @@ local function GC1 ()
 
   finish = false; local i = 1
   u = setmetatable({}, {__gc = function () finish = true end})
-  -- WAS: nothing, we add an explicit call to the garbage collector at the end of
+  -- WAS: nothing, we add an explicit call to the garbage collector to end
   -- the loop
   repeat i = i + 1; u = i .. i; collectgarbage() until finish
   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
 
   finish = false
   u = setmetatable({}, {__gc = function () finish = true end})
-  -- WAS: nothing, we add an explicit call to the garbage collector at the end of
+  -- WAS: nothing, we add an explicit call to the garbage collector to end
   -- the loop
   repeat local i; u = function () return i end; collectgarbage() until finish
   assert(b[1] == 34)   -- 'u' was collected, but 'b' was not
@@ -155,6 +155,9 @@ do
   end
 end
 
+------------------------------------------------------
+-- TODO: these tests do not imply the exercising of our mechanization of GC: we do
+-- not treat strings as Lua's GC does
 foo = nil
 print('long strings')
 x = "01234567890123456789012345678901234567890123456789012345678901234567890123456789"
@@ -263,6 +266,7 @@ b = nil
 collectgarbage()
 for n in pairs(a) do error'cannot be here' end
 for i=1,lim do a[i] = i end
+-- NOTE: this test is not exercising our mechanization
 for i=1,lim do assert(a[i] == i) end
 
 
@@ -339,19 +343,23 @@ C, C1 = nil
 
 -- ephemerons
 local mt = {__mode = 'k'}
-a = {10,20,30,40}; setmetatable(a, mt)
+-- WAS: a = {10,20,30,40}, changed for performance reasons
+a = {10,20};
+setmetatable(a, mt)
 x = nil
 -- WAS: i = 1, 100, changed for performance reasons
-for i = 1, 10 do local n = {}; a[n] = {k = {x}}; x = n end
+for i = 1, 2 do local n = {}; a[n] = {k = {x}}; x = n end
 GC()
 local n = x
 local i = 0
 while n do n = a[n].k[1]; i = i + 1 end
 -- WAS: assert(i == 100), changed for performance reasons
-assert(i == 10)
+assert(i == 2)
 x = nil
 GC()
-for i = 1, 4 do assert(a[i] == i * 10); a[i] = nil end
+-- WAS: for i = 1, 4 do assert(a[i] == i * 10); a[i] = nil end,
+-- changed for performance reasons
+for i = 1, 2 do assert(a[i] == i * 10); a[i] = nil end
 assert(next(a) == nil)
 
 local K = {}
@@ -392,13 +400,34 @@ for i = 6, 10 do
   s[n] = i
 end
 
+-- WAS: nothing, we add explicit calls to the garbage collector
+-- since we finalize one table in each call
+assert(pcall(collectgarbage))
+assert(pcall(collectgarbage))
+---------------------------------------------------------------
+
 assert(not pcall(collectgarbage))
+
+-- WAS: nothing, we add explicit calls to the garbage collector
+-- since we finalize one table in each call
+assert(pcall(collectgarbage))
+assert(pcall(collectgarbage))
+---------------------------------------------------------------
+
 for i = 8, 10 do assert(s[i]) end
 
 for i = 1, 5 do
   local n = setmetatable({}, getmetatable(u))
   s[n] = i
 end
+
+-- WAS: nothing, we add explicit calls to the garbage collector
+-- since we finalize one table in each call
+collectgarbage()
+collectgarbage()
+collectgarbage()
+collectgarbage()
+---------------------------------------------------------------
 
 collectgarbage()
 for i = 1, 10 do assert(s[i]) end
@@ -413,8 +442,8 @@ getmetatable(u).__gc = false
 -- local a, b = pcall(collectgarbage)
 -- assert(not a and type(b) == "string" and string.find(b, "error in __gc"))
 
--- end
--- print '+'
+end
+print '+'
 
 
 ------------------------------------------

@@ -22,24 +22,7 @@
                                      WFunCall
                                      objid ...))))]
 
-   ; NonTable exp.
-   ;   [-->meta (θ : ((v_1 \[ v_2 \]) NonTable objid ...))
-   ;            (θ : e)
-   ;        
-   ;            E-NonTableExp
-   ;            
-   ;            (where e
-   ;                   (non_table_e (θ : ((v_1 \[ v_2 \]) NonTable objid ...))))]
-   ;
-   ;   ; WrongKey exp.
-   ;   [-->meta (θ : ((v_1 \[ v_2 \]) WrongKey objid ... ))
-   ;            (θ : e)
-   ;        
-   ;            E-WrongKeyExp
-   ;            
-   ;            (where e
-   ;                   (wrong_key_e (θ : ((v_1 \[ v_2 \]) WrongKey objid ...))))]
-
+   ; NonTable or WrongKey, exp
    [-->meta (θ : ((v_1 \[ v_2 \]) explabel objid ...))
             (θ : e)
 
@@ -112,27 +95,8 @@
    ;    ;;;;      ;;;   ;;; ;     ;;;   ;;;;   ;  ;  ;  ;;;;   ;    ;     ;;;   ;;;;  
    ;                                                                                  
    ;                                                                                  
-   ;
-   ;   [-->meta (θ : (((v_1 \[ v_2 \]) = v_3) NonTable objid ...))
-   ;            (θ : s)
-   ;        
-   ;            E-NonTableStat
-   ;            
-   ;            (where s
-   ;                   (non_table_s (θ : (((v_1 \[ v_2 \]) = v_3)
-   ;                                        NonTable
-   ;                                        objid ...))))]
-   ;
-   ;   [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) WrongKey objid ...))
-   ;            (θ_2 : s)
-   ;        
-   ;            E-WrongKeyStat
-   ;            
-   ;            (where (θ_2 : s)
-   ;                   (wrong_key_s (θ_1 : (((v_1 \[ v_2 \]) = v_3)
-   ;                                        WrongKey
-   ;                                        objid ...))))]
-
+ 
+   ; NonTable or WrongKey, stat
    [-->meta (θ_1 : (((v_1 \[ v_2 \]) = v_3) statlabel objid ...))
             (θ_2 : s)
 
