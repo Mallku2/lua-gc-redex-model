@@ -45,7 +45,7 @@
   ; Lua's block of code: it helps to avoid an ambiguity in the grammar, between
   ; funcalls and concat. of stats
   [s ssing
-     (ssing scoresing_1 scoresing_2 ...)]
+     (ssing scoresing scoresing ...)]
 
   [v nil Boolean Number String
      tid
@@ -432,6 +432,11 @@
   
   [cte tid
        cid]
+
+  ; locations
+  [l r
+     tid
+     cid]
   
   [C hole
      ; Statements

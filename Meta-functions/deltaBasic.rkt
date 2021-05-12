@@ -6,6 +6,7 @@
          "./grammarMetaFunctions.rkt"
          "./coercion.rkt"
          "./gc.rkt"
+         "./finalization.rkt"
          "../Desugar/parser.rkt"
          "../Desugar/lexer.rkt"
          "../Desugar/phrases_constructors.rkt")
@@ -277,20 +278,23 @@
   ; TODO: while we do not model the internal state of the garbage collector,
   ; some tests (e.g. in errors.lua) verify calls to collectgarbage with
   ; parameters of unexpected type
-  [(δbasic collectgarbage v_1 v_2 v_3 v_4 ... σ_1 θ_1 s)
-   (δbasic collectgarbage v_1 v_2 σ_1 θ_1 s)]
+  [(δbasic collectgarbage v_1 v_2 v_3 v_4 ... σ θ s)
+   (δbasic collectgarbage v_1 v_2 σ θ s)]
   
   ; default parameters
-  [(δbasic collectgarbage σ_1 θ_1 s)
-   (δbasic collectgarbage "collect" σ_1 θ_1 s)]
+  [(δbasic collectgarbage σ θ s)
+   (δbasic collectgarbage "collect" σ θ s)]
 
   ;  performs a full garbage-collection cycle
-  [(δbasic collectgarbage "collect" σ_1 θ_1 s)
-   (gcFinWeak s σ_1 θ_1)]
+  [(δbasic collectgarbage "collect" σ θ s)
+   (gcFinWeak s σ θ)]
 
-  ; TODO: we ignore step
-  [(δbasic collectgarbage "step" Number σ_1 θ_1 s)
-   (gcFinWeak s σ_1 θ_1)]
+  ; TODO: we ignore step, stop
+  [(δbasic collectgarbage "step" Number σ θ s)
+   (gcFinWeak s σ θ)]
+
+  [(δbasic collectgarbage "stop" σ θ s)
+   (σ θ nil)]
 
   ; error
   [(δbasic collectgarbage v ... σ θ s)
@@ -910,10 +914,12 @@
                                             (term (δbasic tostring ,str θ))
                                             )
                              )
-                           (term String_1)
+                           ""
                            (term (v_1 ...))))
 
-   (where String_3, (string-append (term String_2)
+   (where String_3, (string-append (term String_1)
+                                   "\n"
+                                   (term String_2)
                                    "\n"))
 
    (side-condition (println (term (v_1 ...))))]
@@ -1683,7 +1689,7 @@
   
   [(indexMetaTable v_1 v_2 θ)
    v_3
-
+   
    (where tid (getMetaTable v_1 θ))
    (where v_3 (δbasic rawget tid v_2 θ))]
   
