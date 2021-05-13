@@ -1,86 +1,35 @@
 #lang racket
 
-(require redex)
+(require redex
+         "coreGrammar.rkt")
 
-(define-language ext-lang
-  ; terms as compiled from Lua code: needed to enforce well-formedness of
-  ; programs
-  ; it rules out programs like ((s_1 statlabel) ((s_2 statlabel)), which could
-  ; get stuck
-  [scoresing \;
-             break
-             (return e ...)
-             ($statFCall e (e ...))
-             ($statFCall e : Name (e ...))
-             (var_1 var_2 ... = e ...)
-             (do scoreblock end)
-             (if e then scoreblock else scoreblock end)
-             (while e do scoreblock end)
-             ($iter e do scoreblock end)
-             (local Name_1 Name_2 ... = e ... in scoreblock end)]
+(define-extended-language ext-lang core-lang
+  [sing ....
+        ; extensions
+        (s Break)
+        ; to help with the definition of well-formed programs, we exclude as
+        ; many ill-formed programs as possible,  using the grammar
+        (($statFCall v (v ...)) Meta objid ...)
+        (((v \[ v \]) = v) Meta objid ...)
+        
+        (((tid \[ v \]) = v) WrongKey objid ...)
+        (((v \[ v \]) = v) NonTable objid ...)
+        (($statFCall v (v ...)) WFunCall objid ...)
+        ; renv is not an expression nor a value.
+        (s (renv ...) LocalBody)
+        ; to allow intermediate states of execution of a funtioncall
+        (s (renv ...) RetStat)
+        
+        ; error objects
+        ($err v)]
 
-  [scoreblock scoresing
-              (scoresing_1 scoresing_2 scoresing_3 ...)]
-
-  [ssing scoresing
-         ; extensions
-         (do s end)
-         (s Break)
-         ; to help with the definition of well-formed programs, we exclude as
-         ; many ill-formed programs as possible,  using the grammar
-         (($statFCall v (v ...)) Meta objid ...)
-         (((v \[ v \]) = v) Meta objid ...)
-         
-         (((tid \[ v \]) = v) WrongKey objid ...)
-         (((v \[ v \]) = v) NonTable objid ...)
-         (($statFCall v (v ...)) WFunCall objid ...)
-         ; renv is not an expression nor a value.
-         (s (renv ...) LocalBody)
-         ; to allow intermediate states of execution of a funtioncall
-         (s (renv ...) RetStat)
-
-         ; error objects
-         ($err v)]
-
-  ; Lua's block of code: it helps to avoid an ambiguity in the grammar, between
-  ; funcalls and concat. of stats
-  [s ssing
-     (ssing scoresing scoresing ...)]
-
-  [v nil Boolean Number String
+  [v ....
      tid
      cid]
 
-  [Boolean true false]
-    
-  ; Number represents real (double-precision floating-point) numbers
-  [Number real]
-  
-  [String string]
-
-  ; difference between statements and expressions is present also at a semantics
-  ; level: eg., tuples' semantics is defined taking into account if they appear
-  ; as an expression or as a statement, and the same with funcall
-  [ecore v
-         <<<
-         var
-         (\( e \))
-         ($builtIn builtinserv (e ...))
-         tableconstructor
-         (e binop e)
-         (unop e)
-         functiondef
-         (e (e ...))
-         (e : Name (e ...))
-         ; run-time expressions (need to be added since environment is
-         ; manipulated through substitution)
-         r]
-
-  [handler nil
-           cid]
-  
-  [e ecore
+  [e ....
      ; run-time expressions
+     r
      (< e ... >)
      ($err v)
      ; renv is not an expression nor a value. The previous rules for these
@@ -110,76 +59,10 @@
 
   ; identifiers of variables and refs., to ease the definition of several
   ; substitution functions
-  [id Name
-      <<<
+  [id ....
       r
       tid
       cid]
-
-  [parameters (Name ...)
-              (Name ... <<<)]
-
-  ; This syntactic category is added to ease meta-functions' definitions. 
-  [functiondef (function Name parameters scoreblock end)]
-
-  ; Built-in services' names, for use by the random generator of terms
-  [builtinserv assert
-               collectgarbage
-               error
-               getmetatable
-               ipairs
-               load
-               loadfile
-               next
-               pairs
-               pcall
-               print
-               rawequal
-               rawget
-               rawlen
-               rawset
-               select
-               setmetatable
-               tonumber
-               tostring
-               type
-               xpcall
-               ; debug
-               debug.setmetatable
-               ; math
-               math.abs
-               math.acos
-               math.asin
-               math.atan
-               math.ceil
-               math.cos
-               math.cosh
-               math.deg
-               math.exp
-               math.floor
-               math.fmod
-               math.log
-               math.max
-               math.modf
-               math.rad
-               math.sin
-               math.sinh
-               math.sqrt
-               math.tan
-               math.tanh
-               ; package
-               require
-               ; string
-               string.dump
-               string.len
-               string.rep
-               string.reverse
-               string.sub
-               ; table
-               table.concat
-               table.insert
-               table.pack
-               table.unpack]
 
   [label statlabel
          explabel]
@@ -197,39 +80,15 @@
             WFunCall]
 
   ; tables
-  [field (\[ e \] = e)
-         ; we need to allow fields like this
-         e]
-
-  [tableconstructor (\{ field ... \})]
-  
-  
   [(efield ef) (\[ v \] = v)
                v]
   
   [evaluatedtable (\{ efield ... \})]
 
-
-  ; primitive operators
-  [arithop + - * / ^ %]
-  
-  [relop < <= > >=]
-
-  ; Not short-circuit binop
-  [strictbinop arithop relop == ..]
-  
-  [binop strictbinop and or]
-  
-  [unop - not \#]
-  
-  ; Name can be anything except a keyword of the language
-  [Name variable-not-otherwise-mentioned]
-  
   [evar r
         (v \[ v \])]
 
-  [var Name 
-       (e \[ e \])
+  [var ....
        ; run-time expression
        evar]
   
@@ -324,14 +183,14 @@
   [Elf hole
        ; Statements
        (do Elf end)
-       (if Elf then scoreblock else scoreblock end)
-       (local Name_1 Name_2 ... = v ... Elf e ... in scoreblock end)
+       (if Elf then s else s end)
+       (local Name_1 Name_2 ... = v ... Elf e ... in s end)
        (Elf (renv ...) LocalBody)
        (evar ... (Elf \[ e \]) var ... = e ...)
        (evar ... (v \[ Elf \]) var ... = e ...)
        (evar_1 evar_2 ... = v ... Elf e ...)
        (return v ... Elf e ...)
-       (Elf ssing_1 ssing_2 ...)   
+       (Elf sing_1 sing_2 ...)   
 
        ; Function call, method call, built-in services
        ($statFCall Elf (e ...))
@@ -377,8 +236,8 @@
   [Etel (v ... hole e_1 e_2 ...)]
   
   ; immediate evaluation contexts where a tuple is truncated
-  [Et (if hole then scoreblock else scoreblock end)
-      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in scoreblock end)
+  [Et (if hole then s else s end)
+      (local Name_1 Name_2 ... = v ... hole e_1 e_2 ... in s end)
       (evar ... (hole \[ e \]) var ... = e ...)
       (evar ... (v \[ hole \]) var ... = e ...)
       (evar_1 evar_2 ... = v ... hole e_1 e_2 ...)
@@ -406,7 +265,7 @@
   ; list of expressions where a tuple is unwrapped
   [Eael  (v ... hole)]
   ; immediate evaluation contexts where a tuple is unwrapped
-  [Ea (local Name_1 Name_2 ... = v ... hole in scoreblock end)
+  [Ea (local Name_1 Name_2 ... = v ... hole in s end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)
       (v (v ... hole))
@@ -441,15 +300,15 @@
   [C hole
      ; Statements
      (do C end)
-     (if C then scoreblock else scoreblock end)
-     (if e then C else scoreblock end)
-     (if e then scoreblock else C end)
-     (local Name ... = e ... C e ... in scoreblock end)
+     (if C then s else s end)
+     (if e then C else s end)
+     (if e then s else C end)
+     (local Name ... = e ... C e ... in s end)
      (local Name ... = e ... in C end)
      (e ... C e ... = e ...)
      (e ... = e ... C e ...)
      (return e ... C e ...)
-     (while C do scoreblock end)
+     (while C do s end)
      (while e do C end)
      ; Function call, method call, built-in services
      ($statFCall C (e ...))
@@ -457,8 +316,8 @@
      ($statFCall C : Name (e ...))
      ($statFCall e : Name (e ... C e ...))
 
-     (C ssing_1 ssing_2 ...)
-     (ssing_1 ssing_2 ... C ssing_3 ...)
+     (C sing_1 sing_2 ...)
+     (sing_1 sing_2 ... C sing_3 ...)
      
      ; Run-time
      (C (renv ...) RetStat)
@@ -471,7 +330,7 @@
      (C ProtMD v)
      (e ProtMD C)
      ($err C)
-     ($iter C do scoreblock end)
+     ($iter C do s end)
      ($iter e do C end)
 
      ; added each production, instead of a single (C statlabel) and

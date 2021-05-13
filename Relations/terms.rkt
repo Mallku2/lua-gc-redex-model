@@ -269,33 +269,33 @@
 
 
    ; If statement
-   [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
-           scoreblock_1
+   [-->s/e (if v then s_1 else s_2 end)
+           s_1
            If-T
       
            (side-condition (not (is_false_cond? (term v))))]
    
-   [-->s/e (if v then scoreblock_1 else scoreblock_2 end)
-           scoreblock_2
+   [-->s/e (if v then s_1 else s_2 end)
+           s_2
            If-F
       
            (side-condition (is_false_cond? (term v)))]
 
    ; While statement
-   [-->s/e (while e do scoreblock end)
-           (($iter e do scoreblock end) Break)
+   [-->s/e (while e do s end)
+           (($iter e do s end) Break)
            
            While-Start]
    
-   [-->s/e ($iter e do scoresing end)
-           (if e then (scoresing ($iter e do scoresing end)) else \; end)
+   [-->s/e ($iter e do sing end)
+           (if e then (sing ($iter e do sing end)) else \; end)
            
            While-Iter-Sing]
 
-   [-->s/e ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...) end)
+   [-->s/e ($iter e do (sing_1 sing_2 sing_3 ...) end)
            (if e then
-               (scoresing_1 scoresing_2 scoresing_3 ...
-                        ($iter e do (scoresing_1 scoresing_2 scoresing_3 ...)
+               (sing_1 sing_2 sing_3 ...
+                        ($iter e do (sing_1 sing_2 sing_3 ...)
                                end))
                else \; end)
            
@@ -305,13 +305,13 @@
    ; concatenation of statements
    ; this added rule has to do with the concrete grammar used
    ; in this mechanization.
-   [-->s/e (\; scoresing)
-           scoresing
+   [-->s/e (\; sing)
+           sing
 
            Seq-Single]
 
-   [-->s/e (\; scoresing_1 scoresing_2 scoresing_3 ...)
-           (scoresing_1 scoresing_2 scoresing_3 ...)
+   [-->s/e (\; sing_1 sing_2 sing_3 ...)
+           (sing_1 sing_2 sing_3 ...)
            
            Seq-Concat]
 
@@ -340,14 +340,14 @@
 
            Assgn-Split]
 
-   [-->s/e (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ... in scoreblock end)
-           (local Name_1 Name_2 ... = v_1 v_2 ... in scoreblock end)
+   [-->s/e (local Name_1 Name_2 ..._1 = v_1 v_2 ..._1 v_3 v_4 ... in s end)
+           (local Name_1 Name_2 ... = v_1 v_2 ... in s end)
            
            LocalDiscardRvalues]
 
    
-   [-->s/e (local Name_1 ..._1 Name_2 Name_3 ..._2 = v_1 ..._1 in scoreblock end)
-           (local Name_1 ... Name_2 Name_3 ... = v_1 ... nil nil ..._2 in scoreblock end)
+   [-->s/e (local Name_1 ..._1 Name_2 Name_3 ..._2 = v_1 ..._1 in s end)
+           (local Name_1 ... Name_2 Name_3 ... = v_1 ... nil nil ..._2 in s end)
         
            LocalCompleteRvalues]
 
