@@ -26,7 +26,6 @@ local s = {}; setmetatable(s, {__mode = 'k'})
 setmetatable(u, {__gc = function (o)
   local i = s[o]
   s[i] = true
-  print(i)
   assert(not s[i - 1])   -- check proper finalization order
   if i == 8 then error("here") end   -- error during GC
 end})
