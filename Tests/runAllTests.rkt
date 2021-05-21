@@ -66,8 +66,7 @@
   (print "parser tests:")
   (run-tests parser-test-suite)
   (print "concrete grammar rep tests:")
-  (run-tests phrases-constructors-test-suite)
-  
+  (run-tests phrases-constructors-test-suite)  
   )
 
 (define (test-all)
