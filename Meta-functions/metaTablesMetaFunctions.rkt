@@ -30,9 +30,9 @@
 
   ; break loop
   [(w_fun_call (θ : (($statFCall ..._1 v_1 (v_2 ...)) WFunCall
-                                                        tid_1 ...
-                                                        tid_2
-                                                        tid_3 ...)))
+                                                      tid_1 ...
+                                                      tid_2
+                                                      tid_3 ...)))
    ; TODO: check this
    (δbasic error "loop in call")
 

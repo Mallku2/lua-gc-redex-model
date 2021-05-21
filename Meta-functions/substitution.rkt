@@ -158,30 +158,10 @@
     OrdCompWrongOps
     (substExp tid ((id e) ...)) ...)]
 
-  [(substExp ((v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
+  [(substExp (e_1 Meta tid ...) ((id e_2) ...))
+   ((substExp e_1 ((id e_2) ...))
     Meta
-    (substExp tid ((id e) ...)) ...)]
-
-  [(substExp ((not (v_1 (v_2 ...))) Meta tid ...) ((id e) ...))
-   ((not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)))
-    Meta
-    (substExp tid ((id e) ...)) ...)]
-
-  [(substExp ((not (not (v_1 (v_2 ...)))) Meta tid ...) ((id e) ...))
-   ((not (not ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))))
-    Meta
-    (substExp tid ((id e) ...)) ...)]
-
-  [(substExp ((\( (v_1 (v_2 ...)) \)) Meta tid ...) ((id e) ...))
-   ((\( ((substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...)) \))
-    Meta
-    (substExp tid ((id e) ...)) ...)]
-
-  [(substExp (((v_1 \[ v_2 \]) Meta tid ...) Meta tid ...) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \])
-    Meta
-    (substExp tid ((id e) ...)) ...)]
+    (substExp tid ((id e_2) ...)) ...)]
 
   [(substExp (e_1 ProtMD v) ((id e_2) ...))
    ((substExp e_1 ((id e_2) ...)) ProtMD (substExp v ((id e_2) ...)))]
@@ -322,14 +302,8 @@
     WFunCall
     (substExp tid ((id e) ...)) ...)]
 
-  [(substBlock (($statFCall v_1 (v_2 ...)) Meta tid ...) ((id e) ...))
-   (($statFCall (substExp v_1 ((id e) ...)) ((substExp v_2 ((id e) ...)) ...))
-    Meta
-    (substExp tid ((id e) ...)) ...)]
-
-  [(substBlock (((v_1 \[ v_2 \]) = v_3) Meta tid ...) ((id e) ...))
-   (((substExp v_1 ((id e) ...)) \[ (substExp v_2 ((id e) ...)) \]
-                                 = (substExp v_3 ((id e) ...)))
+  [(substBlock (s Meta tid ...) ((id e) ...))
+   ((substBlock s ((id e) ...))
     Meta
     (substExp tid ((id e) ...)) ...)]
 

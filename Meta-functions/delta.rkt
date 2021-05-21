@@ -224,7 +224,7 @@
                osp_2 ...))]
 
   ; meta-table not set
-  [(δ debug.setmetatable v nil θ_1)
+  [(δ debug.setmetatable v nil θ)
    (θ v)]
    
   ;                                                          

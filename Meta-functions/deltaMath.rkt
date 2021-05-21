@@ -581,11 +581,11 @@
    ,(tanh (term Number))]
 
   ; default case of math functions
-  [(δmath builtinserv v ...)
-   (δbasic error any)
+  [(δmath builtinserv any ...)
+   (δbasic error String)
 
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))
    ]
   )
 

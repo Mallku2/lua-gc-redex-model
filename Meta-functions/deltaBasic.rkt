@@ -549,23 +549,27 @@
                ))]
  
   ; Lua program expressed into a string, either syntactically correct or not 
-  [(δbasic load String v_1 "t" v_2)
+  [(δbasic load String String_2 "t" v_2)
    any_2
 
    (where any_1 ,(with-handlers
                      ([exn:fail?
                        ; the string cannot be parsed
-                       (λ (e) (append (term (< nil ))
-                                      (list (if (is_nil? (term v_1))
-                                                
-                                                (string-append "[string "
-                                                               (term String)
-                                                               "]")
-                                                           
-                                                (string-append "[string "
-                                                               (term v_1)
-                                                               "]")))
-                                      (term ( >))))])
+;                       (λ (e) (append (term (< nil ))
+;                                      (list (if (is_nil? (term v_1))
+;                                                
+;                                                (string-append "[string "
+;                                                               (term String)
+;                                                               "]")
+;                                                           
+;                                                (string-append "[string "
+;                                                               (term v_1)
+;                                                               "]")))
+;                                      (term ( >))))
+                       (λ (e) (term (< nil ,(string-append "[string "
+                                                          (term String)
+                                                          "]") >)))
+                       ])
 
                    ; if we are going to parse a Lua program from a string we
                    ; need to unescape backslashes to be able to correclty detect
@@ -1460,39 +1464,67 @@
   ;                                                        
 
   ; to capture the "no value" error for every builtinserv 
-  [(δbasic builtinserv v ...)
-   (δbasic error any)
-
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))]
-  
   ; services that don't modify theta
-  [(δbasic builtinserv v ... θ)
-   (δbasic error any)
+  [(δbasic builtinserv any ...)
+   (δbasic error String)
 
    (side-condition (member (term builtinserv)
                            (term (; basic functions
+                                  error
+                                  getmetatable
                                   ipairs
-                                  next
-                                  pairs
                                   load
                                   loadfile
-                                  getmetatable
+                                  next
+                                  pairs
+                                  pcall
+                                  tonumber
                                   tostring
+                                  type
+                                  rawequal
                                   rawget
-                                  rawlen))))
+                                  rawlen
+                                  select
+                                  xpcall))))
    
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))
    ]
 
   ; services that modify theta
-  [(δbasic builtinserv v ... θ)
-   (θ (δbasic error any))
+  [(δbasic builtinserv any ... θ)
+   (θ (δbasic error String))
+
+   (side-condition (member (term builtinserv)
+                           (term (; basic functions
+                                  setmetatable
+                                  rawset))))
    
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))
-   ]
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))]
+
+  ; for testing purposes: builtin call with random parameters, possible no
+  ; θ provided
+  [(δbasic builtinserv any ...)
+   (() (δbasic error String))
+
+   (side-condition (member (term builtinserv)
+                           (term (; basic functions
+                                  setmetatable
+                                  rawset))))
+   
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))]
+
+  [(δbasic builtinserv any ...)
+   (() () (δbasic error String))
+   
+   (side-condition (member (term builtinserv)
+                           (term (; basic functions
+                                  collectgarbage))))
+
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))]
   )
 
 (provide δbasic)

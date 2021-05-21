@@ -314,36 +314,16 @@
 
 
   ; to capture the "no value" error for every builtinserv 
-  [(δtable builtinserv v ...)
-   (δbasic error any)
+  [(δtable builtinserv any ...)
+   (δbasic error String)
 
    (side-condition (member (term builtinserv)
-                           (term (table.pack
-                                  table.concat))))
-   
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))]
-
-  ; services that don't modify theta
-  [(δtable builtinserv v ... θ)
-   (δbasic error any)
-
-   (side-condition (member (term builtinserv)
-                           (term (; table
+                           (term (table.concat
+                                  table.insert
+                                  table.pack
                                   table.unpack))))
    
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))]
-
-  ; services that modify theta
-  [(δtable builtinserv v ... θ)
-   (θ (δbasic error any))
-
-   (side-condition (member (term builtinserv)
-                           (term (; table
-                                  table.insert))))
-   
-   (where any ,(string-append "erroneous actual parameters to "
-                              (symbol->string (term builtinserv))))]
+   (where String ,(string-append "erroneous actual parameters to "
+                                 (symbol->string (term builtinserv))))]
   )
 (provide δtable)
