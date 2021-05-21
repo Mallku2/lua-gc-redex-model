@@ -386,7 +386,7 @@
     (well_formed_term hole
                       ()
                       (((cl 1) (function x (y) break end)))
-                      (($statFunCall (cl 1) ())
+                      (($statFCall (cl 1) ())
                        WFunCall)))
    #f)
 
@@ -395,7 +395,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      (($statFunCall 1 (1)) WFunCall)))
+                      (($statFCall 1 (1)) WFunCall)))
    #t)
 
   (test-equal
@@ -844,13 +844,13 @@
                       (((objr 1) \[ 1 \]) WrongKey)))
    #f)
 
-  ; ArithWrongOps
+  ; BinopWO
   (test-equal
    (judgment-holds
     (well_formed_term hole
                       ()
                       ()
-                      ((1 + true) ArithWrongOps)))
+                      ((1 + true) BinopWO)))
    #t)
 
   (test-equal
@@ -858,7 +858,57 @@
     (well_formed_term hole
                       ()
                       ()
-                      (("1" + "1") ArithWrongOps)))
+                      (("1" + "1") BinopWO)))
+   #f)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      ((1 + 1) BinopWO)))
+   #f)
+
+  ; BinopWO
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      (("a" .. "b") BinopWO)))
+   #f)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      (("1" .. 1) BinopWO)))
+   #f)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      ((1 .. "1") BinopWO)))
+   #f)
+
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      ((true .. "b") BinopWO)))
+   #t)
+
+  ; BinopWO
+  (test-equal
+   (judgment-holds
+    (well_formed_term hole
+                      ()
+                      ()
+                      ((true < 1) BinopWO)))
    #t)
 
   (test-equal
@@ -866,16 +916,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      ((1 + 1) ArithWrongOps)))
-   #f)
-
-  ; StrConcatWrongOps
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      (("a" .. "b") StrConcatWrongOps)))
+                      ((1 < 1) BinopWO)))
    #f)
 
   (test-equal
@@ -883,48 +924,7 @@
     (well_formed_term hole
                       ()
                       ()
-                      (("1" .. 1) StrConcatWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 .. "1") StrConcatWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((true .. "b") StrConcatWrongOps)))
-   #t)
-
-  ; OrdCompWrongOps
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((true < 1) OrdCompWrongOps)))
-   #t)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      ((1 < 1) OrdCompWrongOps)))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole
-                      ()
-                      ()
-                      (("1" < "1") OrdCompWrongOps)))
+                      (("1" < "1") BinopWO)))
    #f)
 
   ; StrLenWrongOp
@@ -1119,31 +1119,31 @@
   
   ; fun call
   (test-equal
-   (term (free_val_refs () ($statFunCall (ref 1) ())))
+   (term (free_val_refs () ($statFCall (ref 1) ())))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) ())))
+   (term (free_val_refs (((ref 1) false)) ($statFCall (ref 1) ())))
    '())
 
   (test-equal
-   (term (free_val_refs () ($statFunCall (ref 1) ((ref 2)))))
+   (term (free_val_refs () ($statFCall (ref 1) ((ref 2)))))
    (term ((ref 1) (ref 2))))
 
   (test-equal
-   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) ((ref 2)))))
+   (term (free_val_refs (((ref 1) false)) ($statFCall (ref 1) ((ref 2)))))
    (term ((ref 2))))
 
   (test-equal
-   (term (free_val_refs () ($statFunCall (ref 1) : x ())))
+   (term (free_val_refs () ($statFCall (ref 1) : x ())))
    (term ((ref 1))))
 
   (test-equal
-   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) : x ())))
+   (term (free_val_refs (((ref 1) false)) ($statFCall (ref 1) : x ())))
    '())
 
   (test-equal
-   (term (free_val_refs (((ref 1) false)) ($statFunCall (ref 1) : x ((ref 2)))))
+   (term (free_val_refs (((ref 1) false)) ($statFCall (ref 1) : x ((ref 2)))))
    (term ((ref 2))))
 
   ; assignment
@@ -1271,13 +1271,13 @@
   ; WFunCall
   (test-equal
    ; only values
-   (term (free_val_refs () (($statFunCall 1 (2)) WFunCall)))
+   (term (free_val_refs () (($statFCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
   (test-equal
    (term (free_val_refs (((ref 1) 1))
-                        (($statFunCall (ref 1) ((ref 2))) () RetStat)))
+                        (($statFCall (ref 1) ((ref 2))) () RetStat)))
    (term ((ref 2))))
     
                                    
@@ -1454,20 +1454,20 @@
    (term (free_val_refs () (((objr 1) \[ 1 \]) WrongKey)))
    '())
   
-  ; ArithWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_val_refs () ((1 + true) ArithWrongOps)))
+   (term (free_val_refs () ((1 + true) BinopWO)))
    '())
   
-  ; StrConcatWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_val_refs () (("a" .. "b") StrConcatWrongOps)))
+   (term (free_val_refs () (("a" .. "b") BinopWO)))
    '())
   
   
-  ; OrdCompWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_val_refs () ((true < 1) OrdCompWrongOps)))
+   (term (free_val_refs () ((true < 1) BinopWO)))
    '())
   
   ; StrLenWrongOp
@@ -1559,34 +1559,34 @@
   
   ; fun call
   (test-equal
-   (term (free_tids () ($statFunCall (objr 1) ())))
+   (term (free_tids () ($statFCall (objr 1) ())))
    (term ((objr 1))))
 
   (test-equal
-   (term (free_tids (((objr 1) ((\{ \}) nil 1))) ($statFunCall (objr 1) ())))
+   (term (free_tids (((objr 1) ((\{ \}) nil 1))) ($statFCall (objr 1) ())))
    '())
 
   (test-equal
-   (term (free_tids () ($statFunCall (objr 1) ((objr 2)))))
+   (term (free_tids () ($statFCall (objr 1) ((objr 2)))))
    (term ((objr 1) (objr 2))))
 
   (test-equal
    (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    ($statFunCall (objr 1) ((objr 2)))))
+                    ($statFCall (objr 1) ((objr 2)))))
    (term ((objr 2))))
 
   (test-equal
-   (term (free_tids () ($statFunCall (objr 1) : x ())))
+   (term (free_tids () ($statFCall (objr 1) : x ())))
    (term ((objr 1))))
 
   (test-equal
    (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    ($statFunCall (objr 1) : x ())))
+                    ($statFCall (objr 1) : x ())))
    '())
 
   (test-equal
    (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    ($statFunCall (objr 1) : x ((objr 2)))))
+                    ($statFCall (objr 1) : x ((objr 2)))))
    (term ((objr 2))))
 
   ; assignment
@@ -1699,13 +1699,13 @@
   ; WFunCall
   (test-equal
    ; only values
-   (term (free_tids () (($statFunCall 1 (2)) WFunCall)))
+   (term (free_tids () (($statFCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
   (test-equal
    (term (free_tids (((objr 1) ((\{ \}) nil 1)))
-                    (($statFunCall (objr 1) ((ref 2))) () RetStat)))
+                    (($statFCall (objr 1) ((ref 2))) () RetStat)))
    '())
     
                                    
@@ -1892,20 +1892,20 @@
    (term (free_tids () (((objr 1) \[ 1 \]) WrongKey)))
    (term ((objr 1))))
   
-  ; ArithWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_tids () ((1 + true) ArithWrongOps)))
+   (term (free_tids () ((1 + true) BinopWO)))
    '())
   
-  ; StrConcatWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_tids () (("a" .. "b") StrConcatWrongOps)))
+   (term (free_tids () (("a" .. "b") BinopWO)))
    '())
   
   
-  ; OrdCompWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_tids () ((true < 1) OrdCompWrongOps)))
+   (term (free_tids () ((true < 1) BinopWO)))
    '())
   
   ; StrLenWrongOp
@@ -1997,34 +1997,34 @@
   
   ; fun call
   (test-equal
-   (term (free_clids () ($statFunCall (cl 1) ())))
+   (term (free_clids () ($statFCall (cl 1) ())))
    (term ((cl 1))))
 
   (test-equal
-   (term (free_clids (((cl 1) (function x () \; end))) ($statFunCall (cl 1) ())))
+   (term (free_clids (((cl 1) (function x () \; end))) ($statFCall (cl 1) ())))
    '())
 
   (test-equal
-   (term (free_clids () ($statFunCall (cl 1) ((cl 2)))))
+   (term (free_clids () ($statFCall (cl 1) ((cl 2)))))
    (term ((cl 1) (cl 2))))
 
   (test-equal
    (term (free_clids (((cl 1) (function x () \; end)))
-                     ($statFunCall (cl 1) ((cl 2)))))
+                     ($statFCall (cl 1) ((cl 2)))))
    (term ((cl 2))))
 
   (test-equal
-   (term (free_clids () ($statFunCall (cl 1) : x ())))
+   (term (free_clids () ($statFCall (cl 1) : x ())))
    (term ((cl 1))))
 
   (test-equal
    (term (free_clids (((cl 1) (function x () \; end)))
-                     ($statFunCall (cl 1) : x ())))
+                     ($statFCall (cl 1) : x ())))
    '())
 
   (test-equal
    (term (free_clids (((cl 1) (function x () \; end)))
-                     ($statFunCall (cl 1) : x ((cl 2)))))
+                     ($statFCall (cl 1) : x ((cl 2)))))
    (term ((cl 2))))
 
   ; assignment
@@ -2138,13 +2138,13 @@
   ; WFunCall
   (test-equal
    ; only values
-   (term (free_clids () (($statFunCall 1 (2)) WFunCall)))
+   (term (free_clids () (($statFCall 1 (2)) WFunCall)))
    '())
   
   ; FunCall
   (test-equal
    (term (free_clids (((cl 1) (function x () \; end)))
-                     (($statFunCall (cl 1) ((ref 2))) () RetStat)))
+                     (($statFCall (cl 1) ((ref 2))) () RetStat)))
    '())
     
                                    
@@ -2331,20 +2331,20 @@
    (term (free_clids () (((objr 1) \[ (cl 1) \]) WrongKey)))
    (term ((cl 1))))
   
-  ; ArithWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_clids () ((1 + true) ArithWrongOps)))
+   (term (free_clids () ((1 + true) BinopWO)))
    '())
   
-  ; StrConcatWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_clids () (("a" .. "b") StrConcatWrongOps)))
+   (term (free_clids () (("a" .. "b") BinopWO)))
    '())
   
   
-  ; OrdCompWrongOps
+  ; BinopWO
   (test-equal
-   (term (free_clids () ((true < 1) OrdCompWrongOps)))
+   (term (free_clids () ((true < 1) BinopWO)))
    '())
   
   ; StrLenWrongOp

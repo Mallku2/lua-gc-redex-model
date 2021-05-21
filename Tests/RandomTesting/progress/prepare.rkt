@@ -2,8 +2,9 @@
 
 (require redex
          "../../../grammar.rkt"
-         "../../../Meta-functions/delta.rkt"
+         "../../../Meta-functions/grammarMetaFunctions.rkt"
          "../../../Meta-functions/substitution.rkt"
+         "../../../Meta-functions/objStoreMetaFunctions.rkt"
          )
 
 
@@ -333,7 +334,7 @@
       ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
      osp_3 ...)
 
-   ((objid_1 objid_2) ...
+    ((objid_1 objid_2) ...
      ((objr natural_1) (objr natural_2))
      (objid_3 objid_4) ...))
 
@@ -343,7 +344,7 @@
    ; the following holds when tableconstructor_2 has free variables id
    (where functiondef (close_term_meta tableconstructor_2))
 
-    ; next pos in θ
+   ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))
 
    (where ((osp_3 ...) ((objid_3 objid_4) ...))
@@ -357,7 +358,7 @@
                           ((objid_1 objid_2) ...))
    ((((objr natural_2) (tableconstructor_2 any pos)) osp_3 ...)
 
-   ((objid_1 objid_2) ...
+    ((objid_1 objid_2) ...
      ((objr natural_1) (objr natural_2))
      (objid_3 objid_4) ...))
 
@@ -367,7 +368,7 @@
    ; the following holds when tableconstructor does not have free vars
    (where tableconstructor_2 (close_term_meta tableconstructor_2))
 
-    ; next pos in θ
+   ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))
 
    (where ((osp_3 ...) ((objid_3 objid_4) ...))
@@ -382,14 +383,14 @@
                           ((objid_1 objid_2) ...))
    ((((cl natural_2) functiondef_2) osp_3 ...)
 
-   ((objid_1 objid_2) ...
+    ((objid_1 objid_2) ...
      ((cl natural_1) (cl natural_2))
      (objid_3 objid_4) ...))
 
    ; functiondef_1 must be well-formed
    (where functiondef_2 (close_term_meta functiondef_1))
 
-    ; next pos in θ
+   ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))
 
    (where ((osp_3 ...) ((objid_3 objid_4) ...))
@@ -446,14 +447,17 @@
 ;                                                                           ;                                           
 ;                                                                                                                       
 ;                                                                                                                       
-;
-; transform a break into a while true do break end, to guarantee the
-; corresponding rules for well-formed terms;
-; unfortunately, other, simpler solutions seems to have bad performance;
-; this meta-function is defined considering that a big quantity of terms generated
-; by redex-check include breaks
+; enforces context dependent rules:
+; - break statement only into while
+; - labelled terms only in the place of the redex
+; PARAMS:
+; t : the term
+; any_1 : a boolean flag indicating if labelled terms must be removed (for
+;         subterms that are not the redex
+; any_2 : a boolean flag indicating if the actual term appears in place of an
+;         expression
 (define-metafunction ext-lang
-  fix_break : any -> any
+  fix_cont_dep_rules : any any any -> any
 
   
   ;                                          
@@ -474,46 +478,88 @@
   ;                                          
   ;                                          
 
-  [(fix_break break)
+  ; simple fix to breaks outside of while loops
+  [(fix_cont_dep_rules break any_1 any_2)
    (while true do break end)]
 
-  [(fix_break (return e ...))
-   (return (fix_break e) ...)]
+  [(fix_cont_dep_rules (return) any_1 any_2)
+   (return)]
+  
+  [(fix_cont_dep_rules (side-condition
+                        (return v ... e_1 e_2 ...)
+                        (not (redex-match? ext-lang
+                                           v_2
+                                           (term e_1))))
+                       any_1
+                       any_2)
+   (return v ...
+           (fix_cont_dep_rules e_1 any_1 #t)
+           (fix_cont_dep_rules e_2 #t #t) ...)]
 
-  [(fix_break ($statFunCall e_1 (e_2 ...)))
-   ($statFunCall (fix_break e_1)
-                 ((fix_break e_2) ...))]
+  [(fix_cont_dep_rules ($statFCall e_1 (e_2 ...)) any_1 any_2)
+   ($statFCall e_3 (e_4 ...))
 
-  [(fix_break ($statFunCall e_1 : Name (e_2 ...)))
-   ($statFunCall (fix_break e_1) : Name
-                 ((fix_break e_2) ...))]
+   (where (e_3 (e_4 ...)) (fix_cont_dep_rules (e_1 (e_2 ...)) any_1 #t))]
 
-  [(fix_break ($builtIn builtinserv (e ...)))
-   ($builtIn builtinserv ((fix_break e) ...))]
+  [(fix_cont_dep_rules ($statFCall e_1 : Name (e_2 ...)) any_1 any_2)
+   ($statFCall e_3 : Name (e_4 ...))
 
-  [(fix_break (var_1 var_2 ... = e ...))
-   ((fix_break var_1) (fix_break var_2) ... = (fix_break e) ...)]
+   (where (e_3 (e_4 ...)) (fix_cont_dep_rules (e_1 (e_2 ...)) any_1 #t))]
 
-  [(fix_break (do s end))
-   (do (fix_break s) end)]
+  [(fix_cont_dep_rules (side-condition
+                        (evar ... var_1 var_2 ... = e ...)
+                        (not (redex-match? ext-lang evar_2 (term var_1))))
+                       any _)
+   (evar ... (fix_cont_dep_rules var_1 any #t)
+             (fix_cont_dep_rules var_2 #t #t) ... =
+             (fix_cont_dep_rules e #t #t) ...)]
 
-  [(fix_break (if e then s_1 else s_2 end))
-   (if (fix_break e) then (fix_break s_1) else (fix_break s_2) end)]
+  [(fix_cont_dep_rules (evar ... = v ... ) any_1 any_2)
+   (evar ... = v ...)]
 
-  [(fix_break (while e do s end))
-   (while (fix_break e) do (fix_break s) end)]
+  [(fix_cont_dep_rules (side-condition
+                        (evar ... = v ... e_1 e_2 ...)
+                        (not (redex-match? ext-lang v_2 (term e_1))))
+                       any_1 any_2)
+   (evar ... = v ...
+               (fix_cont_dep_rules e_1 any_1 #t)
+               (fix_cont_dep_rules e_2 #t #t) ...)]
 
-  [(fix_break (local Name ... = e ... in s end))
-   (local Name ... = (fix_break e) ... in (fix_break s) end)]
+  [(fix_cont_dep_rules (do s end) any_1 any_2)
+   (do (fix_cont_dep_rules s any_1 #f) end)]
 
-  [(fix_break (ssing_1 ssing_2 ssing_3 ...))
-   ((fix_break ssing_1) (fix_break ssing_2) (fix_break ssing_3) ...)]
+  [(fix_cont_dep_rules (if e then s_1 else s_2 end) any_1 any_2)
+   (if (fix_cont_dep_rules e any_1 #t) then
+       (fix_cont_dep_rules s_1 #t #f)
+       else
+       (fix_cont_dep_rules s_2 #t #f) end)]
 
-  [(fix_break ($err v))
-   ($err (fix_break v))]
+  [(fix_cont_dep_rules (while e do s end) any_1 any_2)
+   (while (fix_cont_dep_rules e #t #t) do (fix_cont_dep_rules s #t #f) end)]
 
-  [(fix_break ($iter e do s end))
-   ($iter (fix_break e) do (fix_break s) end)]
+  [(fix_cont_dep_rules (local Name ... = v ... in s end) any_1 any_2)
+   (local Name ... = v ... in (fix_cont_dep_rules s #t #f) end)]
+
+  [(fix_cont_dep_rules (side-condition
+                        (local Name ... = v ... e_1 e_2 ... in s end)
+                        (not (redex-match? ext-lang
+                                           v_2
+                                           (term e_1)))) any_1 any_2)
+   (local Name ... = v ...
+                     (fix_cont_dep_rules e_1 any_1 #t)
+                     (fix_cont_dep_rules e_2 #t #t) ... in
+                     (fix_cont_dep_rules s #t #f) end)]
+
+  [(fix_cont_dep_rules (sing_1 sing_2 sing_3 ...) any_1 any_2)
+   ((fix_cont_dep_rules sing_1 any_1 #f)
+    (fix_cont_dep_rules sing_2 #t #f)
+    (fix_cont_dep_rules sing_3 #t #f) ...)]
+
+  [(fix_cont_dep_rules ($err v) _ _)
+   ($err v)]
+
+  [(fix_cont_dep_rules ($iter e do s end) _ _)
+   ($iter (fix_cont_dep_rules e #t #t) do (fix_cont_dep_rules s #t #f) end)]
   
   ;                                                                          
   ;                                                                          
@@ -533,18 +579,69 @@
   ;                                                                          
   ;                                                                          
 
-  [(fix_break (s (renv ...) LocalBody))
-   ((fix_break s) (renv ...) LocalBody)]
+  [(fix_cont_dep_rules (s (renv ...) LocalBody) #t _)
+   \;]
 
-  [(fix_break (s (renv ...) RetStat))
-   ((fix_break s) (renv ...) RetStat)]
+  [(fix_cont_dep_rules (s (renv ...) LocalBody) #f _)
+   ((fix_cont_dep_rules s #f #f) (renv ...) LocalBody)]
 
-  ; no problems here
-  [(fix_break (s Break))
-   (s Break)]
+  [(fix_cont_dep_rules (s (renv ...) RetStat) #f _)
+   ((fix_cont_dep_rules s #f #f) (renv ...) RetStat)]
 
-  [(fix_break (s statlabel))
-   ((fix_break s) statlabel)]
+  [(fix_cont_dep_rules (s (renv ...) RetStat) #t _)
+   \;]
+
+  ; TODO: in this case we are trying to fix a break even though it is no needed
+  [(fix_cont_dep_rules (s Break) #f _)
+   ((fix_cont_dep_rules s #f #f) Break)]
+  
+  [(fix_cont_dep_rules (s Break) #t _)
+   \;]
+  
+  [(fix_cont_dep_rules (s Meta tid ...) #t #f)
+   \;]
+  
+  [(fix_cont_dep_rules (s Meta tid ...) #f #f)
+   (((1 \[ 2 \]) = 3) Meta tid ...)
+
+   (side-condition (not (redex-match? ext-lang
+                                      (((v_1 \[ v_2 \]) = v_3) ...
+                                       ($statFCall v_4 (v_5 ...)) ...)
+                                      (term (s)))))]
+  
+  ; simple fix
+  [(fix_cont_dep_rules (s WrongKey tid_1 ...) #f #f)
+   ; try indexing the environment
+   ((((objr ,objStoreFirstLocation) \[ 1 \]) = 1) WrongKey tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     ; TODO: not checking membership of v_1 to
+                                     ; tid_2
+                                     ((tid_2 \[ v_1 \]) = v_2)
+                                     (term s))))]
+
+  [(fix_cont_dep_rules (s WrongKey tid_1 ...) #t #f)
+   \;]
+  
+  [(fix_cont_dep_rules (s NonTable tid ...) #f #f)
+   (((1 \[ 1 \]) = 1) NonTable tid ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     ((v_1 \[ v_2 \]) = v_3)
+                                     (term s))))]
+
+  [(fix_cont_dep_rules (s NonTable tid_1 ...) #t #f)
+   \;]
+  
+  [(fix_cont_dep_rules (s WFunCall tid_1 ...) #f #f)
+   (($statFCall 1 ()) WFunCall tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     ($statFCall v_1 (v_2 ...))
+                                     (term s))))]
+
+  [(fix_cont_dep_rules (s WFunCall tid_1 ...) #t #f)
+   \;]
   
   ;                                  
   ;                                  
@@ -564,42 +661,90 @@
   ;                   ;              
   ;                                  
 
-  [(fix_break (function Name_1 (Name_2 ...) s end))
-   (function Name_1 (Name_2 ...) (fix_break s) end)]
+  [(fix_cont_dep_rules ($builtIn builtinserv ()) _ _)
+   ($builtIn builtinserv ())]
 
-  [(fix_break (function Name_1 (Name_2 ... <<<) s end))
-   (function Name_1 (Name_2 ... <<<) (fix_break s) end)]
+  [(fix_cont_dep_rules (side-condition
+                        ($builtIn builtinserv (v ... e_1 e_2 ...))
+                        (not (redex-match? ext-lang
+                                           v_2
+                                           (term e_1))))
+                       any _)
+   ($builtIn builtinserv (v ...
+                          (fix_cont_dep_rules e_1 any #t)
+                          (fix_cont_dep_rules e_2 #t #t) ...))]
+  
+  [(fix_cont_dep_rules (function Name_1 (Name_2 ...) s end) _ _)
+   (function Name_1 (Name_2 ...) (fix_cont_dep_rules s #t #f) end)]
 
-  [(fix_break (function Name_1 (Name_2 ... <<<) s end))
-   (function Name_1 (Name_2 ... <<<) (fix_break s) end)]
+  [(fix_cont_dep_rules (function Name_1 (Name_2 ... <<<) s end) _ _)
+   (function Name_1 (Name_2 ... <<<) (fix_cont_dep_rules s #t #f) end)]
 
-  [(fix_break (e_1 \[ e_2 \]))
-   ((fix_break e_1) \[ (fix_break e_2) \])]
+  [(fix_cont_dep_rules (v \[ e \]) any _)
+   (v \[ (fix_cont_dep_rules e any #t) \])]
 
-  [(fix_break (\( e \)))
-   (\( (fix_break e) \))]
+  [(fix_cont_dep_rules (e_1 \[ e_2 \]) any _)
+   ((fix_cont_dep_rules e_1 any #t) \[ (fix_cont_dep_rules e_2 #t #t) \])]
 
-  [(fix_break (\{ field ... \}))
-   (\{ (fix_break field) ... \})]
+  [(fix_cont_dep_rules (\( e \)) any _)
+   (\( (fix_cont_dep_rules e any #t) \))]
+
+  [(fix_cont_dep_rules (\{ efield ... \}) _ _)
+   (\{ efield ... \})]
+
+  [(fix_cont_dep_rules (side-condition
+                        (\{ efield ... field_1 field_2 ... \})
+                        (not (redex-match? ext-lang efield_2 (term field_1))))
+                       any _)
+   (\{ efield ...
+       (fix_cont_dep_rules field_1 any #t)
+       (fix_cont_dep_rules field_2 #t #t)... \})]
 
   ; table field with key defined
-  [(fix_break (\[ e_1 \] = e_2))
-   (\[ (fix_break e_1) \] = (fix_break e_2))]
-
-  [(fix_break (e_1 binop e_2))
-   ((fix_break e_1) binop (fix_break e_2))]
-
-  [(fix_break (unop e))
-   (unop (fix_break e))]
-
-  [(fix_break (< e ... >))
-   (< (fix_break e) ... >)]
-
-   [(fix_break (e_1 (e_2 ...)))
-   ((fix_break e_1) ((fix_break e_2) ...))]
+  [(fix_cont_dep_rules (\[ v \] = e) any _)
+   (\[ v \] = (fix_cont_dep_rules e any #t))]
   
-  [(fix_break (e_1 : Name (e_2 ...)))
-   ((fix_break e_1) : Name ((fix_break e_2) ...))]
+  [(fix_cont_dep_rules (\[ e_1 \] = e_2) any _)
+   (\[ (fix_cont_dep_rules e_1 any #t) \] = (fix_cont_dep_rules e_2 #t #t))]
+
+  [(fix_cont_dep_rules (v binop e) any _)
+   (v binop (fix_cont_dep_rules e any #t))]
+
+  [(fix_cont_dep_rules (e_1 binop e_2) any _)
+   ((fix_cont_dep_rules e_1 any #t) binop (fix_cont_dep_rules e_2 #t #t))]
+
+  [(fix_cont_dep_rules (unop e) any _)
+   (unop (fix_cont_dep_rules e any #t))]
+
+  [(fix_cont_dep_rules (< v ... >) _ _)
+   (< v ... >)]
+
+  [(fix_cont_dep_rules (side-condition
+                        (< v ... e_1 e_2 ... >)
+                        (not (redex-match? ext-lang v_2 (term e_1))))
+                       any _)
+   (< v ...
+      (fix_cont_dep_rules e_1 any #t)
+      (fix_cont_dep_rules e_2 #t #t) ... >)]
+
+  [(fix_cont_dep_rules (v_1 (v_2 ...)) _ _)
+   (v_1 (v_2 ...))]
+
+  [(fix_cont_dep_rules (side-condition
+                        (v_1 (v_2 ... e_1 e_2 ...))
+                        (not (redex-match? ext-lang v_3 (term e_1))))
+                       any _)
+   (v_1 (v_2 ...
+         (fix_cont_dep_rules e_1 any #t)
+         (fix_cont_dep_rules e_2 #t #t) ...))]
+
+  [(fix_cont_dep_rules (e_1 (e_2 ...)) any _)
+   ((fix_cont_dep_rules e_1 any #t) ((fix_cont_dep_rules e_2 #t #t) ...))]
+  
+  [(fix_cont_dep_rules (e_1 : Name (e_2 ...)) any _)
+   (e_3 : Name (e_4 ...))
+   
+   (where (e_3 (e_4 ...)) (fix_cont_dep_rules (e_1 (e_2 ...)) any #t))]
 
   
   ;                                                                  
@@ -620,17 +765,119 @@
   ;                                                   ;              
   ;                                                                  
 
-  [(fix_break (e ProtMD v))
-   ((fix_break e) ProtMD v)]
+  [(fix_cont_dep_rules (e ProtMD) #f _)
+   (1 ProtMD)
 
-  [(fix_break (e explabel))
-   ((fix_break e) explabel)]
+   (side-condition (not (redex-match? ext-lang
+                                      ((v) ...
+                                       (\( e_2 \)) ...)
+                                      (term (e)))))]
 
-  [(fix_break (s (renv ...) RetExp))
-   ((fix_break s) (renv ...) RetExp)]
+  [(fix_cont_dep_rules (e ProtMD v) #f _)
+   (1 ProtMD)
+
+   (side-condition (not (redex-match? ext-lang
+                                      ((v_1 (v_2 ...)) ...
+
+                                       ; successful fcall
+                                       (s (renv ...) RetExp) ...
+                                       (< v_3 ... >) ...
+
+                                       ; problems in fcall
+                                       (δbasic error v_4) ...
+                                       ($err v_5)
+                                       ((v_6 (v_7 ...)) WFunCall tid ...) ...
+                                       ((v_8 (v_9 ...)) Meta tid ...) ...
+                                       )
+                                      (term (e)))))]
+
+  [(fix_cont_dep_rules (e ProtMD v ...) #t _)
+   nil]
+
+  [(fix_cont_dep_rules (e Meta tid ...) #f #t)
+   ((1 ()) Meta tid ...)
+
+   (where (v ...
+           <<< ...
+           Name ...
+           r ...
+           ($err v_2) ...
+           (< e_2 ... >) ...
+           )
+          
+          (e))]
+
+  ; simple fix
+  [(fix_cont_dep_rules (e WrongKey tid_1 ...) #f #t)
+   ; try indexing the environment
+   (((objr ,objStoreFirstLocation) \[ 1 \]) WrongKey tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     ; TODO: not checking membership of v_1 to
+                                     ; tid_2
+                                     (tid_2 \[ v_1 \])
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e NonTable tid_1 ...) #f #t)
+   ((1 \[ 1 \]) NonTable tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (v_1 \[ v_2 \])
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e WFunCall tid_1 ...) #f #t)
+   ((1 ()) WFunCall tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (v_1 (v_2 ...))
+                                     (term e))))]
+
+  ; > is translated into <
+  [(fix_cont_dep_rules ((e_1 > e_2) BinopWO tid_1 ...) #f _)
+   (fix_cont_dep_rules ((e_1 < e_2) BinopWO tid_1 ...) #f #t)]
+
+  [(fix_cont_dep_rules ((e_1 >= e_2) BinopWO tid_1 ...) #f _)
+   (fix_cont_dep_rules ((e_1 <= e_2) BinopWO tid_1 ...) #f #t)]
+
+  [(fix_cont_dep_rules (e BinopWO tid_1 ...) #f _)
+   (("a" + "b") BinopWO tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (v_1 binop v_2)
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e EqFail tid_1 ...) #f _)
+   (("a" == 1) EqFail tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (v_1 == v_2)
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e NegWrongOp tid_1 ...) #f _)
+   ((- "a") NegWrongOp tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (- v)
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e StrLenWrongOp tid_1 ...) #f _)
+   ((\# 1) StrLenWrongOp tid_1 ...)
+
+   (side-condition (not (redex-match ext-lang
+                                     (\# v)
+                                     (term e))))]
+
+  [(fix_cont_dep_rules (e explabel tid_1 ...) #t _)
+   ($err 1)]
+
+  [(fix_cont_dep_rules (s (renv ...) RetExp) #t _)
+   nil]
+
+  [(fix_cont_dep_rules (s (renv ...) RetExp) #f _)
+   ((fix_cont_dep_rules s #f #f) (renv ...) RetExp)]
 
   ; default
-  [(fix_break any)
+  [(fix_cont_dep_rules any _ _)
    any]
   )
 
@@ -640,29 +887,35 @@
   
   ; no vararg id
   [(close_term_meta s_1)
-   (fix_break s_2)
+   s_3
+   
+   ; fix breaks, labelled terms in wrong positions, etc
+   (where s_2 (fix_cont_dep_rules s_1 #f #f))
 
    ; get free refs
-   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv s_1))))
+   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv s_2))))
    ; replace local variables identifiers by refs (later steps will bound this
    ; refs)
-   (where s_2 (subst s_1 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
+   (where s_3 (subst s_2 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
 
   ; no free identifiers
   [(close_term_meta s)
-   (fix_break s)]
+   (fix_cont_dep_rules s #f #f)]
 
   [(close_term_meta e_1)
-   (fix_break e_2)
+   e_3
 
-   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv e_1))))
+   ; fix breaks, labelled terms in wrong positions, etc
+   (where e_2 (fix_cont_dep_rules e_1 #f #t))
+   
+   (where (any_1 any_2 ...) ,(remove-duplicates (term (fv e_2))))
    ; replace local variables identifiers by refs (later steps will bound this
    ; refs)
-   (where e_2 (subst e_1 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
+   (where e_3 (subst e_2 ((any_1 (ref 1)) (any_2 (ref 1)) ...)))]
 
   ; no free identifiers
   [(close_term_meta e)
-   (fix_break e)]
+   (fix_cont_dep_rules e #f #t)]
 
   ; redex-check may have generated an ill-formed term
   [(close_term_meta any)
@@ -690,9 +943,9 @@
                       : (osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
    (close_conf_meta  (((refStdout String) ...
-                       ((ref 1) (objr 1))
+                       ((ref 1) (objr ,objStoreFirstLocation))
                        (r v) ...)
-                      : (((objr 1) ((\{ \}) nil ⊥)) osp ...)
+                      : (((objr ,objStoreFirstLocation) ((\{ \}) nil ⊥)) osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
 
    (side-condition (member (term builtinserv)
@@ -710,10 +963,10 @@
                       : (osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
    (close_conf_meta  (((refStdout String) ...
-                       ((ref 1) (objr 1))
+                       ((ref 1) (objr ,objStoreFirstLocation))
                        (r_1 v_1) ...
                        (r_2 v_3) ...)
-                      : (((objr 1) ((\{ \}) nil ⊥)) osp ...)
+                      : (((objr ,objStoreFirstLocation) ((\{ \}) nil ⊥)) osp ...)
                       : (in-hole E ($builtIn builtinserv (e ...)))))
 
    (side-condition (member (term builtinserv)
