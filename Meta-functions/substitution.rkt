@@ -19,8 +19,8 @@
    e]
   
   ; Variable identifier or vararg expression
-  [(substExp id_1 ((id_2 e) ...))
-   (applySubst id_1 ((id_2 e) ...))]
+  [(substExp id_1 ((id_2 e_2) ... (id_1 e_1) (id_3 e_3) ...))
+   e_1]
   
   ; Function call
   [(substExp (e_1 (e_2 ...)) ((id e_3) ...))
@@ -403,22 +403,7 @@
 ;                                                                  
 ;                                                                  
 ;                                                                  
-;                                                                  
-
-(define-metafunction ext-lang
-  applySubst : id ((id e) ...) -> e
-  
-  [(applySubst id ())
-   id]
-  
-  [(applySubst id_1 ((id_1 e_1) (id e) ...))
-   e_1]
-
-  ; {id_1 ≠ id_2}
-  [(applySubst id_1 ((id_2 e_1) (id e) ...))
-   (applySubst id_1 ((id e) ...))]
-  )
-
+;  
 ; auxiliar meta-function to perform a substitution over a table field
 (define-metafunction ext-lang
   substField : field ((id e) ...) -> field

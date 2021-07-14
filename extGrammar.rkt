@@ -11,14 +11,6 @@
   [sing ....
         ; extensions
         (s Break)
-        ; to help with the definition of well-formed programs, we exclude as
-        ; many ill-formed programs as possible,  using the grammar
-;        (($statFCall v (v ...)) Meta tid ...)
-;        (((v \[ v \]) = v) Meta tid ...)
-;        
-;        (((tid \[ v \]) = v) WrongKey tid ...)
-;        (((v \[ v \]) = v) NonTable tid ...)
-;        (($statFCall v (v ...)) WFunCall tid ...)
         (s statlabel tid ...)
         
         ; renv is not an expression nor a value.
@@ -44,24 +36,6 @@
      (e ProtMD v)
      (e ProtMD) ; protected mode where the handler has been used
      
-     ; to help with the definition of well-formed programs, we exclude with the
-     ; grammar as many ill-formed programs as possible
-;     ((v (v ...)) Meta tid ...)
-;     ((not (v (v ...))) Meta tid ...)
-;     ((not (not (v (v ...)))) Meta tid ...)
-;     ((\( (v (v ...)) \)) Meta tid ...)
-;     ((v \[ v \]) Meta tid ...)
-;
-;     ((v_1 (v_2 ...)) WFunCall tid ...)
-;     ((v \[ v \]) NonTable tid ...)
-;     ((tid \[ v \]) WrongKey tid ...)
-;     ((v arithop v) BinopWO tid ...)
-;     ((v .. v) BinopWO tid ...)
-;     ((v < v) BinopWO tid ...)
-;     ((v <= v) BinopWO tid ...)
-;     ((- v) NegWrongOp tid ...)
-;     ((\# v) StrLenWrongOp tid ...)
-;     ((v == v) EqFail tid ...)
      (e explabel tid ...)
      ]
 
