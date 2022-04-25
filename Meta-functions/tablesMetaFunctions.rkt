@@ -38,7 +38,7 @@
                                (term (v ...))))
 
    ; from "efield_1 ...", extract fields of the form "[ key ] = value"
-   ; we discrad fields with numeric key in [1; Number]
+   ; we discard fields with numeric key in [1; Number]
    ; Lua seems to give priority to numeric fields without key, over
    ; fields with numeric key
    (where (efield_3 ...)
