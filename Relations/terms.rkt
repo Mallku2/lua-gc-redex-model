@@ -21,13 +21,9 @@
            (in-hole Et nil)
            E-TruncateEmptyTuple]
    
-   [-->s/e (in-hole Ea (< v_1 v_2 ... >))
-           (fix_unwrap Ea (v_1 v_2 ...))
+   [-->s/e (in-hole Ea (< v_1 ... >))
+           (fix_unwrap Ea (v_1 ...))
            E-UnwrapNonEmptyTuple]
-
-   [-->s/e (in-hole Ea (< >))
-           (fix_unwrap Ea '())
-           E-UnwrapEmptyTuple]
    ;                                                                                          
    ;                                                             ;                            
    ;                                                                                          
