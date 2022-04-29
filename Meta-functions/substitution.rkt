@@ -19,6 +19,17 @@
    e]
   
   ; Variable identifier or vararg expression
+  ; delete repeated mappings
+  [(substExp id_1 ((id_2 e_2) ...
+                   (id_1 e_1)
+                   (id_3 e_3) ...
+                   (id_1 e_4)
+                   (id_4 e_5) ...))
+   (substExp id_1 ((id_2 e_2) ...
+                   (id_3 e_3) ...
+                   (id_1 e_4)
+                   (id_4 e_5) ...))]
+  
   [(substExp id_1 ((id_2 e_2) ... (id_1 e_1) (id_3 e_3) ...))
    e_1]
   
