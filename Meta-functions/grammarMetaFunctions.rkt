@@ -14,52 +14,52 @@
 ; For each ev. contexts where tuples are truncated, we need to add an equation
 ; this definition
 (define-metafunction ext-lang
-  [(fix_unwrap (return v_1 ... hole) (v_2 ...))
-   (return v_1 ... v_2 ...)]
+  [(fix_unwrap (return v_1 ... hole) (v_2 v_3 ...))
+   (return v_1 ... v_2 v_3 ...)]
 
-  [(fix_unwrap (return v_1 ... hole) '())
+  [(fix_unwrap (return v_1 ... hole) ())
    (return v_1 ...) ]
   
-  [(fix_unwrap (v_1 (v_2 ... hole)) (v_3 ...))
-   (v_1 (v_2 ... v_3 ...))]
+  [(fix_unwrap (v_1 (v_2 ... hole)) (v_3 v_4 ...))
+   (v_1 (v_2 ... v_3 v_4 ...))]
 
-  [(fix_unwrap (v_1 (v_2 ... hole)) '())
+  [(fix_unwrap (v_1 (v_2 ... hole)) ())
    (v_1 (v_2 ...))]
 
-  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) (v_3 ...))
-   ($statFCall v_1 (v_2 ... v_3 ...))]
+  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) (v_3 v_4 ...))
+   ($statFCall v_1 (v_2 ... v_3 v_4 ...))]
 
-  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) '())
+  [(fix_unwrap ($statFCall v_1 (v_2 ... hole)) ())
    ($statFCall v_1 (v_2 ...))]
   
-  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) (v_2 ...))
-   ($builtIn builtinserv  (v_1 ... v_2 ...))]
+  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) (v_2 v_3 ...))
+   ($builtIn builtinserv  (v_1 ... v_2 v_3 ...))]
 
-  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) '())
+  [(fix_unwrap ($builtIn builtinserv  (v_1 ... hole)) ())
    ($builtIn builtinserv  (v_1 ...))]
   
-  [(fix_unwrap (< v_1 ... hole >) (v_2 ...))
-   (< v_1 ... v_2 ... >)]
+  [(fix_unwrap (< v_1 ... hole >) (v_2 v_3 ...))
+   (< v_1 ... v_2 v_3 ... >)]
 
-  [(fix_unwrap (< v_1 ... hole >) '())
+  [(fix_unwrap (< v_1 ... hole >) ())
    (< v_1 ... >)]
   
-  [(fix_unwrap (\{ field ... hole \}) (v ...))
-   (\{ field ... v ... \})]
+  [(fix_unwrap (\{ field ... hole \}) (v_1 v_2 ...))
+   (\{ field ... v_1 v_2 ... \})]
   
-  [(fix_unwrap (\{ field ... hole \}) '())
+  [(fix_unwrap (\{ field ... hole \}) ())
    (\{ field ... \})]
 
-  [(fix_unwrap (local Name ... = v_1 ... hole in s end) (v_2 ...))
-   (local Name ... = v_1 ... v_2 ... in s end)]
+  [(fix_unwrap (local Name ... = v_1 ... hole in s end) (v_2 v_3 ...))
+   (local Name ... = v_1 ... v_2 v_3 ... in s end)]
 
-  [(fix_unwrap (local Name ... = v_1 ... hole in s end) '())
+  [(fix_unwrap (local Name ... = v_1 ... hole in s end) ())
    (local Name ... = v_1 ... in s end)]
 
-  [(fix_unwrap (evar ... = v_1 ... hole) (v_2 ...))
-   (evar ... = v_1 ... v_2 ...)]
+  [(fix_unwrap (evar ... = v_1 ... hole) (v_2 v_3 ...))
+   (evar ... = v_1 ... v_2 v_3 ...)]
 
-  [(fix_unwrap (evar ... = v_1 ... hole) '())
+  [(fix_unwrap (evar ... = v_1 ... hole) ())
    (evar ... = v_1 ...)]
   )
 

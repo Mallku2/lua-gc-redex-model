@@ -485,8 +485,8 @@
         (func-def (id-name (new-label)) $1 $2)
         )))
     
-    (retstat ((RETURN) (return (exps (list (nil)))))
-             ((RETURN \;) (return (exps (list (nil)))))
+    (retstat ((RETURN) (return (exps '())))
+             ((RETURN \;) (return (exps '())))
              ((RETURN explist) (return $2))
              ((RETURN explist \;) (return $2)))
     

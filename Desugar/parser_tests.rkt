@@ -39,7 +39,7 @@
                 (term (return 1.0)) )
   
   (check-equal? (parse-this "return"  #f (void))
-                (term (return nil)) )
+                (term (return)) )
   
   (check-equal? (parse-this "return 1,2;"  #f (void))
                 (term (return 1.0 2.0)))

@@ -31,7 +31,7 @@
      (< e ... >)
      ($err v)
      ; renv is not an expression nor a value. The previous rules for these
-     ; constructions does not describe the renv added
+     ; constructions do not describe the renv added
      (s (renv ...) RetExp)
      (e ProtMD v)
      (e ProtMD) ; protected mode where the handler has been used
@@ -252,7 +252,7 @@
   [Ea (local Name_1 Name_2 ... = v ... hole in s end)
       (return v ... hole)
       (evar_1 evar_2 ... = v ... hole)
-      (v (v ... hole))
+      (v Eael)
       ($statFCall v Eael)
       ($builtIn builtinserv Eael)
       (< v ... hole >)
