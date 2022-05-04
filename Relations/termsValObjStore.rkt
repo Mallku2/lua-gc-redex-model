@@ -130,7 +130,7 @@
    
    ; built-in services
    [-->σ/θ (σ_1 : θ : ($builtIn print (v ...)))
-           (σ_2 : θ : nil)
+           (σ_2 : θ : (< >))
         
            E-BuiltInSigmaWrite
         
