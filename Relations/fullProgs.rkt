@@ -51,12 +51,48 @@
    [↦ (σ_1 : θ_1 : (in-hole E t_1))
       (σ_2 : θ_2 : (in-hole E t_2))
 
+      ; to avoid reducing a function call in tail position before "removing the
+      ; last stack frame"
+      (side-condition (not (redex-match? ext-lang
+
+                                         (in-hole E_1 ((in-hole Elf (return (cid (v ...))))
+                                          (renv ...) RetStat))
+
+                                         (term (in-hole E t_1)))))
+
+      (side-condition (not (redex-match? ext-lang
+
+                                         (in-hole E_1 ((in-hole Elf (return (cid (v ...))))
+                                          (renv ...) RetExp))
+
+                                         (term (in-hole E t_1)))))
+       
       (where ((σ_2 : θ_2 : t_2)) ,(apply-reduction-relation
                                    terms-val-obj-store
                                    (term (σ_1 : θ_1 : t_1))))
 
         
       FWD-σθ]
+;
+;   ; tail call: we can "reuse the stack frame of the actual function" or
+;   ; "pop the last stack frame"; in our formalization we choose the second
+;   ; option, and remove the term labelled with RetStat or RetExp, and the
+;   ; references in scope (in renv ...); we replace them with the new function
+;   ; call, effectively modelling the removing of the stack frame at the top
+;   ; of the stack
+;   [↦ (σ : θ : (in-hole E ((in-hole Elf (return (cid (v ...))))
+;                           (renv ...) RetStat)))
+;      (σ : θ : (in-hole E ($statFCall cid (v ...))))
+;
+;        
+;      STailCall]
+;
+;   [↦ (σ : θ : (in-hole E ((in-hole Elf (return (cid (v ...))))
+;                           (renv ...) RetExp)))
+;      (σ : θ : (in-hole E (cid (v ...))))
+;
+;        
+;      ETailCall]
    
    ; meta
    [↦ (σ : θ_1 : (in-hole E (t_1 label objid ...)))

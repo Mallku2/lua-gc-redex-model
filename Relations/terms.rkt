@@ -398,6 +398,24 @@
            
            E-ReturnEmptyTuple]
 
+   ; tail call: we can "reuse the stack frame of the actual function" or
+   ; "pop the last stack frame"; in our formalization we choose the second
+   ; option, and remove the term labelled with RetStat or RetExp, and the
+   ; references in scope (in renv ...); we replace them with the new function
+   ; call, effectively modelling the removing of the stack frame at the top
+   ; of the stack
+   [-->s/e ((in-hole Elf (return (cid (v ...)))) (renv ...) RetStat)
+
+           ($statFCall cid (v ...))
+        
+      S-PopSF]
+
+   [-->s/e ((in-hole Elf (return (cid (v ...)))) (renv ...) RetExp)
+
+           (cid (v ...))
+        
+      E-PopSF]
+
    
    [-->s/e ((in-hole Elf (return v ...)) Break)
            (return v ...)
