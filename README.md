@@ -1,4 +1,4 @@
-This is the mechanization of the semantics presented in *"Decoding Lua: Formal semantics for the developer and the semanticist"* and *"Understanding Lua’s Garbage Collection - Towards a Formalized Static Analyzer"*.
+This is the mechanization of the semantics presented in *"Decoding Lua: Formal semantics for the developer and the semanticist"*, *"Understanding Lua’s Garbage Collection - Towards a Formalized Static Analyzer"* and *"From specification to testing: semantics engineering for Lua 5.2"*
 
 1. **Installation of DrRacket**
 
@@ -56,7 +56,7 @@ objects)   
         ```make [with-gc] [-jn]```.            
      * ```with-gc``` enables testing of the whole test suite, gc included, and ```n``` is the number of parallel threads of execution to be used. It is advisable to make use of parallel threads of execution, if available.
 * **Randomized testing of properties**
-    * The module **Tests/RandomTesting/soundness/wfc.rkt** contains the definitions of the formal system that captures well-formedness of configurations and terms, while **Tests/RandomTesting/soundness/soundness_rand_test.rkt** contains procedures to perform random testing of the soundness of said formal system. 
+    * The module **Tests/RandomTesting/soundness/wfc.rkt** contains the definition of the formal system that captures well-formedness of configurations and terms, while **Tests/RandomTesting/soundness/soundness_rand_test.rkt** contains procedures to perform random testing of the soundness of said formal system. 
     * ```(soundness_wfc_full_coverage attempts debug)``` (defined in  **Tests/RandomTesting/soundness/soundness_rand_test.rkt**) generates `attempts` terms, and checks if the statement of soundness holds for each term. ```debug``` is a boolean flag that indicates if we want to inspect every configuration generated that is not well-formed (useful for debugging purposes).  
 
 4. **Now, where to go?**
