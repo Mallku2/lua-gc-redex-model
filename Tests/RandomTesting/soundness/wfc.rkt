@@ -2,12 +2,6 @@
 
 (require redex
          "../../../grammar.rkt"
-         "../../../Relations/fullProgs.rkt"
-         "../../../Relations/terms.rkt"
-         "../../../Relations/termsValStore.rkt"
-         "../../../Relations/termsObjStore.rkt"
-         "../../../Relations/termsValObjStore.rkt"
-         "../../../Relations/meta.rkt"
          "../../../Meta-functions/grammarMetaFunctions.rkt"
          "../../../Meta-functions/delta.rkt"
          "../../../Meta-functions/substitution.rkt"
@@ -42,11 +36,13 @@
   [---------------------------------------------------------------------------
    (well_formed_stored_table any σ θ ())]
 
-  [; key must not be nil or nan, value must not be nil
+  [; key must not be nil or nan, value must not be nil but we still allow it
+   ; to simplify the formalization of iterators (see next in deltaBasic)
+   ; nil-valued fields do not introduce the risk of obtaining an stuck
+   ; configuration
    (side-condition ,(not (or (is_nil? (term v_1))
                              (equal? (term v_1)
-                                     +nan.0)
-                             (is_nil? (term v_2)))))
+                                     +nan.0))))
    
    (well_formed_term any σ θ v_1)
    (well_formed_term any σ θ v_2)
@@ -226,9 +222,6 @@
   [(well_formed_term any σ θ e)
    (well_formed_term ,(plug (term any)
                             (term ($iter e do hole end))) σ θ wfscore)
-   ;   (side-condition ,(redex-match?  ext-lang
-   ;                                  (in-hole C_2 (C_3 Break))
-   ;                                  (term any)))
    --------------------------------------------------------------------------
    (well_formed_term any σ θ ($iter e do wfscore end))]
 
@@ -640,6 +633,7 @@
 
 (provide well_formed_term)
 
+; well-formedness of stores
 (define-metafunction  ext-lang
   well_formed_vsp : vsp σ θ -> any
 
@@ -719,6 +713,7 @@
   [(well_formed_theta _ _ _)
    #f])
 
+; well-formedness of configurations
 (define-metafunction  ext-lang
   [(well_formed_conf (σ : θ : t))
    ,(and
@@ -729,23 +724,7 @@
      (judgment-holds
       (well_formed_term hole σ θ t)))])
 
-;                                                                  
-;                                                                  
-;                                                                  
-;                                                                  
-;                                                                  
-;                                                                  
-;   ;;;;;    ;;;;    ;;;;    ;;;;;   ;;;;    ;;;;    ;;;;    ;;;;  
-;   ;;  ;;   ;;  ;  ;;  ;;  ;;  ;;   ;;  ;  ;;  ;;  ;    ;  ;    ; 
-;   ;    ;   ;      ;    ;  ;    ;   ;      ;    ;  ;       ;      
-;   ;    ;   ;      ;    ;  ;    ;   ;      ;;;;;;   ;;;;    ;;;;  
-;   ;    ;   ;      ;    ;  ;    ;   ;      ;            ;       ; 
-;   ;;  ;;   ;      ;;  ;;  ;;  ;;   ;      ;;   ;  ;    ;  ;    ; 
-;   ;;;;;    ;       ;;;;    ;;; ;   ;       ;;;;    ;;;;    ;;;;  
-;   ;                            ;                                 
-;   ;                        ;   ;                                 
-;   ;                         ;;;                                  
-;                                                                  
+; final states
 ; PRE : {t is well-formed, with respect to some stores}
 (define-metafunction  ext-lang
   is_final_stat : s -> any
@@ -793,157 +772,3 @@
 
 (provide is_final_conf)
 
-(define (check_one_step c result)
-  (or
-   ; it was a final configuration 
-   (and (= (length result) 0)
-        (term (is_final_conf ,c)))
-   ; not a final configuration 
-   (and (= (length result) 1)
-        (term (well_formed_conf ,(first result))))))
-
-(define (soundness_wfc_pred c debug)
-  (let ([result (if (not (term (well_formed_conf ,c)))
-                    ; TODO: naive approach to discard ill formed
-                    ; terms
-                    (if debug
-                        (begin (println (term ,c))
-                               (term ((() : () : \;))))
-                        
-                        (term ((() : () : \;))))
-                     
-                    (apply-reduction-relation full-progs-rel
-                                              (term ,c)))])
-    (check_one_step c result)
-    )
-  )
-
-; generates "attempts" examples taking into account left hand-side of the rules
-; from "rel"; flag "debug" indicates if the non-well-formed terms must be printed 
-(define (soundness_wfc rel attempts debug)
-  (redex-check  ext-lang any
-                (soundness_wfc_pred (term any) debug)
-                #:prepare close_conf
-                #:attempts attempts
-                #:source rel))
-
-; test and print relation coverage of soundness_wfc
-(define (soundness_wfc_coverage rel attempts debug)
-  ; create records to register test coverage related with ↦
-  (let ([rel-coverage (make-coverage rel)]
-        [full-progs-rel-coverage (make-coverage full-progs-rel)])
-    (parameterize
-        ; supply data-structures
-        ([relation-coverage (list rel-coverage full-progs-rel-coverage)])
-      (soundness_wfc rel attempts debug)
-      (values (covered-cases rel-coverage)
-              (covered-cases full-progs-rel-coverage))
-      )))
-
-; generates "attempts" examples following the pattern (σ : θ : s)
-; flag "debug" indicates if the non-well-formed terms must be printed
-(define (soundness_wfc_no_rel attempts debug)
-  (redex-check  ext-lang (σ : θ : s)
-                (soundness_wfc_pred (term (σ : θ : s)) debug)
-                #:prepare close_conf
-                #:attempts attempts))
-
-; tests and prints relation coverage of soundness_wfc_no_rel
-(define (soundness_wfc_no_rel_coverage attempts debug)
-  ; create records to register test coverage related with ↦
-  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
-    (parameterize
-        ; supply data-structures
-        ([relation-coverage (list full-progs-rel-coverage)])
-      (soundness_wfc_no_rel attempts debug)
-      (values (covered-cases full-progs-rel-coverage))
-      )))
-
-; generates "attempts" examples following the pattern
-; (σ : θ : (return ($builtIn builtinserv (v ...))))
-; flag "debug" indicates if the non-well-formed terms must be printed
-(define (soundness_wfc_builtIn attempts debug)
-  (redex-check  ext-lang (σ : θ : (return ($builtIn builtinserv (v ...))))
-                (soundness_wfc_pred (term (σ : θ : (return ($builtIn builtinserv (v ...))))) debug)
-                #:prepare close_conf
-                #:attempts attempts
-                ))
-
-; test and print relation coverage soundness_wfc_builtIn
-(define (soundness_wfc_builtIn_coverage attempts debug)
-  ; create records to register test coverage related with ↦
-  (let ([full-progs-rel-coverage (make-coverage full-progs-rel)])
-    (parameterize
-        ; supply data-structures
-        ([relation-coverage (list full-progs-rel-coverage)])
-      (soundness_wfc_builtIn attempts debug)
-      (values (covered-cases full-progs-rel-coverage)))))
-
-
-; TODO: any way to automate this?
-(define terms-rel-rules 50)
-(define terms-val-store-rules 3)
-(define terms-obj-store-rules 11)
-(define terms-val-obj-store-rules 3)
-(define meta-rules 23)
-(define full-rules (+ terms-rel-rules
-                      terms-val-store-rules
-                      terms-obj-store-rules
-                      terms-val-obj-store-rules
-                      meta-rules))
-; ratio of the examples generated following the left side of rules, with respect
-; to the total amount of examples
-(define ratio-prepare (/ 2 3))
-
-; divides tests among every relation, according to ratio-prepare;
-; tests soundness_wfc for every relation, except for full-progs-rel;
-; invokes soundness_wfc_no_rel for full-progs-rel
-(define (soundness_wfc_full_coverage attempts debug)
-  ; create records to register test coverage related with ↦
-  (let ([terms-rel-coverage (make-coverage terms-rel)]
-        [terms-val-store-coverage (make-coverage terms-val-store)]
-        [terms-obj-store-coverage (make-coverage terms-obj-store)]
-        [terms-val-obj-store-coverage (make-coverage terms-val-obj-store)]
-        [meta-coverage (make-coverage meta)]
-        [full-progs-rel-coverage (make-coverage full-progs-rel)])
-    (parameterize
-        ; supply data-structures
-        ([relation-coverage (list terms-rel-coverage
-                                  terms-val-store-coverage
-                                  terms-obj-store-coverage
-                                  terms-val-obj-store-coverage
-                                  meta-coverage
-                                  full-progs-rel-coverage)])
-      (begin
-        ; 50 rules in terms-rel
-        (soundness_wfc terms-rel (floor (* (* attempts (/ terms-rel-rules
-                                                          full-rules))
-                                           ratio-prepare)) debug)
-        ; 3 rules in terms-val-store
-        (soundness_wfc terms-val-store (floor (* (* attempts (/ terms-val-store-rules
-                                                                full-rules))
-                                                 ratio-prepare)) debug)
-        ; 11 rules in terms-obj-store
-        (soundness_wfc terms-obj-store (floor (* (* attempts (/ terms-obj-store-rules
-                                                                full-rules))
-                                                 ratio-prepare)) debug)
-        ; 3 rules in terms-val-obj-store
-        (soundness_wfc terms-val-obj-store (floor (* (* attempts (/ terms-val-obj-store-rules
-                                                                    full-rules))
-                                                     ratio-prepare)) debug)
-        ; 23 rules in meta
-        (soundness_wfc meta (floor (* (* attempts (/ meta-rules
-                                                     full-rules))
-                                      ratio-prepare)) debug)
-
-        ; remaining tests taken just from arbitrary terms of the grammar
-        (soundness_wfc_no_rel (floor (* attempts
-                                        (- 1 ratio-prepare))) debug)
-        
-        (values (covered-cases terms-rel-coverage)
-                (covered-cases terms-val-store-coverage)
-                (covered-cases terms-obj-store-coverage)
-                (covered-cases terms-val-obj-store-coverage)
-                (covered-cases meta-coverage)
-                (covered-cases full-progs-rel-coverage))
-        ))))

@@ -216,8 +216,10 @@
    (where tid (getMetaTableRef v))
 
    ; meta-table already present
+   ; TODO: this breaks soundness: if there is a reference to tid somewhere else,
+   ; we end up with dandgling references
    (where (osp_1 ...
-           (tid intreptable_1)
+           (tid intreptable)
            osp_2 ...) θ_1)
 
    (where θ_2 (osp_1 ...
