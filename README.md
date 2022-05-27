@@ -51,13 +51,13 @@ objects)   
 * **Executing Lua's own test suite**:    
      
      * For performance purposes, we divided each .lua file of the test suite into several fragments. A .rkt file is provided which implements several tests that compile each of these fragments.
-     * For a given module M.lua of Lua's test suite, a single test test-M_n from M.rkt will compile all the content of thefile M_n.lua, plugging the result into an execution environment that only contains the required library services. Then, it will execute the resulting program and test whether the execution was successful or not.
+     * For a given module M.lua of Lua's test suite, a single test test-M_n from M.rkt will compile all the content of the file M_n.lua, plugging the result into an execution environment that only contains the required library services. Then, it will execute the resulting program and test whether the execution was successful or not.
      * For easiness of use, we provide a Makefile that allows for the execution of the whole test suite, with or without testing of gc:         
-        ```make [with-gc] [-jn]```            
-     * ```with-gc``` enables testing of the whole test suite, gc included, and ```n``` is the number of parallel threads of execution to be used. It is advisable to make use of parallel threads of execution, if available
+        ```make [with-gc] [-jn]```.            
+     * ```with-gc``` enables testing of the whole test suite, gc included, and ```n``` is the number of parallel threads of execution to be used. It is advisable to make use of parallel threads of execution, if available.
 * **Randomized testing of properties**
-    * The module **Tests/RandomTesting/progress/defs.rkt** contains the definitions of the formal system that captures well-formedness of configurations and terms, together with procedures to perform random testing of the soundness of said formal system. 
-    * ```(soundness_wfc_full_coverage attempts debug)``` generates `attempts` terms, and checks if the statement of soundness holds for each term. ```debug``` is a boolean flag that indicates if we want to inspect every configuration generated that is not well-formed (useful for debugging purposes).  
+    * The module **Tests/RandomTesting/soundness/wfc.rkt** contains the definitions of the formal system that captures well-formedness of configurations and terms, while **Tests/RandomTesting/soundness/soundness_rand_test.rkt** contains procedures to perform random testing of the soundness of said formal system. 
+    * ```(soundness_wfc_full_coverage attempts debug)``` (defined in  **Tests/RandomTesting/soundness/soundness_rand_test.rkt**) generates `attempts` terms, and checks if the statement of soundness holds for each term. ```debug``` is a boolean flag that indicates if we want to inspect every configuration generated that is not well-formed (useful for debugging purposes).  
 
 4. **Now, where to go?**
 
