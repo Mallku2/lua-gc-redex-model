@@ -344,7 +344,7 @@
 
   ; we substitute into the evaluated table and metatable's ref
   [(substTheta ((tid (evaluatedtable_1 any_1 pos)) osp_1 ...) ((id e) ...))
-   ((tid (evaluatedtable_1 any_2 pos)) osp_2 ...)
+   ((tid (evaluatedtable_2 any_2 pos)) osp_2 ...)
 
    (where (osp_2 ...) (substTheta (osp_1 ...) ((id e) ...)))
    (where evaluatedtable_2 (substExp evaluatedtable_1 ((id e) ...)))
