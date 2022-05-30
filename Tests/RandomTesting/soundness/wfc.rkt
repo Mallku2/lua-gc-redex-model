@@ -312,9 +312,10 @@
   [(side-condition ,(not (redex-match? ext-lang
                                        (($err v) ...
                                         break ...
-                                        \; ...
-                                        (term s)))))
+                                        \; ...)
+                                        (term (s)))))
    (well_formed_term any σ θ s)
+   (well_formed_term any σ θ tid) ...
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (s Meta tid ...))]
 
@@ -569,8 +570,9 @@
                                         <<< ...
                                         (< e_2 ... >) ...
                                         )
-                                       (term e))))
+                                       (term (e)))))
    (well_formed_term any σ θ e)
+   (well_formed_term any σ θ tid) ...
    -------------------------------------------
    (well_formed_term any σ θ (e Meta tid ...))]
 
@@ -687,18 +689,35 @@
    (side-condition (judgment-holds (well_formed_stored_table hole σ θ 
                                                              (field ...))))]
 
-  [(well_formed_osp (cid functiondef) σ θ)
+  [(well_formed_osp (cid_1 functiondef_1) σ θ)
    #t
    
    ; functiondef must be well formed
    (side-condition (judgment-holds (well_formed_term hole σ θ 
-                                                     functiondef)))]
+                                                     functiondef_1)))
+
+   ; functiondef must be unique in the store
+   ; to preserve closure caching invariant
+   (side-condition (not (redex-match ext-lang
+                                     (side-condition  (osp_1 ...
+                                                       (cid_2 functiondef_2)
+                                                       osp_2 ...)
+                                                      (and (equal? (term functiondef_1)
+                                                                   (term functiondef_2))
+                                                           (not (equal? (term cid_1)
+                                                                        (term cid_2)))))
+                                     (term θ))))
+   ]
 
   ; default
   [(well_formed_osp any ...)
    #f]
   )
 
+; auxiliar function of well_formed_conf:
+; well_formed_theta θ_1 σ θ_2 iterates through θ_1, checking
+; wf of each osp in θ_1, with respect to the information in σ
+; and θ_2 (original θ store)
 (define-metafunction  ext-lang
   well_formed_theta : θ σ θ -> any
   
@@ -723,6 +742,8 @@
      
      (judgment-holds
       (well_formed_term hole σ θ t)))])
+
+(provide well_formed_conf)
 
 ; final states
 ; PRE : {t is well-formed, with respect to some stores}

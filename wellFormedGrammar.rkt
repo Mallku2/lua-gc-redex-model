@@ -29,6 +29,7 @@
   [wfssing wfscoresing
            
            (do wfs end)
+           (return)
            (return v ... wfe wfecore ...)
 
            ($statFCall wfe (wfecore ...))
@@ -96,10 +97,10 @@
        
        ($builtIn builtinserv (v ... wfe wfecore ...))
 
-       (\{ efield ... wfe wffield ... \})
+       (\{ efield ... wffield wfnevfield ... \})
        
        (wfe binop wfecore)
-       (v binop wfecore)
+       (v binop wfe)
        
        (unop wfe)
        
@@ -141,8 +142,14 @@
            (wfecore \[ wfecore \])
            r]
 
-  ; tables
-  [wffield (\[ wfecore \] = wfecore)
+  ; fields of tables
+  ; well-formed field under evaluation
+  [wffield (\[ wfe \] = wfecore)
+           (\[ v \] = wfe)
+           wfe]
+
+  ; well-formed not-evaluated fields
+  [wfnevfield (\[ wfecore \] = wfecore)
          ; we need to allow fields like this
          wfecore]
     

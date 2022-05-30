@@ -259,6 +259,8 @@
 ; bound free tids, cids from a given conf; enforces well-formedness of the domain
 ; and img of given stores
 (define-metafunction ext-lang
+  ; note that the domain is (osp ...) instead of θ, to allow
+  ; for ill-formed θ stores (e.g., repeated locations in the domain)
   close_fix_theta_sigma : σ (osp ...) t -> (σ θ t)
 
   [(close_fix_theta_sigma (vsp ...) (osp_1 ...) t_1)
@@ -285,8 +287,11 @@
    ; add dummy tables and closures to bound tids and cids
    (where (osp_2 ...) (osp_1 ...
                        (tid_3 ((\{ \}) nil ⊥)) ...
-                       (cid_3 (function x () \; end)) ...))
-   
+                       ; we must avoid breaking the invariant that refers to
+                       ; closure caching: there should be only one instance
+                       ; of a given closure value in store
+                       ; we introduce arbitrary differences (e.g., through cid_3 ...)
+                       (cid_3 (function x () (return cid_3) end)) ...))
    ; ensure well-formedness of dom((osp_2 ...)) and img((osp_2 ...)))
    (where (θ ((objid_1 objid_2) ...)) (fix_theta_dom_img (osp_2 ...)))
    ; apply the expected substitutions in t_1 and σ_1
@@ -298,6 +303,9 @@
 ; redex-check could generate terms with refs (objr number_1) and (cl number_1)
 ; fix_theta_dom implements a simple fix to that
 ; it also enforces well-formedness of the img
+; RETURNS
+; modified θ together with the substitutions of objid that the user of this function
+; needs to perform on the term and σ in order to coincide with the returned θ
 (define-metafunction ext-lang
   fix_theta_dom_img : (osp ...) -> (θ ((objid objid) ...))
 
@@ -415,14 +423,20 @@
   [(fix_tableconstructor_aux ())
    ()]
 
-  ; discard fields with nil or nan key, or nil value
-  [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field ...))
+  ; discard fields with nil or nan key
+  [(fix_tableconstructor_aux ((\[ v \] = _) field ...))
    (fix_tableconstructor_aux (field ...))
 
-   (side-condition (or (is_nil? (term v_1))
-                       (equal? (term v_1)
-                               +nan.0)
-                       (is_nil? (term v_2))))]
+   (side-condition (or (is_nil? (term v))
+                       (equal? (term v)
+                               +nan.0)))]
+
+  ; {v ≠ nil, nan}
+  ; to avoid discarding nil-valued fields
+  [(fix_tableconstructor_aux ((\[ v \] = nil) field_1 ...))
+   ((\[ v \] = 1) field_2 ...)
+
+   (where (field_2 ...) (fix_tableconstructor_aux (field_1 ...)))]
 
   ; default: field does not have a nil or nan key, or nil value
   [(fix_tableconstructor_aux ((\[ v_1 \] = v_2) field_1 ...))
@@ -1005,20 +1019,22 @@
 
    (where (σ : θ : t_2) (close_conf_meta (() : () : t_1)))]
 
-  [(int_close_conf_meta (σ_1 : t_1))
-   (σ_2 : θ : t_2)
+  ; (vsp ...) instead of σ, to allow for ill-formed stores
+  [(int_close_conf_meta ((vsp ...) : t_1))
+   (σ : θ : t_2)
 
-   (where (σ_2 : θ : t_2) (close_conf_meta (σ_1 : () : t_1)))]
+   (where (σ : θ : t_2) (close_conf_meta ((vsp ...) : () : t_1)))]
 
-  [(int_close_conf_meta (θ_1 : t_1))
-   (σ : θ_2 : t_2)
+  
+  [(int_close_conf_meta ((osp ...) : t_1))
+   (σ : θ : t_2)
 
-   (where (σ : θ_2 : t_2) (close_conf_meta (() : θ_1 : t_1)))]
+   (where (σ : θ : t_2) (close_conf_meta (() : (osp ...) : t_1)))]
 
-  [(int_close_conf_meta (σ_1 : θ_1 : t_1))
-   (σ_2 : θ_2 : t_2)
+  [(int_close_conf_meta ((vsp ...) : (osp ...) : t_1))
+   (σ : θ : t_2)
 
-   (where (σ_2 : θ_2 : t_2) (close_conf_meta (σ_1 : θ_1 : t_1)))]
+   (where (σ : θ : t_2) (close_conf_meta ((vsp ...) : (osp ...) : t_1)))]
 
   ; deault case: redex-check generated something that is not in s ∪ e: we
   ; default it to the conf. () : () ;
