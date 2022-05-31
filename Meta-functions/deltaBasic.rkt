@@ -134,7 +134,7 @@
    ,(bytes-length (string->bytes/utf-8 (term String)))]
   
   ; Table length: just the max. positive numeric key
-  [(δbasic \# (\{ field ... \}))
+  [(δbasic \# (\{ efield ... \}))
    any
 
    ; extract positive numeric keys
@@ -146,7 +146,7 @@
                                                         (positive-integer? (term v_2))
                                                         (not (is_nil? (term v_3)))))
                                    (term ,field)))
-             (term (field ...))))
+             (term (efield ...))))
    
    (where any ,(argmax (λ (number) number) (term (Number_1 Number_2 ...))))]
   
@@ -365,7 +365,7 @@
    v
    
    (where (osp_3 ...
-           (tid_3 ((\{ field_1 ... (\[ "__metatable" \] = v) field_2 ... \})
+           (tid_3 ((\{ efield_1 ... (\[ "__metatable" \] = v) efield_2 ... \})
                    any_2 ...))
            osp_4 ...)
 
@@ -385,9 +385,9 @@
   ; the value isn't a table. It has a meta-table, which has
   ; a "__metatable" key,
   [(δbasic getmetatable any_1 (osp_1 ...
-                               (tid_2 ((\{ field_1 ...
+                               (tid_2 ((\{ efield_1 ...
                                            (\[ "__metatable" \] = v)
-                                           field_2 ... \})
+                                           efield_2 ... \})
                                        any_2 ...))
                                osp_2 ...))
    v
@@ -769,15 +769,15 @@
   ; by allowing just one nil-valued field it is possible to emulate the semantics
   ; of next, where the user can delete a field during traversal
   [(δbasic next tid nil (osp_1 ...
-                         (tid ((\{ (\[ v \] = nil) field ... \}) any ...))
+                         (tid ((\{ (\[ v \] = nil) efield ... \}) any ...))
                          osp_2 ...))
    (δbasic next tid nil (osp_1 ...
-                         (tid ((\{ field ... \}) any ...))
+                         (tid ((\{ efield ... \}) any ...))
                          osp_2 ...))]
 
   ; {v_2 ≠ nil} 
   [(δbasic next tid nil (osp_1 ...
-                         (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
+                         (tid ((\{ (\[ v_1 \] = v_2) efield ... \}) any ...))
                          osp_2 ...))
    (< v_1 v_2 >)]
   
@@ -789,13 +789,13 @@
   ; next does not return nil-valued fields
   [(δbasic next tid v_1 (osp_1 ...
                          (tid
-                          ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = nil)
-                               field_2 ... \})
+                          ((\{ efield_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = nil)
+                               efield_2 ... \})
                            any ...))
                          osp_2 ...))
    (δbasic next tid v_1 (osp_1 ...
                          (tid
-                          ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
+                          ((\{ efield_1 ... (\[ v_2 \] = v_3) efield_2 ... \})
                            any ...))
                          osp_2 ...))
    
@@ -804,8 +804,8 @@
   ; {v_5 ≠ nil}
   [(δbasic next tid v_1 (osp_1 ...
                          (tid
-                          ((\{ field_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
-                               field_2 ... \})
+                          ((\{ efield_1 ... (\[ v_2 \] = v_3) (\[ v_4 \] = v_5)
+                               efield_2 ... \})
                            any ...))
                          osp_2 ...))
    (< v_4 v_5 >)
@@ -815,7 +815,7 @@
   ; last index
   [(δbasic next tid v_1 (osp_1 ...
                          (tid
-                          ((\{ field_1 ... (\[ v_2 \] = v_3) \}) any ...))
+                          ((\{ efield_1 ... (\[ v_2 \] = v_3) \}) any ...))
                          osp_2 ...))
    (< nil >)
    
@@ -973,7 +973,7 @@
   ; {tid points to a table}
   [(δbasic rawget tid_1 v_1
            (osp_1 ...
-            (tid_1 ((\{ field_1 ... (\[ v_2 \] = v_3) field_2 ... \})
+            (tid_1 ((\{ efield_1 ... (\[ v_2 \] = v_3) efield_2 ... \})
                     any ...))
             osp_2 ...))
    v_3
@@ -1049,13 +1049,13 @@
   ; function next)
   [(δbasic rawset tid v_1 nil θ)
    ((osp_1 ...
-     (tid ((\{ field_3 ... (\[ v_2 \] = nil) field_4 ... \}) any ...))
+     (tid ((\{ efield_3 ... (\[ v_2 \] = nil) efield_4 ... \}) any ...))
      osp_2 ...) tid)
 
    (where (side-condition
            (tid v_1 (osp_1 ...
-                     (tid ((\{ field_1 ... (\[ v_2 \] = v_3)
-                               field_2 ... \})
+                     (tid ((\{ efield_1 ... (\[ v_2 \] = v_3)
+                               efield_2 ... \})
                            any ...))
                      osp_2 ...))
            (equal? (term (δbasic == v_1 v_2))
@@ -1064,21 +1064,21 @@
 
    ; clean previous nil-valued fields, but preserving order (needed for table
    ; iterators)
-   (where (field_3 ...)
+   (where (efield_3 ...)
           ,(filter (lambda (field)
                      (redex-match? ext-lang
                                    (side-condition (|[| v_2 |]| = v_3)
                                                    (not (is_nil? (term v_3))))
                                    (term ,field)))
-             (term (field_1 ...))))
+             (term (efield_1 ...))))
 
-   (where (field_4 ...)
+   (where (efield_4 ...)
           ,(filter (lambda (field)
                      (redex-match? ext-lang
                                    (side-condition (|[| v_2 |]| = v_3)
                                                    (not (is_nil? (term v_3))))
                                    (term ,field)))
-             (term (field_2 ...))))]
+             (term (efield_2 ...))))]
 
   ; special case: v ∉ dom(θ(tid))
   [(δbasic rawset tid v nil θ)
@@ -1087,24 +1087,24 @@
   ; v_2 != nil
   ; field update
   [(δbasic rawset tid v_1 v_2 (osp_1 ...
-                               (tid ((\{ field_1 ... (\[ v_3 \] = v_4)
-                                         field_2
+                               (tid ((\{ efield_1 ... (\[ v_3 \] = v_4)
+                                         efield_2
                                          ... \})
                                      any ...))
                                osp_2 ...))
    ((osp_1 ...
-     (tid ((\{ field_1 ... (\[ v_3 \] = v_2) field_2 ... \}) any ...))
+     (tid ((\{ efield_1 ... (\[ v_3 \] = v_2) efield_2 ... \}) any ...))
      osp_2 ...) tid)
 
    (where true (δbasic == v_1 v_3))]
   
   ; add a new field 
   [(δbasic rawset tid v_1 v_2 (osp_1 ...
-                               (tid ((\{ field ... \}) any ...))
+                               (tid ((\{ efield ... \}) any ...))
                                osp_2 ...))
 
    ((osp_1 ...
-     (tid ((\{ (\[ v_1 \] = v_2) field ... \}) any ...))
+     (tid ((\{ (\[ v_1 \] = v_2) efield ... \}) any ...))
      osp_2 ...) tid)
 
    (side-condition (not (equal? (term v_2)

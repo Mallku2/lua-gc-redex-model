@@ -446,12 +446,6 @@
   (test-equal
    (judgment-holds
     (well_formed_term hole ()
-                      (((objr 6) ((|{| |}|) nil ⊘))) (($statFCall (objr 6) (nil)) Meta (objr 2))))
-   #f)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole ()
                       (((objr 2)
                         ((|{|
                           |}|)
@@ -459,12 +453,6 @@
                          ⊥))
                        ((objr 6) ((|{| |}|) nil ⊘))) (((objr 6) (nil)) Meta (objr 2))))
    #t)
-
-  (test-equal
-   (judgment-holds
-    (well_formed_term hole ()
-                      (((objr 6) ((|{| |}|) nil ⊘))) (((objr 6) (nil)) Meta (objr 2))))
-   #f)
 
   (test-equal
    (judgment-holds

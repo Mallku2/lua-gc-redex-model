@@ -315,7 +315,6 @@
                                         \; ...)
                                         (term (s)))))
    (well_formed_term any σ θ s)
-   (well_formed_term any σ θ tid) ...
    --------------------------------------------------------------------------
    (well_formed_term any σ θ (s Meta tid ...))]
 
@@ -572,7 +571,8 @@
                                         )
                                        (term (e)))))
    (well_formed_term any σ θ e)
-   (well_formed_term any σ θ tid) ...
+   ; note that we do not need to check tid ...: the notion of wft
+   ; does not depend on them
    -------------------------------------------
    (well_formed_term any σ θ (e Meta tid ...))]
 

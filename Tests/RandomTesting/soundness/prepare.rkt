@@ -331,16 +331,40 @@
   [(fix_theta_dom_img_aux () natural ((objid_1 objid_2) ...))
    (() ((objid_1 objid_2) ...))]
 
+;  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
+;                           osp_1 ...)
+;                          natural_2
+;                          ((objid_1 objid_2) ...))
+;   ((((objr natural_2)
+;      ; in order to bound free ids in tableconstructor_1,
+;      ; close_term_meta returned a functiondef; we put it into a new
+;      ; table
+;      ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
+;     osp_3 ...)
+;
+;    ((objid_1 objid_2) ...
+;     ((objr natural_1) (objr natural_2))
+;     (objid_3 objid_4) ...))
+;
+;   ; table constructor must be well formed: deleted nil, nan or repeated keys;
+;   ; bound free variables
+;   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
+;   ; the following holds when tableconstructor_2 has free variables id
+;   (where functiondef (close_term_meta tableconstructor_2))
+;
+;   ; next pos in θ
+;   (where natural_3 ,(+ 1 (term natural_2)))
+;
+;   (where ((osp_3 ...) ((objid_3 objid_4) ...))
+;          (fix_theta_dom_img_aux (osp_1 ...)
+;                                 natural_3
+;                                 ()))]
+
   [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
                            osp_1 ...)
                           natural_2
                           ((objid_1 objid_2) ...))
-   ((((objr natural_2)
-      ; in order to bound free ids in tableconstructor_1,
-      ; close_term_meta returned a functiondef; we put it into a new
-      ; table
-      ((\{ (\[ 1 \] = functiondef) \}) any_2 pos))
-     osp_3 ...)
+   ((((objr natural_2) (tableconstructor_3 any pos)) osp_3 ...)
 
     ((objid_1 objid_2) ...
      ((objr natural_1) (objr natural_2))
@@ -349,32 +373,7 @@
    ; table constructor must be well formed: deleted nil, nan or repeated keys;
    ; bound free variables
    (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
-   ; the following holds when tableconstructor_2 has free variables id
-   (where functiondef (close_term_meta tableconstructor_2))
-
-   ; next pos in θ
-   (where natural_3 ,(+ 1 (term natural_2)))
-
-   (where ((osp_3 ...) ((objid_3 objid_4) ...))
-          (fix_theta_dom_img_aux (osp_1 ...)
-                                 natural_3
-                                 ()))]
-
-  [(fix_theta_dom_img_aux (((objr natural_1) (tableconstructor_1 any pos))
-                           osp_1 ...)
-                          natural_2
-                          ((objid_1 objid_2) ...))
-   ((((objr natural_2) (tableconstructor_2 any pos)) osp_3 ...)
-
-    ((objid_1 objid_2) ...
-     ((objr natural_1) (objr natural_2))
-     (objid_3 objid_4) ...))
-
-   ; table constructor must be well formed: deleted nil, nan or repeated keys;
-   ; bound free variables
-   (where tableconstructor_2 (fix_tableconstructor tableconstructor_1))
-   ; the following holds when tableconstructor does not have free vars
-   (where tableconstructor_2 (close_term_meta tableconstructor_2))
+   (where tableconstructor_3 (close_term_meta tableconstructor_2))
 
    ; next pos in θ
    (where natural_3 ,(+ 1 (term natural_2)))

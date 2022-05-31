@@ -14,7 +14,7 @@
          "./fullProgsTests.rkt"
          "./executionEnvironmentTests.rkt"
          ; Random testing
-         "./RandomTesting/progress/tests.rkt"
+         "./RandomTesting/soundness/wfc_test_suite.rkt"
          ; Desugaring
          "../Desugar/parser_tests.rkt"
          "../Desugar/lexer_tests.rkt"
